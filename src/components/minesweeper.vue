@@ -1,12 +1,16 @@
 <template>
   <div id="content">
     <div id="minefield">
-      <div class="block" v-for="item in blocks" :key="item.index" :index="item.index" @click="click(item.index, item.row, item.col)">
-        <div class="innerBlock closeBlock" v-if="!item.open"></div>
-        <div class="innerBlock mineBlock" v-else-if="item.mine==1">×</div>
+      <div class="block" v-for="item in blocks" :key="item.index" :index="item.index"
+           @click.left="click(item.index, item.row, item.col)"
+           @click.right="flag(item.index, item.row, item.col)">
+        <div class="innerBlock flagBlock" v-if="item.flag"><i class="el-icon-location-outline"></i></div>
+        <div class="innerBlock closeBlock" v-else-if="!item.open"></div>
+        <div class="innerBlock mineBlock" v-else-if="item.mine==1"><i class="el-icon-close"></i></div>
         <div class="innerBlock" v-else>{{item.number==0 ? '' : item.number}}</div>
       </div>
     </div>
+    <div>{{flagNumber}} / {{config.mines}}</div>
   </div>
 </template>
 
@@ -15,9 +19,9 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: column nowrap;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
     #minefield{
       border-bottom: 1px solid black;
       border-right: 1px solid black;
@@ -34,13 +38,14 @@
           height: 100%;
           font-size: 20px;
         }
+        .flagBlock{
+          background-color: #ccc;
+        }
         .closeBlock{
           background-color: #ccc;
         }
         .mineBlock{
           color: red;
-          font-size: 40px;
-          line-height: 32px;
         }
       }
     }
@@ -54,24 +59,22 @@
       return {
         config: {
           blockSize: 40,
-          width: 10,
-          height: 10,
-          mines: 10
+          width: 20,
+          height: 20,
+          mines: 60
         },
-        blocks: []
+        blocks: [],
+        isGenerate: false,
+        flagNumber: 0,
       }
     },
     created: function(){
-
+      document.oncontextmenu = function(){
+        event.returnValue = false;
+      };
     },
     mounted: function () {
       let that = this;
-
-      //点击事件
-      // $("#minefield").on("click", ".block", function () {
-      //   let index = $(this).attr("index");
-      //   //console.log(that.blocks[index]);
-      // });
 
       //调整雷区的宽高
       $("#minefield").css("width", this.config.width * this.config.blockSize + "px")
@@ -87,7 +90,8 @@
             col: j,
             mine: 0,
             number: 0,
-            open: true
+            open: false,
+            flag: false,
           });
         }
       }
@@ -98,70 +102,111 @@
           .css("line-height", this.config.blockSize + "px");
       });
 
-      //布雷
-      for(let i=0;i<this.config.mines;i++){
-        let index = 0;
-        do{
-          index = Math.floor(Math.random()*this.config.width*this.config.height);
-        } while (this.blocks[index].mine==1);
-        this.blocks[index].mine = 1;
-      }
-
-      //计算number
-      for(let i in this.blocks){
-        if(this.blocks[i].mine==0){
-          let index = parseInt(i);
-          this.blocks[index].number += some(index-1)
-            + some(index+1)
-            + some(index-this.config.width-1)
-            + some(index-this.config.width)
-            + some(index-this.config.width+1)
-            + some(index+this.config.width-1)
-            + some(index+this.config.width)
-            + some(index+this.config.width+1);
-        }
-
-        function some(index) {
-          if(index < 0 || index > that.config.width * that.config.height -1)
-            return 0;
-          return that.blocks[index].mine;
-        }
-      }
+      //this.generate();
     },
     methods: {
-      click(index, row, col){
-        // console.log(index, row, col);
-        if(!this.blocks[index].open){
-          if(this.blocks[index].mine==1){
-            //如果是雷，游戏结束
-            alert("GG");
-          } else {
-            //如果不是雷，执行open
-            this.open(index);
-            if(this.isWin()){
-              this.$nextTick(() => {
-                alert("u win! ");
+      generate(safeIndex){
+        let that = this;
+        do{
+          //清空雷区
+          this.blocks = [];
+          for(let i=0;i<this.config.height;i++){
+            for(let j=0;j<this.config.width;j++){
+              this.blocks.push({
+                index: i*this.config.width+j,
+                row: i,
+                col: j,
+                mine: 0,
+                number: 0,
+                open: false,
+                flag: false,
               });
+            }
+          }
+
+          //布雷
+          for(let i=0;i<this.config.mines;i++){
+            let index = 0;
+            do{
+              index = Math.floor(Math.random()*this.config.width*this.config.height);
+            } while (this.blocks[index].mine==1);
+            this.blocks[index].mine = 1;
+          }
+
+          //计算number
+          for(let i=0;i<this.config.height;i++){
+            for(let j=0;j<this.config.width;j++){
+              let index = i*this.config.width+j;
+              if(this.blocks[index].mine==0){
+                this.blocks[index].number +=
+                  some(i, j-1)
+                  + some(i, j+1)
+                  + some(i-1, j-1)
+                  + some(i-1, j)
+                  + some(i-1, j+1)
+                  + some(i+1, j-1)
+                  + some(i+1, j)
+                  + some(i+1, j+1);
+              }
+            }
+            function some(i, j) {
+              if(i < 0 || i > that.config.height -1) return 0;
+              if(j < 0 || j > that.config.width -1) return 0;
+              // if(index < 0 || index > that.config.width * that.config.height -1) return 0;
+              return that.blocks[i*that.config.width+j].mine;
+            }
+          }
+        } while(this.blocks[safeIndex].number!=0 || this.blocks[safeIndex].mine!=0);
+      },
+      click(index, row, col){
+        if(!this.isGenerate){
+          //第一次点击，再布雷，保证第一次点开是0
+          this.generate(index);
+          this.isGenerate = true;
+          this.click(index, row, col);
+        } else {
+          if(!this.blocks[index].flag){
+            if(!this.blocks[index].open){
+              //如果没打开，则打开
+              if(this.blocks[index].mine==1){
+                //如果是雷，游戏结束
+                this.$alert("GG");
+              } else {
+                //如果不是雷，执行open
+                this.open(row, col);
+                if(this.isWin()){
+                  this.$alert("u win! ");
+                }
+              }
+            } else {
+              //如果已经打开，执行快速打开
+              this.quickOpen(row, col);
             }
           }
         }
       },
-      open(index){
-        if(index < 0 || index > this.config.width * this.config.height -1)
-          return;
+      open(i, j){
+        let index = i*this.config.width+j;
+        if(i < 0 || i > this.config.height -1) return 0;
+        if(j < 0 || j > this.config.width -1) return 0;
+        // if(index < 0 || index > this.config.width * this.config.height -1)
+        //   return;
         if(this.blocks[index].open)
           return;
         this.blocks[index].open = true;
         if(this.blocks[index].number==0){
-          this.open(index-1);
-          this.open(index+1);
-          this.open(index-this.config.width-1);
-          this.open(index-this.config.width);
-          this.open(index-this.config.width+1);
-          this.open(index+this.config.width-1);
-          this.open(index+this.config.width);
-          this.open(index+this.config.width+1);
+          this.open(i, j-1);
+          this.open(i, j+1);
+          this.open(i-1, j-1);
+          this.open(i-1, j);
+          this.open(i-1, j+1);
+          this.open(i+1, j-1);
+          this.open(i+1, j);
+          this.open(i+1, j+1);
         }
+      },
+      quickOpen(i, j){
+        
       },
       isWin(){
         let result = true;
@@ -172,6 +217,12 @@
           }
         }
         return result;
+      },
+      flag(index, row, col){
+        if(this.isGenerate && !this.blocks[index].open){
+          this.flagNumber += this.blocks[index].flag ? -1 : 1;
+          this.blocks[index].flag = !this.blocks[index].flag;
+        }
       }
     }
   }
