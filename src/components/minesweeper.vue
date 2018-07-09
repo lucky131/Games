@@ -59,9 +59,9 @@
       return {
         config: {
           blockSize: 40,
-          width: 20,
-          height: 20,
-          mines: 60
+          width: 10,
+          height: 10,
+          mines: 10
         },
         blocks: [],
         isGenerate: false,
@@ -152,7 +152,6 @@
             function some(i, j) {
               if(i < 0 || i > that.config.height -1) return 0;
               if(j < 0 || j > that.config.width -1) return 0;
-              // if(index < 0 || index > that.config.width * that.config.height -1) return 0;
               return that.blocks[i*that.config.width+j].mine;
             }
           }
@@ -168,16 +167,7 @@
           if(!this.blocks[index].flag){
             if(!this.blocks[index].open){
               //如果没打开，则打开
-              if(this.blocks[index].mine==1){
-                //如果是雷，游戏结束
-                this.$alert("GG");
-              } else {
-                //如果不是雷，执行open
-                this.open(row, col);
-                if(this.isWin()){
-                  this.$alert("u win! ");
-                }
-              }
+              this.open(row, col);
             } else {
               //如果已经打开，执行快速打开
               this.quickOpen(row, col);
@@ -189,12 +179,45 @@
         let index = i*this.config.width+j;
         if(i < 0 || i > this.config.height -1) return 0;
         if(j < 0 || j > this.config.width -1) return 0;
-        // if(index < 0 || index > this.config.width * this.config.height -1)
-        //   return;
+        if(this.blocks[index].flag)
+          return;
         if(this.blocks[index].open)
           return;
-        this.blocks[index].open = true;
-        if(this.blocks[index].number==0){
+        if(this.blocks[index].mine>0){
+          this.$alert("GG");
+        } else {
+          this.blocks[index].open = true;
+          if(this.blocks[index].number==0){
+            this.open(i, j-1);
+            this.open(i, j+1);
+            this.open(i-1, j-1);
+            this.open(i-1, j);
+            this.open(i-1, j+1);
+            this.open(i+1, j-1);
+            this.open(i+1, j);
+            this.open(i+1, j+1);
+          }
+          if(this.isWin()){
+            this.$alert("u win! ");
+          }
+        }
+      },
+      quickOpen(i, j){
+        let that = this;
+        let index = i*this.config.width+j;
+        let number = this.blocks[index].number;
+        let flagNumber = 0;
+        flagNumber +=
+          some(i, j-1)
+          + some(i, j+1)
+          + some(i-1, j-1)
+          + some(i-1, j)
+          + some(i-1, j+1)
+          + some(i+1, j-1)
+          + some(i+1, j)
+          + some(i+1, j+1);
+        if(number == flagNumber){
+          //如果两个数相等，则等价于打开周围8块
           this.open(i, j-1);
           this.open(i, j+1);
           this.open(i-1, j-1);
@@ -204,9 +227,11 @@
           this.open(i+1, j);
           this.open(i+1, j+1);
         }
-      },
-      quickOpen(i, j){
-        
+        function some(i, j) {
+          if(i < 0 || i > that.config.height -1) return 0;
+          if(j < 0 || j > that.config.width -1) return 0;
+          return that.blocks[i*that.config.width+j].flag ? 1 : 0;
+        }
       },
       isWin(){
         let result = true;
