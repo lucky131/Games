@@ -11,12 +11,13 @@
     <div style="color: white">direction: {{snake.direction}}, length: {{snake.length}}</div>
     <el-dialog
       title="新游戏"
+      center
       :visible.sync="isDialogShow"
       width="320px"
       :show-close="falseData"
       :close-on-click-modal="falseData"
       :close-on-press-escape="falseData">
-      <el-form label-width="75px">
+      <el-form label-width="80px">
         <el-form-item label="格子大小">
           <el-input-number v-model="config.blockSize" :min="5" :step="5"></el-input-number>
         </el-form-item>
@@ -65,6 +66,9 @@
           }
         }
       }
+    }
+    .el-form-item /deep/ .el-form-item__label{
+      padding-right: 20px;
     }
   }
 </style>
