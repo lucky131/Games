@@ -191,7 +191,7 @@
             this.step();
           }, this.config.interval);
         } else {
-          this.$alert("GG", {
+          this.$alert("GG, your score: " + this.snake.length, {
             callback: () => {
               this.isDialogShow = true;
             }
