@@ -14,7 +14,7 @@
     <el-dialog
       title="新游戏"
       :visible.sync="isDialogShow"
-      width="600px"
+      width="500px"
       :show-close="falseData"
       :close-on-click-modal="falseData"
       :close-on-press-escape="falseData">
