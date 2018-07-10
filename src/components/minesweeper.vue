@@ -13,12 +13,13 @@
     <div>{{flagNumber}} / {{config.mines}}</div>
     <el-dialog
       title="新游戏"
+      center
       :visible.sync="isDialogShow"
       width="500px"
       :show-close="falseData"
       :close-on-click-modal="falseData"
       :close-on-press-escape="falseData">
-      <el-form label-width="75px">
+      <el-form label-width="80px">
         <el-form-item label="格子大小">
           <el-input-number v-model="config.blockSize" :min="10" :step="5"></el-input-number>
         </el-form-item>
@@ -31,13 +32,13 @@
           </el-radio-group>
           <div>
             <div class="dialogRow">
-              宽：<el-input-number :disabled="config.difficulty!==4" v-model="config.width" :min="10"></el-input-number>
+              <span class="dialogRowLabel">宽</span><el-input-number :disabled="config.difficulty!==4" v-model="config.width" :min="10"></el-input-number>
             </div>
             <div class="dialogRow">
-              高：<el-input-number :disabled="config.difficulty!==4" v-model="config.height" :min="10"></el-input-number>
+              <span class="dialogRowLabel">高</span><el-input-number :disabled="config.difficulty!==4" v-model="config.height" :min="10"></el-input-number>
             </div>
             <div class="dialogRow">
-              雷：<el-input-number :disabled="config.difficulty!==4" v-model="config.mines" :min="1"></el-input-number>
+              <span class="dialogRowLabel">雷</span><el-input-number :disabled="config.difficulty!==4" v-model="config.mines" :min="1"></el-input-number>
             </div>
           </div>
         </el-form-item>
@@ -84,8 +85,14 @@
         }
       }
     }
+    .el-form-item /deep/ .el-form-item__label{
+      padding-right: 20px;
+    }
     .dialogRow{
       margin: 10px 0;
+      .dialogRowLabel{
+        margin-right: 20px;
+      }
     }
   }
 </style>
@@ -128,6 +135,7 @@
 
         this.isDialogShow = false;
         this.isGenerate = false;
+        this.flagNumber = 0;
         this.startTime = new Date();
 
         //调整雷区的宽高
