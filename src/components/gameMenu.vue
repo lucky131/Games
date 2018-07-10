@@ -21,6 +21,10 @@ export default {
         {
           name: "贪吃蛇",
           path: "/snake"
+        },
+        {
+          name: "填色",
+          path: "/color"
         }
       ]
     }
