@@ -120,6 +120,11 @@
     },
     methods: {
       start(){
+        if(this.config.mines > this.config.width * this.config.height / 2){
+          this.$alert("雷密度不能超过50%");
+          return;
+        }
+
         this.isDialogShow = false;
         this.isGenerate = false;
 

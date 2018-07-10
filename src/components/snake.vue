@@ -21,10 +21,10 @@
           <el-input-number v-model="config.blockSize" :min="5" :step="5"></el-input-number>
         </el-form-item>
         <el-form-item label="宽">
-          <el-input-number v-model="config.width" :min="10"></el-input-number>
+          <el-input-number v-model="config.width" :min="5"></el-input-number>
         </el-form-item>
         <el-form-item label="高">
-          <el-input-number v-model="config.height" :min="10"></el-input-number>
+          <el-input-number v-model="config.height" :min="5"></el-input-number>
         </el-form-item>
         <el-form-item label="间隔(ms)">
           <el-input-number v-model="config.interval" :min="100" :max="1000" :step="100"></el-input-number>
@@ -175,6 +175,8 @@
           && nextPosition.col >=0
           && nextPosition.col <= this.config.width-1
           && !this.blocks[nextPosition.row][nextPosition.col].snake){
+          //把头加上
+          this.snake.positions.unshift(nextPosition);
           //判断是否吃了果实
           if(this.blocks[nextPosition.row][nextPosition.col].food){
             //把屁股加回来
@@ -185,7 +187,6 @@
             //重新生成一个果实
             this.generateFood();
           }
-          this.snake.positions.unshift(nextPosition);
           setTimeout(() => {
             this.step();
           }, this.config.interval);
