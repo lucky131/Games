@@ -107,6 +107,7 @@
         blocks: [],
         isGenerate: false,
         flagNumber: 0,
+        startTime: null,
       }
     },
     created: function(){
@@ -127,6 +128,7 @@
 
         this.isDialogShow = false;
         this.isGenerate = false;
+        this.startTime = new Date();
 
         //调整雷区的宽高
         $("#minefield").css("width", this.config.width * this.config.blockSize + "px")
@@ -247,7 +249,9 @@
             this.open(i+1, j+1);
           }
           if(this.isWin()){
-            this.$alert("u win! ", {
+            let endTime = new Date();
+            let diff = (endTime.getTime() - this.startTime.getTime()) / 1000;
+            this.$alert("Win! Your score: " + diff + " s", {
               callback: () => {
                 this.isDialogShow = true;
               }
