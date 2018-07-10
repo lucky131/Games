@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 import menu from "@/components/gameMenu.vue"
 import minesweeper from "@/components/minesweeper.vue"
+import snake from "@/components/snake.vue"
 
 Vue.use(Router)
 
@@ -17,6 +18,11 @@ export default new Router({
       path: "/minesweeper",
       name: "minesweeper",
       component: minesweeper
+    },
+    {
+      path: "/snake",
+      name: "snake",
+      component: snake
     }
   ]
 })

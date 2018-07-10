@@ -17,6 +17,10 @@ export default {
         {
           name: "扫雷",
           path: "/minesweeper"
+        },
+        {
+          name: "贪吃蛇",
+          path: "/snake"
         }
       ]
     }
