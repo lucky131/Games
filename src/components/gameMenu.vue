@@ -1,11 +1,22 @@
 <template>
-  <div>
-    <el-button type="primary" v-for="item in gameList" :key="item.name" @click="goto(item.path)">{{item.name}}</el-button>
+  <div id="content">
+    <div>
+      <el-tooltip v-for="item in gameList" :key="item.name" effect="dark" :content="item.desc" placement="bottom">
+        <el-button type="primary" @click="goto(item.path)">{{item.name}}</el-button>
+      </el-tooltip>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-
+  #content {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+  }
 </style>
 
 <script>
@@ -16,15 +27,18 @@ export default {
       gameList: [
         {
           name: "扫雷",
-          path: "/minesweeper"
+          path: "/minesweeper",
+          desc: "经典扫雷，左键打开，右键插旗"
         },
         {
           name: "贪吃蛇",
-          path: "/snake"
+          path: "/snake",
+          desc: "贪吃蛇，WASD或方向键操控"
         },
         {
           name: "填色",
-          path: "/color"
+          path: "/color",
+          desc: "填色使之成渐变状"
         }
       ]
     }
