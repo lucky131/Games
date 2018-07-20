@@ -10,6 +10,29 @@
         </div>
       </div>
     </div>
+    <el-dialog
+      title="新游戏"
+      center
+      :visible.sync="isDialogShow"
+      width="320px"
+      :show-close="falseData"
+      :close-on-click-modal="falseData"
+      :close-on-press-escape="falseData">
+      <el-form label-width="80px">
+        <el-form-item label="格子大小">
+          <el-input-number v-model="config.blockSize" :min="30" :step="5"></el-input-number>
+        </el-form-item>
+        <el-form-item label="宽">
+          <el-input-number v-model="config.width" :min="4" :step="2"></el-input-number>
+        </el-form-item>
+        <el-form-item label="高">
+          <el-input-number v-model="config.height" :min="4" :step="2"></el-input-number>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="">
+        <el-button type="primary" @click="start()">开始</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -79,7 +102,7 @@
       }
     },
     mounted: function () {
-      this.start();
+
     },
     methods: {
       start(){
@@ -155,7 +178,7 @@
                     let diff = (endTime.getTime() - this.startTime.getTime()) / 1000;
                     this.$alert("Win! Time: " + diff + " s", {
                       callback: () => {
-                        // this.isDialogShow = true;
+                        this.isDialogShow = true;
                       }
                     });
                   }

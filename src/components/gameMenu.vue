@@ -43,7 +43,7 @@ export default {
         {
           name: "连连看",
           path: "/link",
-          desc: "经典连连看，左键操作"
+          desc: "经典连连看，左键操作，无解需要刷新重来"
         }
       ]
     }
