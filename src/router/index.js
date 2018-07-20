@@ -5,6 +5,7 @@ import menu from "@/components/gameMenu.vue"
 import minesweeper from "@/components/minesweeper.vue"
 import snake from "@/components/snake.vue"
 import color from "@/components/color.vue"
+import link from "@/components/link.vue"
 
 Vue.use(Router)
 
@@ -29,6 +30,11 @@ export default new Router({
       path: "/color",
       name: "color",
       component: color
+    },
+    {
+      path: "/link",
+      name: "link",
+      component: link
     }
   ]
 })

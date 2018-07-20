@@ -39,6 +39,11 @@ export default {
           name: "填色",
           path: "/color",
           desc: "填色使之成渐变状"
+        },
+        {
+          name: "连连看",
+          path: "/link",
+          desc: "经典连连看，左键操作"
         }
       ]
     }
