@@ -144,9 +144,9 @@
         this.setColor(index, Math.floor(256*Math.random()), Math.floor(256*Math.random()), Math.floor(256*Math.random()));
       },
       setColor(index, r, g, b){
-        this.blocks[index].r = Math.floor(r);
-        this.blocks[index].g = Math.floor(g);
-        this.blocks[index].b = Math.floor(b);
+        this.blocks[index].r = Math.round(r);
+        this.blocks[index].g = Math.round(g);
+        this.blocks[index].b = Math.round(b);
       },
       click(index){
         if(index==21 || index==25 || index==41 || index==45)
