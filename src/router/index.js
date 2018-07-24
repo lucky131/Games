@@ -2,10 +2,10 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import menu from "@/components/gameMenu.vue"
-import minesweeper from "@/components/minesweeper.vue"
-import snake from "@/components/snake.vue"
-import color from "@/components/color.vue"
-import link from "@/components/link.vue"
+import minesweeper from "@/components/minesweeper/minesweeper.vue"
+import snake from "@/components/snake/snake.vue"
+import color from "@/components/color/color.vue"
+import link from "@/components/link/link.vue"
 
 Vue.use(Router)
 

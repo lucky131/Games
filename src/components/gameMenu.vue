@@ -1,10 +1,8 @@
 <template>
   <div id="content">
-    <div>
-      <el-tooltip v-for="item in gameList" :key="item.name" effect="dark" :content="item.desc" placement="bottom">
-        <el-button type="primary" @click="goto(item.path)">{{item.name}}</el-button>
-      </el-tooltip>
-    </div>
+    <el-tooltip v-for="item in gameList" :key="item.name" effect="dark" :content="item.desc" placement="bottom">
+      <el-button type="primary" @click="goto(item.path)">{{item.name}}</el-button>
+    </el-tooltip>
   </div>
 </template>
 
