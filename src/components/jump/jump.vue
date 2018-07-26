@@ -1,18 +1,23 @@
 <template>
   <div id="content">
     <div id="board">
-      x: {{player.x}}<br>
-      y: {{player.y}}<br>
-      vx: {{player.vx}}<br>
-      vy: {{player.vy}}<br>
-      ax: {{player.ax}}<br>
-      ay: {{player.ay}}<br>
-      jump: {{player.jump}}<br>
+      <span v-if="config.showStat">
+        x: {{player.x}}<br>
+        y: {{player.y}}<br>
+        vx: {{player.vx}}<br>
+        vy: {{player.vy}}<br>
+        ax: {{player.ax}}<br>
+        ay: {{player.ay}}<br>
+        jump: {{player.jump}}<br>
+      </span>
       <div id="player" :style="{top: player.y+'px', left: player.x+'px'}"></div>
       <div :id="'floor'+item.id" class="floor" v-for="item in floors" :key="item.id"
            :style="{width: item.width+'px', top: item.top+'px', left: item.left+'px'}"></div>
     </div>
-    <el-button type="primary" @click="reset()">Reset</el-button>
+    <div>
+      <el-button type="primary" @click="reset()">Reset</el-button>
+      <el-button type="primary" @click="changeShowStat()">数据：{{config.showStat ? "开" : "关"}}</el-button>
+    </div>
   </div>
 </template>
 
@@ -27,6 +32,7 @@
     #board{
       border: 1px solid black;
       position: relative;
+      margin-bottom: 20px;
       #player{
         width: 20px;
         height: 20px;
@@ -52,6 +58,7 @@
           height: 800,
           playerWidth: 10,
           playerHeight: 20,
+          showStat: true,
           g: 10,
           tick: 0.050, //s
           ticking: true,
@@ -78,7 +85,8 @@
             left: 550,
             events: "add2",
           }
-        ]
+        ],
+        startTime: null,
       }
     },
     mounted: function () {
@@ -273,8 +281,10 @@
                 });
               } else if(this.floors[index].events === "win"){
                 //胜利
+                let endTime = new Date();
+                let diff = (endTime.getTime() - this.startTime.getTime()) / 1000;
                 this.config.ticking = false;
-                this.$alert("win! ", {
+                this.$alert("Win! Your score: " + diff + " s", {
                   callback: () => {
                     this.reset();
                   }
@@ -308,12 +318,16 @@
             events: "add2",
           }
         ];
+        this.startTime = new Date();
         if(!this.config.ticking){
           this.config.ticking = true;
           setTimeout(() => {
             this.nextTick();
           }, this.config.tick*100);
         }
+      },
+      changeShowStat(){
+        this.config.showStat = !this.config.showStat;
       }
     }
   }
