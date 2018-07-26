@@ -9,9 +9,10 @@
       ay: {{player.ay}}<br>
       jump: {{player.jump}}<br>
       <div id="player" :style="{top: player.y+'px', left: player.x+'px'}"></div>
-      <div :id="'floor'+index" class="floor" v-for="(item, index) in floors" :key="index"></div>
+      <div :id="'floor'+item.id" class="floor" v-for="item in floors" :key="item.id"
+           :style="{width: item.width+'px', top: item.top+'px', left: item.left+'px'}"></div>
     </div>
-    <el-button type="primary" @click="resetPlayer()">Reset</el-button>
+    <el-button type="primary" @click="reset()">Reset</el-button>
   </div>
 </template>
 
@@ -71,64 +72,11 @@
         },
         floors: [
           {
+            id: 1,
             width: 150,
             top: 700,
-            left: 200,
-            events: [],
-          },
-          {
-            width: 100,
-            top: 600,
-            left: 500,
-            events: [],
-          },
-          {
-            width: 80,
-            top: 500,
-            left: 700,
-            events: [],
-          },
-          {
-            width: 150,
-            top: 450,
-            left: 100,
-            events: [],
-          },
-          {
-            width: 70,
-            top: 350,
-            left: 500,
-            events: [],
-          },
-          {
-            width: 60,
-            top: 300,
-            left: 850,
-            events: [],
-          },
-          {
-            width: 50,
-            top: 180,
-            left: 855,
-            events: [],
-          },
-          {
-            width: 40,
-            top: 100,
-            left: 650,
-            events: [],
-          },
-          {
-            width: 30,
-            top: 200,
-            left: 320,
-            events: [],
-          },
-          {
-            width: 30,
-            top: 120,
-            left: 130,
-            events: ["win"],
+            left: 550,
+            events: "add2",
           }
         ]
       }
@@ -136,15 +84,15 @@
     mounted: function () {
       $("#board").css("width", this.config.width+"px").css("height", this.config.height+"px");
       $("#player").css("width", this.config.playerWidth+"px").css("height", this.config.playerHeight+"px");
-      for(let index in this.floors){
-        $("#floor"+index).css("width", this.floors[index].width)
-          .css("top", this.floors[index].top)
-          .css("left", this.floors[index].left);
-      }
+      // for(let index in this.floors){
+      //   $("#floor"+this.floors[index].id).css("width", this.floors[index].width)
+      //     .css("top", this.floors[index].top)
+      //     .css("left", this.floors[index].left);
+      // }
 
       let that = this;
 
-      this.resetPlayer();
+      this.reset();
 
       //键盘事件
       $(document).keydown(function (e) {
@@ -225,9 +173,11 @@
             this.player.vy = -this.player.vy;
 
           //落地
-          if(this.player.y>this.config.height - this.config.playerHeight && this.player.vy>0){
-            this.player.y = this.config.height - this.config.playerHeight;
+          if(this.player.y > this.config.height - this.config.playerHeight - 3
+            && this.player.y < this.config.height - this.config.playerHeight + 2
+            && this.player.vy>0){
             this.player.vy = 0;
+            this.player.y = this.config.height - this.config.playerHeight;
             this.player.jump = this.config.maxJump;
           }
           //自定义floor
@@ -240,13 +190,95 @@
               this.player.vy = 0;
               this.player.y = this.floors[index].top - this.config.playerHeight;
               this.player.jump = this.config.maxJump;
-              for(let index2 in this.floors[index].events){
-                switch (this.floors[index].events[index2]){
-                  case "win":
-                    alert("win! ");
-                    this.config.ticking = false;
-                    break;
-                }
+              if(this.floors[index].events === "add2"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 2,
+                  width: 100,
+                  top: 600,
+                  left: 400,
+                  events: "add3",
+                });
+              } else if(this.floors[index].events === "add3"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 3,
+                  width: 80,
+                  top: 500,
+                  left: 700,
+                  events: "add4",
+                });
+              } else if(this.floors[index].events === "add4"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 4,
+                  width: 150,
+                  top: 450,
+                  left: 100,
+                  events: "add5",
+                });
+              } else if(this.floors[index].events === "add5"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 5,
+                  width: 70,
+                  top: 350,
+                  left: 500,
+                  events: "add6",
+                });
+              } else if(this.floors[index].events === "add6"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 6,
+                  width: 60,
+                  top: 300,
+                  left: 850,
+                  events: "add7",
+                });
+              } else if(this.floors[index].events === "add7"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 7,
+                  width: 50,
+                  top: 180,
+                  left: 855,
+                  events: "add8",
+                });
+              } else if(this.floors[index].events === "add8"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 8,
+                  width: 40,
+                  top: 100,
+                  left: 650,
+                  events: "add9",
+                });
+              } else if(this.floors[index].events === "add9"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 9,
+                  width: 30,
+                  top: 200,
+                  left: 320,
+                  events: "add10",
+                });
+              } else if(this.floors[index].events === "add10"){
+                this.floors[index].events = "";
+                this.floors.push({
+                  id: 10,
+                  width: 30,
+                  top: 120,
+                  left: 130,
+                  events: "win",
+                });
+              } else if(this.floors[index].events === "win"){
+                //胜利
+                this.config.ticking = false;
+                this.$alert("win! ", {
+                  callback: () => {
+                    this.reset();
+                  }
+                });
               }
               break;
             }
@@ -259,14 +291,23 @@
           }
         });
       },
-      resetPlayer(){
+      reset(){
         this.player.x = this.config.width/2 - this.config.playerWidth/2;
-        this.player.y = this.config.height - this.config.playerHeight;
+        this.player.y = this.config.height - this.config.playerHeight*2;
         this.player.vx = 0;
         this.player.vy = 0;
         this.player.ax = 0;
         this.player.ay = this.config.g;
         this.player.jump = this.config.maxJump;
+        this.floors = [
+          {
+            id: 1,
+            width: 150,
+            top: 700,
+            left: 550,
+            events: "add2",
+          }
+        ];
         if(!this.config.ticking){
           this.config.ticking = true;
           setTimeout(() => {
