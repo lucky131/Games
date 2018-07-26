@@ -42,6 +42,11 @@ export default {
           name: "连连看",
           path: "/link",
           desc: "经典连连看，左键操作，无解需要刷新重来"
+        },
+        {
+          name: "跳一跳",
+          path: "/jump",
+          desc: "横版跳跃游戏，WASD或方向键操控"
         }
       ]
     }
