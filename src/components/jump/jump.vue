@@ -45,7 +45,7 @@
       </span>
       <div id="player" :style="{top: player.y+'px', left: player.x+'px'}"></div>
       <div :id="'floor'+item.id" class="floor" v-for="item in floors" :key="item.id"
-           :style="{width: item.width+'px', top: item.top+'px', left: item.left+'px'}"></div>
+           :style="{width: item.width+'px', height: item.height+'px', top: item.top+'px', left: item.left+'px'}"></div>
     </div>
   </div>
 </template>
@@ -77,7 +77,6 @@
         position: absolute;
       }
       .floor{
-        height: 10px;
         background-color: black;
         position: absolute;
       }
@@ -115,26 +114,13 @@
           ay: 0,
           jump: 0,
         },
-        floors: [
-          {
-            id: 1,
-            width: 150,
-            top: 700,
-            left: 550,
-            events: "add2",
-          }
-        ],
+        floors: [],
         startTime: null,
       }
     },
     mounted: function () {
       $("#board").css("width", this.config.width+"px").css("height", this.config.height+"px");
       $("#player").css("width", this.config.playerWidth+"px").css("height", this.config.playerHeight+"px");
-      // for(let index in this.floors){
-      //   $("#floor"+this.floors[index].id).css("width", this.floors[index].width)
-      //     .css("top", this.floors[index].top)
-      //     .css("left", this.floors[index].left);
-      // }
 
       let that = this;
 
@@ -182,9 +168,6 @@
     },
     methods: {
       nextTick(){
-        // $("#player").css("left", Math.round(this.player.x)+"px");
-        // $("#player").css("top", Math.round(this.player.y)+"px");
-
         this.$nextTick(() => {
           this.player.x += this.player.vx * this.config.tick;
           this.player.y += this.player.vy * this.config.tick;
@@ -211,12 +194,42 @@
           //左墙
           if(this.player.x<0 && this.player.vx<0)
             this.player.vx = -this.player.vx;
+          for(let index in this.floors){
+            if(this.player.y > this.floors[index].top - this.config.playerHeight
+              && this.player.y < this.floors[index].top + this.floors[index].height
+              && this.player.x > this.floors[index].left - this.config.playerWidth - 0
+              && this.player.x < this.floors[index].left - this.config.playerWidth + 5
+              && this.player.vx > 0){
+              this.player.vx = -this.player.vx;
+              break;
+            }
+          }
           //右墙
           if(this.player.x>this.config.width - this.config.playerWidth && this.player.vx>0)
             this.player.vx = -this.player.vx;
+          for(let index in this.floors){
+            if(this.player.y > this.floors[index].top - this.config.playerHeight
+              && this.player.y < this.floors[index].top + this.floors[index].height
+              && this.player.x > this.floors[index].left + this.floors[index].width - 5
+              && this.player.x < this.floors[index].left + this.floors[index].width + 0
+              && this.player.vx < 0){
+              this.player.vx = -this.player.vx;
+              break;
+            }
+          }
           //顶部
           if(this.player.y<0 && this.player.vy<0)
             this.player.vy = -this.player.vy;
+          for(let index in this.floors){
+            if(this.player.x > this.floors[index].left - this.config.playerWidth
+              && this.player.x < this.floors[index].left + this.floors[index].width
+              && this.player.y > this.floors[index].top + this.floors[index].height - 4
+              && this.player.y < this.floors[index].top + this.floors[index].height + 1
+              && this.player.vy < 0){
+              this.player.vy = -this.player.vy;
+              break;
+            }
+          }
 
           //落地
           if(this.player.y > this.config.height - this.config.playerHeight - 3
@@ -226,7 +239,6 @@
             this.player.y = this.config.height - this.config.playerHeight;
             this.player.jump = this.config.maxJump;
           }
-          //自定义floor
           for(let index in this.floors){
             if(this.player.x > this.floors[index].left - this.config.playerWidth
               && this.player.x < this.floors[index].left + this.floors[index].width
@@ -241,6 +253,7 @@
                 this.floors.push({
                   id: 2,
                   width: 100,
+                  height: 10,
                   top: 600,
                   left: 400,
                   events: "add3",
@@ -250,6 +263,7 @@
                 this.floors.push({
                   id: 3,
                   width: 80,
+                  height: 10,
                   top: 500,
                   left: 700,
                   events: "add4",
@@ -259,6 +273,7 @@
                 this.floors.push({
                   id: 4,
                   width: 150,
+                  height: 10,
                   top: 450,
                   left: 100,
                   events: "add5",
@@ -268,6 +283,7 @@
                 this.floors.push({
                   id: 5,
                   width: 70,
+                  height: 10,
                   top: 350,
                   left: 500,
                   events: "add6",
@@ -277,6 +293,7 @@
                 this.floors.push({
                   id: 6,
                   width: 60,
+                  height: 10,
                   top: 300,
                   left: 850,
                   events: "add7",
@@ -286,6 +303,7 @@
                 this.floors.push({
                   id: 7,
                   width: 50,
+                  height: 10,
                   top: 180,
                   left: 855,
                   events: "add8",
@@ -295,6 +313,7 @@
                 this.floors.push({
                   id: 8,
                   width: 40,
+                  height: 10,
                   top: 100,
                   left: 650,
                   events: "add9",
@@ -304,6 +323,7 @@
                 this.floors.push({
                   id: 9,
                   width: 30,
+                  height: 10,
                   top: 200,
                   left: 320,
                   events: "add10",
@@ -313,6 +333,7 @@
                 this.floors.push({
                   id: 10,
                   width: 30,
+                  height: 10,
                   top: 120,
                   left: 130,
                   events: "win",
@@ -351,6 +372,7 @@
           {
             id: 1,
             width: 150,
+            height: 10,
             top: 700,
             left: 550,
             events: "add2",
