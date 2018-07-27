@@ -1,7 +1,40 @@
 <template>
   <div id="content">
+    <div id="ope">
+      <el-button type="primary" @click="reset()">Reset</el-button>
+      <el-button type="primary" @click="changeDebug()">debug模式：{{config.debug ? "开" : "关"}}</el-button>
+      <el-form label-width="100px">
+        <el-form-item label="方块宽度">
+          <el-slider v-model="config.playerWidth" :min="5" :step="5" :max="100" :disabled="!config.debug" @change="changePlayerSize()"></el-slider>
+        </el-form-item>
+        <el-form-item label="方块高度">
+          <el-slider v-model="config.playerHeight" :min="5" :step="5" :max="100" :disabled="!config.debug" @change="changePlayerSize()"></el-slider>
+        </el-form-item>
+        <el-form-item label="移动加速度">
+          <el-slider v-model="config.pushA" :min="0" :step="1" :max="100" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+        <el-form-item label="摩擦加速度">
+          <el-slider v-model="config.fA" :min="0" :step="1" :max="100" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+        <el-form-item label="最大横向速度">
+          <el-slider v-model="config.maxVx" :min="0" :step="1" :max="100" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+        <el-form-item label="最大纵向速度">
+          <el-slider v-model="config.maxVy" :min="0" :step="1" :max="100" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+        <el-form-item label="重力g">
+          <el-slider v-model="config.g" :min="0" :step="1" :max="30" :disabled="!config.debug" @change="changeG()"></el-slider>
+        </el-form-item>
+        <el-form-item label="跳跃速度">
+          <el-slider v-model="config.jumpVy" :min="0" :step="1" :max="100" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+        <el-form-item label="跳跃次数">
+          <el-slider v-model="config.maxJump" :min="0" :step="1" :max="10" :disabled="!config.debug"></el-slider>
+        </el-form-item>
+      </el-form>
+    </div>
     <div id="board">
-      <span v-if="config.showStat">
+      <span v-if="config.debug">
         x: {{player.x}}<br>
         y: {{player.y}}<br>
         vx: {{player.vx}}<br>
@@ -14,10 +47,6 @@
       <div :id="'floor'+item.id" class="floor" v-for="item in floors" :key="item.id"
            :style="{width: item.width+'px', top: item.top+'px', left: item.left+'px'}"></div>
     </div>
-    <div>
-      <el-button type="primary" @click="reset()">Reset</el-button>
-      <el-button type="primary" @click="changeShowStat()">数据：{{config.showStat ? "开" : "关"}}</el-button>
-    </div>
   </div>
 </template>
 
@@ -26,9 +55,17 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-flow: column nowrap;
+    flex-flow: row nowrap;
     align-items: center;
     justify-content: center;
+    #ope{
+      width: 300px;
+      padding: 20px;
+      box-sizing: border-box;
+      .el-form-item{
+        margin-bottom: 0;
+      }
+    }
     #board{
       border: 1px solid black;
       position: relative;
@@ -58,7 +95,7 @@
           height: 800,
           playerWidth: 10,
           playerHeight: 20,
-          showStat: true,
+          debug: true,
           g: 10,
           tick: 0.050, //s
           ticking: true,
@@ -66,6 +103,7 @@
           fA: 25,
           maxVx: 50,
           maxVy: 50,
+          jumpVy: 50,
           maxJump: 1,
         },
         player: {
@@ -108,7 +146,7 @@
           //↑
           // that.player.ay = -that.pushA;
           if(that.player.jump>0){
-            that.player.vy = -that.config.maxVy;
+            that.player.vy = -that.config.jumpVy;
             that.player.jump--;
           }
         } else if(e.keyCode==40 || e.keyCode==83){
@@ -326,8 +364,14 @@
           }, this.config.tick*100);
         }
       },
-      changeShowStat(){
-        this.config.showStat = !this.config.showStat;
+      changeDebug(){
+        this.config.debug = !this.config.debug;
+      },
+      changePlayerSize(){
+        $("#player").css("width", this.config.playerWidth+"px").css("height", this.config.playerHeight+"px");
+      },
+      changeG(){
+        this.player.ay = this.config.g;
       }
     }
   }
