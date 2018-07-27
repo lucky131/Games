@@ -1,8 +1,13 @@
 <template>
   <div id="content">
     <div id="ope">
-      <el-button type="primary" @click="reset()">Reset</el-button>
-      <el-button type="primary" @click="changeDebug()">debug模式：{{config.debug ? "开" : "关"}}</el-button>
+      <div id="levels">
+        <el-button size="small" type="primary" v-for="n in allData.length-1" @click="changeLevel(n)">{{n}}</el-button>
+      </div>
+      <el-row>
+        <el-button size="small" type="primary" @click="reset()">Reset</el-button>
+        <el-button size="small" type="primary" @click="changeDebug()">debug模式：{{config.debug ? "开" : "关"}}</el-button>
+      </el-row>
       <el-form label-width="100px">
         <el-form-item label="方块宽度">
           <el-slider v-model="config.playerWidth" :min="5" :step="5" :max="100" :disabled="!config.debug" @change="changePlayerSize()"></el-slider>
@@ -43,9 +48,10 @@
         ay: {{player.ay}}<br>
         jump: {{player.jump}}<br>
       </span>
+      <div id="level">Level: {{level}}</div>
       <div id="player" :style="{top: player.y+'px', left: player.x+'px'}"></div>
-      <div :id="'floor'+item.id" class="floor" v-for="item in floors" :key="item.id"
-           :style="{width: item.width+'px', height: item.height+'px', top: item.top+'px', left: item.left+'px'}"></div>
+      <div class="floor" v-for="item in floors" :key="item.id"
+           :style="{width: item.width+'px', height: item.height+'px', top: item.top+'px', left: item.left+'px', backgroundColor: item.color ? item.color : 'black'}"></div>
     </div>
   </div>
 </template>
@@ -62,6 +68,9 @@
       width: 300px;
       padding: 20px;
       box-sizing: border-box;
+      #levels{
+        margin-bottom: 20px;
+      }
       .el-form-item{
         margin-bottom: 0;
       }
@@ -70,14 +79,19 @@
       border: 1px solid black;
       position: relative;
       margin-bottom: 20px;
+      #level{
+        position: absolute;
+        font-size: 20px;
+        top: 10px;
+        right: 10px;
+      }
       #player{
         width: 20px;
         height: 20px;
-        background-color: black;
+        background-color: #2e7bff;
         position: absolute;
       }
       .floor{
-        background-color: black;
         position: absolute;
       }
     }
@@ -85,6 +99,7 @@
 </style>
 
 <script>
+  import allData from "./floors.js"
   export default {
     name: "jump",
     data(){
@@ -104,6 +119,7 @@
           maxVy: 50,
           jumpVy: 50,
           maxJump: 1,
+          slideVx: 50,
         },
         player: {
           x: 0,
@@ -116,8 +132,10 @@
         },
         floors: [],
         startTime: null,
+        level: 1,
       }
     },
+    mixins: [allData],
     mounted: function () {
       $("#board").css("width", this.config.width+"px").css("height", this.config.height+"px");
       $("#player").css("width", this.config.playerWidth+"px").css("height", this.config.playerHeight+"px");
@@ -144,6 +162,13 @@
         } else if(e.keyCode==39 || e.keyCode==68){
           //→
           that.player.ax = that.config.pushA;
+        } else if(e.keyCode==82){
+          //R
+          that.reset();
+        } else if(e.keyCode>=49 && e.keyCode<=57){
+          //1~9
+          let number = e.keyCode-48;
+          that.changeLevel(number);
         }
       });
       $(document).keyup(function (e) {
@@ -248,106 +273,17 @@
               this.player.vy = 0;
               this.player.y = this.floors[index].top - this.config.playerHeight;
               this.player.jump = this.config.maxJump;
-              if(this.floors[index].events === "add2"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 2,
-                  width: 100,
-                  height: 10,
-                  top: 600,
-                  left: 400,
-                  events: "add3",
-                });
-              } else if(this.floors[index].events === "add3"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 3,
-                  width: 80,
-                  height: 10,
-                  top: 500,
-                  left: 700,
-                  events: "add4",
-                });
-              } else if(this.floors[index].events === "add4"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 4,
-                  width: 150,
-                  height: 10,
-                  top: 450,
-                  left: 100,
-                  events: "add5",
-                });
-              } else if(this.floors[index].events === "add5"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 5,
-                  width: 70,
-                  height: 10,
-                  top: 350,
-                  left: 500,
-                  events: "add6",
-                });
-              } else if(this.floors[index].events === "add6"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 6,
-                  width: 60,
-                  height: 10,
-                  top: 300,
-                  left: 850,
-                  events: "add7",
-                });
-              } else if(this.floors[index].events === "add7"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 7,
-                  width: 50,
-                  height: 10,
-                  top: 180,
-                  left: 855,
-                  events: "add8",
-                });
-              } else if(this.floors[index].events === "add8"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 8,
-                  width: 40,
-                  height: 10,
-                  top: 100,
-                  left: 650,
-                  events: "add9",
-                });
-              } else if(this.floors[index].events === "add9"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 9,
-                  width: 30,
-                  height: 10,
-                  top: 200,
-                  left: 320,
-                  events: "add10",
-                });
-              } else if(this.floors[index].events === "add10"){
-                this.floors[index].events = "";
-                this.floors.push({
-                  id: 10,
-                  width: 30,
-                  height: 10,
-                  top: 120,
-                  left: 130,
-                  events: "win",
-                });
-              } else if(this.floors[index].events === "win"){
-                //胜利
-                let endTime = new Date();
-                let diff = (endTime.getTime() - this.startTime.getTime()) / 1000;
+              //事件
+              if(this.floors[index].events === "level2"){
+                this.level = 2;
+                this.reset();
+              } else if(this.floors[index].events === "die"){
                 this.config.ticking = false;
-                this.$alert("Win! Your score: " + diff + " s", {
-                  callback: () => {
-                    this.reset();
-                  }
-                });
+                this.$message("大侠你挂了，请重新来过");
+              } else if(this.floors[index].events === "slideRight"){
+                this.player.vx = this.config.slideVx;
+              } else if(this.floors[index].events === "slideLeft"){
+                this.player.vx = -this.config.slideVx;
               }
               break;
             }
@@ -360,24 +296,21 @@
           }
         });
       },
+      changeLevel(level){
+        //1~length
+        if(level<1 || level>this.allData.length) return;
+        this.level = level;
+        this.reset();
+      },
       reset(){
-        this.player.x = this.config.width/2 - this.config.playerWidth/2;
-        this.player.y = this.config.height - this.config.playerHeight*2;
+        this.player.x = this.allData[this.level].bornLeft;
+        this.player.y = this.allData[this.level].bornBottom - this.config.playerHeight*2;
         this.player.vx = 0;
         this.player.vy = 0;
         this.player.ax = 0;
         this.player.ay = this.config.g;
         this.player.jump = this.config.maxJump;
-        this.floors = [
-          {
-            id: 1,
-            width: 150,
-            height: 10,
-            top: 700,
-            left: 550,
-            events: "add2",
-          }
-        ];
+        this.floors = this.allData[this.level].floors;
         this.startTime = new Date();
         if(!this.config.ticking){
           this.config.ticking = true;
