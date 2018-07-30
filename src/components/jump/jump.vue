@@ -38,7 +38,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <div id="board" @mousemove="mousemove">
+    <div id="board" @click="mouseclick" @mousemove="mousemove">
       <div id="stat" v-if="config.debug">
         x: {{player.x}}<br>
         y: {{player.y}}<br>
@@ -248,27 +248,31 @@
           //反弹碰撞
           //左墙
           if(this.player.x<0 && this.player.vx<0)
-            this.player.vx = -this.player.vx;
+            // this.player.vx = -this.player.vx;
+            this.player.vx = 0;
           for(let index in this.floors){
             if(this.player.y > this.floors[index].top - this.config.playerHeight
               && this.player.y < this.floors[index].top + this.floors[index].height
               && this.player.x > this.floors[index].left - this.config.playerWidth - 0
               && this.player.x < this.floors[index].left - this.config.playerWidth + 5
               && this.player.vx > 0){
-              this.player.vx = -this.player.vx;
+              // this.player.vx = -this.player.vx;
+              this.player.vx = 0;
               break;
             }
           }
           //右墙
           if(this.player.x>this.config.width - this.config.playerWidth && this.player.vx>0)
-            this.player.vx = -this.player.vx;
+            // this.player.vx = -this.player.vx;
+            this.player.vx = 0;
           for(let index in this.floors){
             if(this.player.y > this.floors[index].top - this.config.playerHeight
               && this.player.y < this.floors[index].top + this.floors[index].height
               && this.player.x > this.floors[index].left + this.floors[index].width - 5
               && this.player.x < this.floors[index].left + this.floors[index].width + 0
               && this.player.vx < 0){
-              this.player.vx = -this.player.vx;
+              // this.player.vx = -this.player.vx;
+              this.player.vx = 0;
               break;
             }
           }
@@ -328,6 +332,12 @@
             }, this.config.tick*100);
           }
         });
+      },
+      mouseclick(){
+        this.player.x = this.mouseX;
+        this.player.y = this.mouseY;
+        this.player.vx = 0;
+        this.player.vy = 0;
       },
       mousemove(e){
         if(e.target != e.currentTarget){
