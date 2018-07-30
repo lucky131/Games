@@ -2,7 +2,7 @@
   <div id="content">
     <div id="ope">
       <div id="levels">
-        <el-button size="small" type="primary" v-for="n in allData.length-1" @click="changeLevel(n)">{{n}}</el-button>
+        <el-button size="small" type="primary" v-for="n in allData.length-1" :key="n" @click="changeLevel(n)">{{n}}</el-button>
       </div>
       <el-row>
         <el-button size="small" type="primary" @click="reset()">Reset</el-button>
@@ -38,8 +38,8 @@
         </el-form-item>
       </el-form>
     </div>
-    <div id="board">
-      <span v-if="config.debug">
+    <div id="board" @mousemove="mousemove">
+      <div id="stat" v-if="config.debug">
         x: {{player.x}}<br>
         y: {{player.y}}<br>
         vx: {{player.vx}}<br>
@@ -47,11 +47,15 @@
         ax: {{player.ax}}<br>
         ay: {{player.ay}}<br>
         jump: {{player.jump}}<br>
-      </span>
+        mouseX: {{mouseX}}<br>
+        mouseY: {{mouseY}}<br>
+      </div>
       <div id="level">Level: {{level}}</div>
       <div id="player" :style="{top: player.y+'px', left: player.x+'px'}"></div>
       <div class="floor" v-for="item in floors" :key="item.id"
-           :style="{width: item.width+'px', height: item.height+'px', top: item.top+'px', left: item.left+'px', backgroundColor: item.color ? item.color : 'black'}"></div>
+           :style="{width: item.width+'px', height: item.height+'px', top: item.top+'px', left: item.left+'px', backgroundColor: item.color ? item.color : 'black'}">
+        <span v-if="config.debug">{{item.id}}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -79,6 +83,25 @@
       border: 1px solid black;
       position: relative;
       margin-bottom: 20px;
+      #cover{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        z-index: 10;
+      }
+      #stat{
+        position: absolute;
+        width: 200px;
+        background-color: rgba(0,0,0,.3);
+        color: rgba(255,255,255,.7);
+        z-index: 20;
+        transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+      }
+      #stat:hover{
+        background-color: rgba(0,0,0,.7);
+        color: rgba(255,255,255,.9);
+      }
       #level{
         position: absolute;
         font-size: 20px;
@@ -93,6 +116,12 @@
       }
       .floor{
         position: absolute;
+        color: #bbb;
+        font-size: 10px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
     }
   }
@@ -131,8 +160,9 @@
           jump: 0,
         },
         floors: [],
-        startTime: null,
         level: 1,
+        mouseX: 0,
+        mouseY: 0,
       }
     },
     mixins: [allData],
@@ -267,19 +297,22 @@
           for(let index in this.floors){
             if(this.player.x > this.floors[index].left - this.config.playerWidth
               && this.player.x < this.floors[index].left + this.floors[index].width
-              && this.player.y > this.floors[index].top - this.config.playerHeight - 3
-              && this.player.y < this.floors[index].top - this.config.playerHeight + 2
+              && this.player.y > this.floors[index].top - this.config.playerHeight - 2
+              && this.player.y < this.floors[index].top - this.config.playerHeight + 3
               && this.player.vy > 0){
               this.player.vy = 0;
               this.player.y = this.floors[index].top - this.config.playerHeight;
               this.player.jump = this.config.maxJump;
               //事件
-              if(this.floors[index].events === "level2"){
-                this.level = 2;
+              if(this.floors[index].events.startsWith("level")){
+                let level = this.floors[index].events.replace("level", "");
+                level = parseInt(level);
+                this.level = level;
                 this.reset();
               } else if(this.floors[index].events === "die"){
-                this.config.ticking = false;
-                this.$message("大侠你挂了，请重新来过");
+                // this.config.ticking = false;
+                // this.$message("大侠你挂了，请重新来过");
+                this.reset();
               } else if(this.floors[index].events === "slideRight"){
                 this.player.vx = this.config.slideVx;
               } else if(this.floors[index].events === "slideLeft"){
@@ -296,6 +329,13 @@
           }
         });
       },
+      mousemove(e){
+        if(e.target != e.currentTarget){
+          return;
+        }
+        this.mouseX = e.offsetX;
+        this.mouseY = e.offsetY;
+      },
       changeLevel(level){
         //1~length
         if(level<1 || level>this.allData.length) return;
@@ -311,7 +351,6 @@
         this.player.ay = this.config.g;
         this.player.jump = this.config.maxJump;
         this.floors = this.allData[this.level].floors;
-        this.startTime = new Date();
         if(!this.config.ticking){
           this.config.ticking = true;
           setTimeout(() => {
