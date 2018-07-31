@@ -148,7 +148,6 @@
           maxVy: 50,
           jumpVy: 50,
           maxJump: 1,
-          slideVx: 50,
         },
         player: {
           x: 0,
@@ -313,14 +312,24 @@
                 level = parseInt(level);
                 this.level = level;
                 this.reset();
+              } else if(this.floors[index].events.startsWith("remove")){
+                let id = this.floors[index].events.replace("remove", "");
+                id = parseInt(id);
+                for(let index in this.floors){
+                  if(this.floors[index].id === id){
+                    this.floors.splice(index, 1);
+                    break;
+                  }
+                }
+                this.floors[index].events = "";
+              } else if(this.floors[index].events.startsWith("slide")){
+                let v = this.floors[index].events.replace("slide", "");
+                v = parseInt(v);
+                this.player.vx = v;
               } else if(this.floors[index].events === "die"){
                 // this.config.ticking = false;
                 // this.$message("大侠你挂了，请重新来过");
                 this.reset();
-              } else if(this.floors[index].events === "slideRight"){
-                this.player.vx = this.config.slideVx;
-              } else if(this.floors[index].events === "slideLeft"){
-                this.player.vx = -this.config.slideVx;
               }
               break;
             }
@@ -360,7 +369,9 @@
         this.player.ax = 0;
         this.player.ay = this.config.g;
         this.player.jump = this.config.maxJump;
-        this.floors = this.allData[this.level].floors;
+        // this.floors = this.allData[this.level].floors;
+        //深拷贝，否则指针相同
+        this.floors = $.extend(true, [], this.allData[this.level].floors);
         if(!this.config.ticking){
           this.config.ticking = true;
           setTimeout(() => {
