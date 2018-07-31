@@ -343,10 +343,12 @@
         });
       },
       mouseclick(){
-        this.player.x = this.mouseX;
-        this.player.y = this.mouseY;
-        this.player.vx = 0;
-        this.player.vy = 0;
+        if(this.config.debug){
+          this.player.x = this.mouseX;
+          this.player.y = this.mouseY;
+          this.player.vx = 0;
+          this.player.vy = 0;
+        }
       },
       mousemove(e){
         if(e.target != e.currentTarget){

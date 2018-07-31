@@ -93,10 +93,8 @@ export default {
         },
         {
           level: 2,
-          // bornLeft: 20,
-          // bornBottom: 50,
-          bornLeft: 313,
-          bornBottom: 320,
+          bornLeft: 20,
+          bornBottom: 50,
           floors: [
             {
               id: 201,
