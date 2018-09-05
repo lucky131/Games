@@ -1,5 +1,7 @@
 <template>
-  <div id="content">
+  <div id="content"
+       @mouseup.left="mouseup()"
+       @mouseup.right="mouseup()">
     <div id="board" v-show="!isDialogShow">
       <div id="tipTop" class="tip"><div v-for="(item, index) in topBlocks" :key="index"><span v-for="(item2, index2) in item" :key="index2">{{item2}}</span></div></div>
       <div id="tipLeft" class="tip"><div v-for="(item, index) in leftBlocks" :key="index"><span v-for="(item2, index2) in item" :key="index2">{{item2}}</span></div></div>
@@ -7,8 +9,6 @@
         <div class="block" v-for="item in blocks" :key="item.index"
              @mousedown.left="leftDown(item.index)"
              @mousedown.right="rightDown(item.index)"
-             @mouseup.left="mouseup()"
-             @mouseup.right="mouseup()"
              @mouseenter="enter(item.index)">
           <div class="innerBlock xBlock" v-if="item.x"><i class="el-icon-close"></i></div>
           <div class="innerBlock fillBlock" v-else-if="item.fill"></div>
@@ -165,6 +165,7 @@
       start(){
         this.isDialogShow = false;
         this.startTime = new Date();
+        this.mouseStatus = 0;
 
         //初始化棋盘
         $("#board").css("width", this.config.width * this.config.blockSize + 150)
