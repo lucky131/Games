@@ -47,9 +47,24 @@ export default {
           name: "跳一跳",
           path: "/jump",
           desc: "横版跳跃游戏，WASD或方向键操控"
+        },
+        {
+          name: "Picross",
+          path: "/picross",
+          desc: "经典Picross"
         }
       ]
     }
+  },
+  created(){
+    //禁止右键菜单
+    document.oncontextmenu = function(){
+      event.returnValue = false;
+    };
+    //禁止选择文本
+    document.onselectstart = function(){
+      event.returnValue = false;
+    };
   },
   methods: {
     goto(url){

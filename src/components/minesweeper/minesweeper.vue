@@ -117,12 +117,6 @@
         startTime: null,
       }
     },
-    created: function(){
-      //禁止右键菜单
-      document.oncontextmenu = function(){
-        event.returnValue = false;
-      };
-    },
     mounted: function () {
       let that = this;
     },

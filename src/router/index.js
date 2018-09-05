@@ -1,12 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import menu from "@/components/gameMenu.vue"
-import minesweeper from "@/components/minesweeper/minesweeper.vue"
-import snake from "@/components/snake/snake.vue"
-import color from "@/components/color/color.vue"
-import jump from "@/components/jump/jump.vue"
-import link from "@/components/link/link.vue"
+import menu from "../components/gameMenu"
+import minesweeper from "../components/minesweeper/minesweeper"
+import snake from "../components/snake/snake"
+import color from "../components/color/color"
+import jump from "../components/jump/jump"
+import link from "../components/link/link"
+import picross from "../components/picross/picross"
 
 Vue.use(Router)
 
@@ -41,6 +42,11 @@ export default new Router({
       path: "/jump",
       name: "jump",
       component: jump
+    },
+    {
+      path: "/picross",
+      name: "picross",
+      component: picross
     }
   ]
 })
