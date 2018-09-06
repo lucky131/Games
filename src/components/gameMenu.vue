@@ -1,8 +1,11 @@
 <template>
   <div id="content">
-    <el-tooltip v-for="item in gameList" :key="item.name" effect="dark" :content="item.desc" placement="bottom">
-      <el-button type="primary" @click="goto(item.path)">{{item.name}}</el-button>
-    </el-tooltip>
+    <div class="block" v-for="item in gameList" :key="item.name" :style="{backgroundColor: item.color}" @click="goto(item.path)">
+      <div class="innerBlock">
+        <div class="name">{{item.name}}</div>
+        <div class="desc">{{item.desc}}</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,6 +17,44 @@
     flex-flow: row wrap;
     align-items: center;
     justify-content: center;
+    .block{
+      flex: 1;
+      height: 100%;
+      cursor: pointer;
+      .innerBlock{
+        width: 100%;
+        height: 100%;
+        padding: 0 20px;
+        box-sizing: border-box;
+        background-color: rgba(0,0,0,0.5);
+        transition: background-color 300ms;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        .name{
+          color: rgba(255,255,255,.5);
+          transition: color 500ms;
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .desc{
+          margin-top: 10px;
+          color: rgba(255,255,255,.25);
+          transition: color 500ms;
+          font-size: 12px;
+        }
+      }
+      .innerBlock:hover{
+        background-color: rgba(0,0,0,0);
+        .name{
+          color: rgba(0,0,0,.75);
+        }
+        .desc{
+          color: rgba(0,0,0,.5);
+        }
+      }
+    }
   }
 </style>
 
@@ -26,37 +67,44 @@ export default {
         {
           name: "扫雷",
           path: "/minesweeper",
-          desc: "经典扫雷，左键打开，右键插旗"
+          desc: "经典扫雷，左键打开，右键插旗",
+          color: "#b0b0b0",
         },
         {
           name: "贪吃蛇",
           path: "/snake",
-          desc: "贪吃蛇，WASD或方向键操控"
+          desc: "贪吃蛇，WASD或方向键操控",
+          color: "#707070",
         },
         {
           name: "填色",
           path: "/color",
-          desc: "填色使之成渐变状"
+          desc: "填色使之成渐变状",
+          color: "#ff5e52",
         },
         {
           name: "连连看",
           path: "/link",
-          desc: "经典连连看，左键操作，无解需要刷新重来"
+          desc: "经典连连看，左键操作，无解需要刷新重来",
+          color: "#ffef6e",
         },
         {
           name: "跳一跳",
           path: "/jump",
-          desc: "横版跳跃游戏，WASD或方向键操控"
+          desc: "横版跳跃游戏，WASD或方向键操控",
+          color: "#6cd7ff",
         },
         {
           name: "Picross",
           path: "/picross",
-          desc: "经典Picross"
+          desc: "经典Picross",
+          color: "#5affb6",
         },
         {
           name: "猜数字",
           path: "/digital",
-          desc: "经典猜数字游戏 - Bulls and Cows"
+          desc: "经典猜数字游戏 - Bulls and Cows",
+          color: "#e19bff",
         }
       ]
     }
