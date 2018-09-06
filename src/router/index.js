@@ -8,6 +8,7 @@ import color from "../components/color/color"
 import jump from "../components/jump/jump"
 import link from "../components/link/link"
 import picross from "../components/picross/picross"
+import digital from "../components/digital/digital"
 
 Vue.use(Router)
 
@@ -47,6 +48,11 @@ export default new Router({
       path: "/picross",
       name: "picross",
       component: picross
+    },
+    {
+      path: "/digital",
+      name: "digital",
+      component: digital
     }
   ]
 })

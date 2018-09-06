@@ -11,7 +11,7 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     align-items: center;
     justify-content: center;
   }
@@ -52,6 +52,11 @@ export default {
           name: "Picross",
           path: "/picross",
           desc: "经典Picross"
+        },
+        {
+          name: "猜数字",
+          path: "/digital",
+          desc: "经典猜数字游戏 - Bulls and Cows"
         }
       ]
     }
