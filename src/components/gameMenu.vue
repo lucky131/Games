@@ -15,11 +15,11 @@
     height: 100vh;
     display: flex;
     flex-flow: row wrap;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    align-content: stretch;
     .block{
+      min-width: 25%;
       flex: 1;
-      height: 100%;
       cursor: pointer;
       .innerBlock{
         width: 100%;
