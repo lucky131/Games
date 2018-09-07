@@ -109,7 +109,7 @@ export default {
         {
           name: "狼人杀上帝助手",
           path: "/wolf",
-          desc: "狼人杀上帝助手 - 发牌器",
+          desc: "狼人kill专用发牌器",
           color: "#ffbc64",
         },
       ]
