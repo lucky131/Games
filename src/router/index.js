@@ -9,6 +9,7 @@ import jump from "../components/jump/jump"
 import link from "../components/link/link"
 import picross from "../components/picross/picross"
 import digital from "../components/digital/digital"
+import wolf from "../components/wolf/wolf"
 
 Vue.use(Router)
 
@@ -53,6 +54,11 @@ export default new Router({
       path: "/digital",
       name: "digital",
       component: digital
+    },
+    {
+      path: "/wolf",
+      name: "wolf",
+      component: wolf
     }
   ]
 })

@@ -105,7 +105,13 @@ export default {
           path: "/digital",
           desc: "经典猜数字游戏 - Bulls and Cows",
           color: "#e19bff",
-        }
+        },
+        {
+          name: "狼人杀上帝助手",
+          path: "/wolf",
+          desc: "狼人杀上帝助手 - 发牌器",
+          color: "#ffbc64",
+        },
       ]
     }
   },
