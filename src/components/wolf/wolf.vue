@@ -42,6 +42,7 @@
           <span class="number">{{item.number}}</span>
         </div>
       </div>
+      <div class="stat">共{{config.numberOfCard}}张牌</div>
     </div>
 
     <div v-if="step===2" class="block">
@@ -184,6 +185,12 @@
         },
         result: "",
       }
+    },
+    created(){
+      //允许选择文本
+      document.onselectstart = function(){
+        event.returnValue = true;
+      };
     },
     mounted(){
 
