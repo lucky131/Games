@@ -1,8 +1,8 @@
 <template>
   <div class="wrap">
-    <div id="map" class="block"></div>
+    <div id="map" class="block" :style="{height: height+'px'}"></div>
     <div id="gradient1" class="gradient"></div>
-    <div id="pie" class="block"></div>
+    <div id="pie" class="block" :style="{height: height+'px'}"></div>
     <div id="gradient2" class="gradient"></div>
     <div id="table">
       <el-table :data="data_person" stripe @row-click="rowClick">
@@ -21,9 +21,10 @@
   .wrap{
     display: flex;
     flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-content: center;
     .block{
       width: 100%;
-      height: 100vh;
     }
     #table{
       width: 100%;
@@ -32,7 +33,7 @@
     }
     .gradient{
       width: 100%;
-      height: 10vh;
+      height: 60px;
     }
     #gradient1{
       background: linear-gradient(#555, #aaa);
@@ -57,6 +58,7 @@
     name: "graduate",
     data(){
       return{
+        height: 0,
         egg: 0,
       }
     },
@@ -67,156 +69,160 @@
     mounted(){
       window.vuethis = this;
 
+      this.height = window.innerHeight;
+
       let echarts = require('echarts');
 
-      let myChart1 = echarts.init(document.getElementById('map'));
-      myChart1.setOption({
-        title: {
-          text: '地图可缩放 下面还有哦',
-          link: 'javascript: vuethis.showInfo();',
-          target: 'self',
-          textStyle: {
-            color: '#888',
-            fontSize: 12,
-            fontWeight: 'bold',
-            textBorderColor: '#555',
-            textBorderWidth: 1,
-            textShadowColor: '#555',
-            textShadowBlur: 5
-          },
-          bottom: 0,
-          left: 'center'
-        },
-        backgroundColor: '#555',
-        tooltip: {
-          trigger: 'item',
-          formatter: function (params) {
-            if(params.data.name=='台湾') return '台湾自古以来就是中国不可分割的<br>一部分领土，神圣不可侵犯 `^`';
-            if(params.data.name=='新疆') return '大西北扶持了解一下';
-            if(params.data.name=='西藏') return '应该没人会去这吧';
-            if(params.data.name=='内蒙古') return '这就是你爱上一匹野马的理由？';
-            if(params.data.name=='青海') return '你为啥要看这里';
-            if(params.data.name=='陕西') return '知道亦哲为什么要离开这里吗？';
-            if(params.data.name=='黑龙江') return '看！那有一小块也属于我！';
-            if(params.data.name=='香港') return '香港在这呢，接下来你要找澳门对吧';
-            if(params.data.name=='澳门') return '为了找个彩蛋你也是蛮拼的';
-            var res;
-            if(params.data.name=='南海诸岛') res = '海外';
-            else res = params.data.name;
-            res += ': ' + params.data.value + '人<br>';
-            for(let i=0;i<params.data.list.length;i++){
-              res += params.data.list[i] + '<br>';
-            }
-            return res;
-          },
-          padding: [10],
-          confine: true,
-          extraCssText: 'box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);'
-        },
-        visualMap: {
-          min: 0,
-          max: 8,
-          calculable: false,
-          inRange: {
-            //color: ['#646a7d', '#bbb931', '#ed3d3d']
-            color: ['#888', '#d5d11b', '#f49408', '#e93022']
-          },
-          //text: ['15', '0'],
-          textStyle: {
-            color: '#fff'
-          }
-        },
-        series: [{
-          name: 'namehere',
-          type: 'map',
-          roam: true,
-          map: 'china',
-          scaleLimit: {
-            min: 1,
-            max: 15
-          },
-          itemStyle:{
-            normal:{
-              label:{
-                show: false,
-                position: ['50%', '50%'],
-                color: '#333'
-              },
-              borderColor: 'rgba(0,0,0,.3325)'
+      this.$nextTick(() => {
+        let myChart1 = echarts.init(document.getElementById('map'));
+        myChart1.setOption({
+          title: {
+            text: '地图可缩放 下面还有哦',
+            link: 'javascript: vuethis.showInfo();',
+            target: 'self',
+            textStyle: {
+              color: '#888',
+              fontSize: 12,
+              fontWeight: 'bold',
+              textBorderColor: '#555',
+              textBorderWidth: 1,
+              textShadowColor: '#555',
+              textShadowBlur: 5
             },
-            emphasis:{
-              label:{show:false}
+            bottom: 0,
+            left: 'center'
+          },
+          backgroundColor: '#555',
+          tooltip: {
+            trigger: 'item',
+            formatter: function (params) {
+              if(params.data.name=='台湾') return '台湾自古以来就是中国不可分割的<br>一部分领土，神圣不可侵犯 `^`';
+              if(params.data.name=='新疆') return '大西北扶持了解一下';
+              if(params.data.name=='西藏') return '应该没人会去这吧';
+              if(params.data.name=='内蒙古') return '这就是你爱上一匹野马的理由？';
+              if(params.data.name=='青海') return '你为啥要看这里';
+              if(params.data.name=='陕西') return '知道亦哲为什么要离开这里吗？';
+              if(params.data.name=='黑龙江') return '看！那有一小块也属于我！';
+              if(params.data.name=='香港') return '香港在这呢，接下来你要找澳门对吧';
+              if(params.data.name=='澳门') return '为了找个彩蛋你也是蛮拼的';
+              var res;
+              if(params.data.name=='南海诸岛') res = '海外';
+              else res = params.data.name;
+              res += ': ' + params.data.value + '人<br>';
+              for(let i=0;i<params.data.list.length;i++){
+                res += params.data.list[i] + '<br>';
+              }
+              return res;
+            },
+            padding: [10],
+            confine: true,
+            extraCssText: 'box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);'
+          },
+          visualMap: {
+            min: 0,
+            max: 8,
+            calculable: false,
+            inRange: {
+              //color: ['#646a7d', '#bbb931', '#ed3d3d']
+              color: ['#888', '#d5d11b', '#f49408', '#e93022']
+            },
+            //text: ['15', '0'],
+            textStyle: {
+              color: '#fff'
             }
           },
-          data: this.data_city
-        }]
-      });
-
-      let myChart3 = echarts.init(document.getElementById('pie'));
-      myChart3.setOption({
-        title: {
-          text: '读研 vs 就业',
-          link: 'javascript: vuethis.showInfo();',
-          target: 'self',
-          textStyle: {
-            color: '#666',
-            fontSize: 12,
-            fontWeight: 'bold'
-          },
-          bottom: 0,
-          left: 'center'
-        },
-        backgroundColor: '#aaa',
-        tooltip : {
-          trigger: 'item',
-          formatter: "{b} : {c}人 ({d}%)"
-        },
-        legend: {
-          orient: 'vertical',
-          top: 'middle',
-          left: 'left',
-          data: ['就业','读研','读博','出国','其他'],
-          inactiveColor: '#666'
-        },
-        series : [
-          {
-            name: '去向分布',
-            type: 'pie',
-            radius : ['30%', '55%'],
-            center: ['60%', '50%'],
-            avoidLabelOverlap: false,
-            hoverOffset: 13,
-            label: {
-              normal: {
-                show: false,
-                position: 'center'
+          series: [{
+            name: 'namehere',
+            type: 'map',
+            roam: true,
+            map: 'china',
+            scaleLimit: {
+              min: 1,
+              max: 15
+            },
+            itemStyle:{
+              normal:{
+                label:{
+                  show: false,
+                  position: ['50%', '50%'],
+                  color: '#333'
+                },
+                borderColor: 'rgba(0,0,0,.3325)'
               },
-              emphasis: {
-                show: true,
-                textStyle: {
-                  fontSize: '30',
-                  fontWeight: 'bold'
+              emphasis:{
+                label:{show:false}
+              }
+            },
+            data: this.data_city
+          }]
+        });
+
+        let myChart3 = echarts.init(document.getElementById('pie'));
+        myChart3.setOption({
+          title: {
+            text: '读研 vs 就业',
+            link: 'javascript: vuethis.showInfo();',
+            target: 'self',
+            textStyle: {
+              color: '#666',
+              fontSize: 12,
+              fontWeight: 'bold'
+            },
+            bottom: 0,
+            left: 'center'
+          },
+          backgroundColor: '#aaa',
+          tooltip : {
+            trigger: 'item',
+            formatter: "{b} : {c}人 ({d}%)"
+          },
+          legend: {
+            orient: 'vertical',
+            top: 'middle',
+            left: 'left',
+            data: ['就业','读研','读博','出国','其他'],
+            inactiveColor: '#666'
+          },
+          series : [
+            {
+              name: '去向分布',
+              type: 'pie',
+              radius : ['30%', '55%'],
+              center: ['60%', '50%'],
+              avoidLabelOverlap: false,
+              hoverOffset: 13,
+              label: {
+                normal: {
+                  show: false,
+                  position: 'center'
+                },
+                emphasis: {
+                  show: true,
+                  textStyle: {
+                    fontSize: '30',
+                    fontWeight: 'bold'
+                  }
+                }
+              },
+              labelLine: {
+                normal: {
+                  show: false
+                },
+                emphasis: {
+                  show: false
+                }
+              },
+              data: this.data_pie,
+              itemStyle: {
+                emphasis: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
                 }
               }
-            },
-            labelLine: {
-              normal: {
-                show: false
-              },
-              emphasis: {
-                show: false
-              }
-            },
-            data: this.data_pie,
-            itemStyle: {
-              emphasis: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
             }
-          }
-        ]
+          ]
+        });
       });
     },
     methods: {
