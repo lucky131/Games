@@ -112,6 +112,12 @@ export default {
           desc: "狼人kill专用发牌器",
           color: "#ffbc64",
         },
+        {
+          name: "12班去向图",
+          path: "/graduate",
+          desc: "110900010643",
+          color: "#ff7381",
+        },
       ]
     }
   },

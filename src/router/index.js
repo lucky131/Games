@@ -10,6 +10,7 @@ import link from "../components/link/link"
 import picross from "../components/picross/picross"
 import digital from "../components/digital/digital"
 import wolf from "../components/wolf/wolf"
+import graduate from "../components/graduate/graduate"
 
 Vue.use(Router)
 
@@ -59,6 +60,11 @@ export default new Router({
       path: "/wolf",
       name: "wolf",
       component: wolf
+    },
+    {
+      path: "/graduate",
+      name: "graduate",
+      component: graduate
     }
   ]
 })
