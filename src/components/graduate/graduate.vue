@@ -5,7 +5,9 @@
     <div id="pie" class="block" :style="{height: height+'px'}"></div>
     <div id="gradient2" class="gradient"></div>
     <div id="table">
-      <el-table :data="data_person" stripe @row-click="rowClick">
+      <el-table :data="data_person" stripe @row-click="rowClick"
+                :header-cell-style='{textAlign: "center"}'
+                :cell-style='{textAlign: "center"}'>
         <el-table-column label="Who" prop="name"></el-table-column>
         <el-table-column label="Where" prop="where"></el-table-column>
         <el-table-column label="What" prop="what"></el-table-column>
