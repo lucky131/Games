@@ -1,9 +1,9 @@
 <template>
   <div id="content">
-    <div class="block" v-for="item in gameList" :key="item.name" :style="{backgroundColor: item.color}" @click="goto(item.path)">
+    <div :class="{block: true, mobileBlock: isMobile}" v-if="!isMobile || item.mobile" v-for="item in gameList" :key="item.name" :style="{backgroundColor: item.color}" @click="goto(item.path)">
       <div class="innerBlock">
         <div class="name">{{item.name}}</div>
-        <div class="desc">{{item.desc}}</div>
+        <div v-if="!isMobile" class="desc">{{item.desc}}</div>
       </div>
     </div>
   </div>
@@ -21,6 +21,15 @@
       min-width: 25%;
       flex: 1;
       cursor: pointer;
+      &.mobileBlock{
+        min-width: 100%;
+        .innerBlock{
+          background-color: rgba(0,0,0,0);
+          .name{
+            color: rgba(0,0,0,.75);
+          }
+        }
+      }
       .innerBlock{
         width: 100%;
         height: 100%;
@@ -63,60 +72,78 @@ export default {
   name: 'gameMenu',
   data () {
     return {
+      width: 0,
+      isMobile: false,
       gameList: [
         {
           name: "扫雷",
           path: "/minesweeper",
           desc: "经典扫雷，左键打开，右键插旗",
           color: "#b0b0b0",
+          mobile: false,
         },
         {
           name: "贪吃蛇",
           path: "/snake",
           desc: "贪吃蛇，WASD或方向键操控",
           color: "#707070",
+          mobile: false,
         },
         {
           name: "填色",
           path: "/color",
           desc: "填色使之成渐变状",
           color: "#ff5e52",
+          mobile: false,
         },
         {
           name: "连连看",
           path: "/link",
           desc: "经典连连看，左键操作，无解需要刷新重来",
           color: "#ffef6e",
+          mobile: false,
         },
         {
           name: "跳一跳",
           path: "/jump",
-          desc: "横版跳跃游戏，WASD或方向键操控",
-          color: "#6cd7ff",
+          desc: "横版跳跃游戏，WASD或方向键操控，开发中...",
+          color: "#6df8ff",
+          mobile: false,
         },
         {
           name: "Picross",
           path: "/picross",
           desc: "经典Picross",
           color: "#5affb6",
+          mobile: false,
         },
         {
           name: "猜数字",
           path: "/digital",
           desc: "经典猜数字游戏 - Bulls and Cows",
           color: "#e19bff",
+          mobile: false,
         },
         {
           name: "狼人杀上帝助手",
           path: "/wolf",
           desc: "狼人kill专用发牌器",
           color: "#ffbc64",
+          mobile: true,
         },
         {
           name: "12班去向图",
           path: "/graduate",
           desc: "110900010643",
           color: "#ff7381",
+          mobile: true,
+        },
+        {
+          name: "地形生成器",
+          path: "/eco",
+          desc: "自主研发，开发中...",
+          color: "#6285ff",
+          mobile: false,
         },
       ]
     }
@@ -130,6 +157,13 @@ export default {
     document.onselectstart = function(){
       event.returnValue = false;
     };
+  },
+  mounted(){
+    this.width = window.innerWidth;
+    this.isMobile = this.width < 450;
+    if(this.isMobile){
+      this.$message("移动端支持功能较少，使用pc端查看完整功能");
+    }
   },
   methods: {
     goto(url){

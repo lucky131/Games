@@ -11,6 +11,7 @@ import picross from "../components/picross/picross"
 import digital from "../components/digital/digital"
 import wolf from "../components/wolf/wolf"
 import graduate from "../components/graduate/graduate"
+import eco from "../components/eco/eco"
 
 Vue.use(Router)
 
@@ -65,6 +66,11 @@ export default new Router({
       path: "/graduate",
       name: "graduate",
       component: graduate
+    },
+    {
+      path: "/eco",
+      name: "eco",
+      component: eco
     }
   ]
 })
