@@ -29,17 +29,23 @@
       <canvas id="c1" @mousemove="mousemove" @mouseout="mouseout"></canvas>
       <div class="ope">
         <el-form label-width="100px">
+          <el-form-item label="陆地等高距">
+            <el-input-number size="small" v-model="config.contourDistanceOfLand" :min="1" @change="renderMap()"></el-input-number>
+          </el-form-item>
           <el-form-item label="海洋等高距">
             <el-input-number size="small" v-model="config.contourDistanceOfOcean" :min="1" @change="renderMap()"></el-input-number>
           </el-form-item>
-          <el-form-item label="陆地等高距">
-            <el-input-number size="small" v-model="config.contourDistanceOfLand" :min="1" @change="renderMap()"></el-input-number>
+          <el-form-item label="植被等高距">
+            <el-input-number size="small" v-model="config.contourDistanceOfVegetation" :min="1" @change="renderMap()"></el-input-number>
           </el-form-item>
         </el-form>
       </div>
     </div>
 
-    <el-button type="primary" @click="start()">重绘</el-button>
+    <div class="btns">
+      <el-button type="primary" @click="isDialogShow=true">重开</el-button>
+      <el-button type="primary" @click="start()">重绘</el-button>
+    </div>
 
     <el-dialog
       title="新游戏"
@@ -57,7 +63,7 @@
           <el-input-number v-model="config.blockPix" :min="1" :max="10" :step="1"></el-input-number>
         </el-form-item>
         <el-form-item label="海平面">
-          <el-input-number v-model="config.seaLevel" :min="0" :max="100" :step="1"></el-input-number>
+          <el-input-number v-model="config.seaLevel" :min="0" :max="100" :step="5"></el-input-number>
         </el-form-item>
       </el-form>
       <span slot="footer" class="">
@@ -91,6 +97,9 @@
         }
       }
     }
+    .btns{
+      margin-top: 20px;
+    }
   }
 </style>
 
@@ -107,8 +116,9 @@
           blockPix: 6,
           seaLevel: 40,
           maxHeight: 0,
-          contourDistanceOfOcean: 4,
           contourDistanceOfLand: 16,
+          contourDistanceOfOcean: 4,
+          contourDistanceOfVegetation: 4,
         },
         showData: {
           i: "",
@@ -196,8 +206,9 @@
         }
 
         //生成河流
-        this.createRiver(10,4);
-        this.createRiver(30,2);
+        this.createRiver(this.config.mapSize/10,6);
+        this.createRiver(this.config.mapSize/2,3);
+        this.createRiver(this.config.mapSize/2,3);
 
         //平整河水
         this.smoothOvergroundWater(1);
@@ -224,25 +235,25 @@
         let ctx = document.getElementById("c1").getContext("2d");
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
-            let rgb=null;
+            let rgb = null;
             if(this.map[i][j].overgroundWater>5){
               //深水
-              rgb=this.linearColorRGB(this.config.seaLevel+20,0,0,60, 5,120,223,233, this.map[i][j].overgroundWater,Math.max(this.config.contourDistanceOfOcean,1));
+              rgb=this.linearColorRGB(this.config.seaLevel,0,0,60, 5,120,223,233, this.map[i][j].overgroundWater,this.config.contourDistanceOfOcean);
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
-            }else if(this.map[i][j].vegetation>0){
+            } else if(this.map[i][j].vegetation>0){
               //植被
               let rgbGround=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude);
               let rgbVege=this.linearColorRGB(0,1,125,10, 200,78,60,16, this.map[i][j].altitude);
-              rgb=this.linearColorRGB(25,rgbVege.r,rgbVege.g,rgbVege.b, -2,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].vegetation);
+              rgb=this.linearColorRGB(25,rgbVege.r,rgbVege.g,rgbVege.b, -2,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].vegetation,this.config.contourDistanceOfVegetation);
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
-            }else if(this.map[i][j].overgroundWater>0){
+            } else if(this.map[i][j].overgroundWater>0){
               //浅水
               let rgbGround=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude);
-              rgb=this.linearColorRGB(5,120,223,233, 0,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].overgroundWater);
+              rgb=this.linearColorRGB(5,120,223,233, 0,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].overgroundWater); //等高距默认1
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
-            }else {
+            } else {
               //陆地
-              rgb=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude,Math.max(this.config.contourDistanceOfLand,1));
+              rgb=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude,this.config.contourDistanceOfLand);
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
             }
             ctx.fillRect(i*this.config.blockPix,j*this.config.blockPix,this.config.blockPix,this.config.blockPix);
@@ -367,20 +378,19 @@
         }
       },
       createRiver(range, width) {
-        let heightestPosX=0, heightestPosY=0;
-        for(let i=0;i<this.config.mapSize;i++){
-          for(let j=0;j<this.config.mapSize;j++){
-            if(this.map[i][j].altitude==this.config.maxHeight){
-              heightestPosX=i;
-              heightestPosY=j;
-              break;
-            }
-          }
-        }
-        let curX=heightestPosX+Math.floor(Math.random()*range*2-range);
-        let curY=heightestPosY+Math.floor(Math.random()*range*2-range);
-        curX=Math.max(0,Math.min(this.config.mapSize-1,curX));
-        curY=Math.max(0,Math.min(this.config.mapSize-1,curY));
+        let highestPos = this.highestPos(0, 0, this.config.mapSize);
+        let highestPosX = highestPos.x;
+        let highestPosY = highestPos.y;
+        // console.log("最高点：", highestPosX, highestPosY);
+        let curX, curY;
+        do{
+          curX=highestPosX+Math.floor(Math.random()*range*2-range);
+          curY=highestPosY+Math.floor(Math.random()*range*2-range);
+          curX=Math.max(0,Math.min(this.config.mapSize-1,curX));
+          curY=Math.max(0,Math.min(this.config.mapSize-1,curY));
+          // console.log("河流生成点：", curX, curY);
+        } while (this.map[curX][curY].overgroundWater > 0);
+        // console.log("最终河流生成点：", curX, curY);
         while(curX>=0 && curY>=0 && curX<=this.config.mapSize-1 && curY<=this.config.mapSize-1 &&
         this.map[curX][curY].altitude>this.config.seaLevel && this.map[curX][curY].overgroundWater<15){
           this.changeOvergroundWater(curX-width/2,curY-width/2,curX+width/2,curY+width/2,width*10/(10+this.map[curX][curY].slope));
@@ -529,7 +539,7 @@
         }
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
-            if(this.map[i][j].altitude>this.config.seaLevel-5){
+            if(this.map[i][j].altitude>this.config.seaLevel-range){
               let beginX=Math.max(0,i-range),beginY=Math.max(0,j-range),
                 endX=Math.min(this.config.mapSize-1,i+range),endY=Math.min(this.config.mapSize-1,j+range);
               let total=0;
