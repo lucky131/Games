@@ -45,6 +45,7 @@
     <div class="btns">
       <el-button type="primary" @click="isDialogShow=true">重开</el-button>
       <el-button type="primary" @click="start()">重绘</el-button>
+      <el-button type="primary" @click="seeding()">传播</el-button>
     </div>
 
     <el-dialog
@@ -177,8 +178,8 @@
         //大陆板块
         this.createMountain(this.config.mapSize/8,this.config.mapSize/8*6,16,16,this.config.mapSize/3,this.config.mapSize/3,1,0,5);
 
-        //波动
-        this.wave();
+        //陆地波动
+        this.waveGround();
 
         //平整陆地
         this.smoothLand();
@@ -212,13 +213,14 @@
 
         //平整河水
         this.smoothOvergroundWater(1);
-        this.smoothOvergroundWater(2);
+        this.smoothOvergroundWater(3);
 
         //生成地下水
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             if(this.map[i][j].overgroundWater>0){
-              this.changeUndergroundWater(i-10,j-10,i+10,j+10,Math.log(this.map[i][j].overgroundWater/50+1));
+              let range = this.map[i][j].altitude/5 + this.map[i][j].overgroundWater/10;
+              this.changeUndergroundWater(i-range,j-range,i+range,j+range,Math.log(this.map[i][j].overgroundWater/50+1));
             }
           }
         }
@@ -227,8 +229,8 @@
         //生成植被
         this.createVegetation();
 
-        //平整植被，可视为种子传播
-        //smoothVegetation(1);
+        //平整植被
+        this.smoothVegetation(1);
 
       },
       renderMap(){
@@ -236,24 +238,23 @@
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             let rgb = null;
+            let rgbGround=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude,this.config.contourDistanceOfLand);
             if(this.map[i][j].overgroundWater>5){
               //深水
               rgb=this.linearColorRGB(this.config.seaLevel,0,0,60, 5,120,223,233, this.map[i][j].overgroundWater,this.config.contourDistanceOfOcean);
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
             } else if(this.map[i][j].vegetation>0){
               //植被
-              let rgbGround=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude);
               let rgbVege=this.linearColorRGB(0,1,125,10, 200,78,60,16, this.map[i][j].altitude);
-              rgb=this.linearColorRGB(25,rgbVege.r,rgbVege.g,rgbVege.b, -2,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].vegetation,this.config.contourDistanceOfVegetation);
+              rgb=this.linearColorRGB(25,rgbVege.r,rgbVege.g,rgbVege.b, 0,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].vegetation,this.config.contourDistanceOfVegetation);
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
             } else if(this.map[i][j].overgroundWater>0){
               //浅水
-              let rgbGround=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude);
-              rgb=this.linearColorRGB(5,120,223,233, 0,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].overgroundWater); //等高距默认1
+              rgb=this.linearColorRGB(5,120,223,233, 0,rgbGround.r,rgbGround.g,rgbGround.b, this.map[i][j].overgroundWater, 1); //等高距默认1
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
             } else {
               //陆地
-              rgb=this.linearColorRGB(this.config.seaLevel,240,219,130, 350,74,47,0, this.map[i][j].altitude,this.config.contourDistanceOfLand);
+              rgb = rgbGround;
               ctx.fillStyle="rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
             }
             ctx.fillRect(i*this.config.blockPix,j*this.config.blockPix,this.config.blockPix,this.config.blockPix);
@@ -407,18 +408,22 @@
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             //植物生长条件：
-            //地上水<0.5  y=-2x+1  线性
-            //0<地下水<30  y=-x^2/15+2x  二次函数
-            //海拔高生成少  y=200/(x+200)  反比例
-            if(this.map[i][j].overgroundWater<0.5 && this.map[i][j].undergroundWater>0 && this.map[i][j].undergroundWater<30){
-              let value=((2*this.map[i][j].undergroundWater-this.map[i][j].undergroundWater*this.map[i][j].undergroundWater/15)
-                *(-2*this.map[i][j].overgroundWater+1))
+            //基准值 1/5
+            //地上水<1  y=-x+1  线性  0~1
+            //0<地下水<30  y=-x^2/15+2x  二次函数  0~15
+            //海拔高生成少  y=200/(x+200)  反比例  1~+0
+            //随机数 0.9~1.1
+            //概率  y=v/(v+4)  反比例  0~1
+            if(this.map[i][j].overgroundWater<1 && this.map[i][j].undergroundWater>0 && this.map[i][j].undergroundWater<30){
+              let value= 1/5
+                *(2*this.map[i][j].undergroundWater-this.map[i][j].undergroundWater*this.map[i][j].undergroundWater/15)
+                *(-1*this.map[i][j].overgroundWater+1)
                 *(200/(this.map[i][j].altitude+200))
                 *(Math.random()/5+0.9);
-              let prob=value/(value+20);
+              let prob=value/(value+3);
               if(Math.random()<prob){
-                let range=value/6;
-                this.changeVegetation(i-range,j-range,i+range,j+range,value/5);
+                let range=value;
+                this.changeVegetation(i-range,j-range,i+range,j+range,value);
               }
             }
           }
@@ -456,7 +461,7 @@
             }
         return pos;
       },
-      wave() {
+      waveGround() {
         //1随机
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
@@ -583,6 +588,9 @@
             this.map[i][j].vegetation=map2[i][j].vegetation;
           }
         }
+      },
+      seeding(){
+
       },
     }
   }
