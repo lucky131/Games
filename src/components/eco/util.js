@@ -19,7 +19,7 @@ export default {
       gap = gap<1 ? 1 : gap;
       x = x-x%gap;
       rgb.r = Math.floor(r2-x1*(r2-r1)/((x-x1)/flag+x1));
-      rgb.g = Math.floor(g2-x1*(g2-g1)/((x-x1)/flag+x1))
+      rgb.g = Math.floor(g2-x1*(g2-g1)/((x-x1)/flag+x1));
       rgb.b = Math.floor(b2-x1*(b2-b1)/((x-x1)/flag+x1));
       return rgb;
     },

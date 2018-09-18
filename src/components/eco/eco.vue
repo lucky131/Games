@@ -45,7 +45,8 @@
     <div class="btns">
       <el-button type="primary" @click="isDialogShow=true">重开</el-button>
       <el-button type="primary" @click="start()">重绘</el-button>
-      <el-button type="primary" @click="seeding()">传播</el-button>
+      <el-button type="primary" @click="seedingBtn()">传播</el-button>
+      <el-button type="primary" @click="windingBtn()">风</el-button>
     </div>
 
     <el-dialog
@@ -317,7 +318,7 @@
         endY = Math.min(Math.floor(endY), this.config.mapSize-1);
         for(let i=beginX;i<=endX;i++)
           for(let j=beginY;j<=endY;j++)
-            this.map[i][j].vegetation+=value*(Math.random()*0.4+0.8);
+            this.map[i][j].vegetation+=value;
       },
       createMountain(minPos, posLen, minHei, heiLen, minRan, ranLen, ridgeNum, valleyNum, number){
         for(let i=0;i<number;i++)
@@ -410,13 +411,13 @@
             //植物生长条件：
             //基准值 1/5
             //地上水<1  y=-x+1  线性  0~1
-            //0<地下水<30  y=-x^2/15+2x  二次函数  0~15
+            //地下水>0  y=5.41*ln(x+1)  对数  0~+∞
             //海拔高生成少  y=200/(x+200)  反比例  1~+0
             //随机数 0.9~1.1
             //概率  y=v/(v+4)  反比例  0~1
-            if(this.map[i][j].overgroundWater<1 && this.map[i][j].undergroundWater>0 && this.map[i][j].undergroundWater<30){
+            if(this.canGrowVegetation(i, j)){
               let value= 1/5
-                *(2*this.map[i][j].undergroundWater-this.map[i][j].undergroundWater*this.map[i][j].undergroundWater/15)
+                *(5*Math.log(this.map[i][j].undergroundWater+1))
                 *(-1*this.map[i][j].overgroundWater+1)
                 *(200/(this.map[i][j].altitude+200))
                 *(Math.random()/5+0.9);
@@ -428,6 +429,9 @@
             }
           }
         }
+      },
+      canGrowVegetation(i, j){
+        return (this.map[i][j].overgroundWater<1 && this.map[i][j].undergroundWater>0);
       },
       highestPos(x,y,range) {
         let pos={}, max=-10086;
@@ -589,8 +593,46 @@
           }
         }
       },
+      seedingBtn(){
+        this.seeding();
+        this.renderMap();
+      },
       seeding(){
-
+        let map2 = new Array(this.config.mapSize);
+        for(let i=0;i<this.config.mapSize;i++){
+          map2[i] = new Array(this.config.mapSize);
+          for(let j=0;j<this.config.mapSize;j++){
+            map2[i][j] = {vegetation: 0};
+          }
+        }
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            let value = this.map[i][j].vegetation;
+            let times = 1 + Math.exp(-value/5);
+            map2[i][j].vegetation = this.map[i][j].vegetation * times;
+          }
+        }
+        for(let i=0;i<this.config.mapSize;i++){
+          for (let j = 0; j < this.config.mapSize; j++) {
+            this.map[i][j].vegetation = map2[i][j].vegetation;
+          }
+        }
+      },
+      windingBtn(){
+        this.winding();
+        this.renderMap();
+      },
+      winding(){
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            //符合植物生长条件
+            if(this.canGrowVegetation(i, j)){
+              if(Math.random() < 0.03){
+                this.changeVegetation(i-1, j-1, i+1, j+1, 1);
+              }
+            }
+          }
+        }
       },
     }
   }
