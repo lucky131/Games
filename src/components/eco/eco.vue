@@ -345,14 +345,14 @@
               let distance = Math.sqrt((i-x)*(i-x)+(j-y)*(j-y));
               let directionX = i-x, directionY = j-y;
               let cos = this.cosOfTwoVector(directionX,directionY,vectorX,vectorY);
-              if(distance<=range+2 && cos>0.9995) {
-                let tempX = i+(2*Math.random()-1)*range/8;
-                let tempY = j+(2*Math.random()-1)*range/8;
-                this.changeAltitude(tempX-range/10,
-                  tempY-range/10,
-                  tempX+range/10,
-                  tempY+range/10,
-                  height/50);
+              if(distance<=range*0.8 && cos>0.9995) {
+                let tempX = i+(2*Math.random()-1)*distance/8;
+                let tempY = j+(2*Math.random()-1)*distance/8;
+                this.changeAltitude(tempX-distance/10,
+                  tempY-distance/10,
+                  tempX+distance/10,
+                  tempY+distance/10,
+                  1-1/(distance+1));
               }
             }
           }
@@ -365,21 +365,21 @@
               let distance = Math.sqrt((i-x)*(i-x)+(j-y)*(j-y));
               let directionX = i-x, directionY = j-y;
               let cos = this.cosOfTwoVector(directionX,directionY,vectorX,vectorY);
-              if(distance<=range-2 && cos>0.9995) {
-                let tempX = i+(2*Math.random()-1)*range/8;
-                let tempY = j+(2*Math.random()-1)*range/8;
-                this.changeAltitude(tempX-range/10,
-                  tempY-range/10,
-                  tempX+range/10,
-                  tempY+range/10,
-                  -height/40);
+              if(distance<=range*0.8 && cos>0.9995) {
+                let tempX = i+(2*Math.random()-1)*distance/8;
+                let tempY = j+(2*Math.random()-1)*distance/8;
+                this.changeAltitude(tempX-distance/10,
+                  tempY-distance/10,
+                  tempX+distance/10,
+                  tempY+distance/10,
+                  -1+1/(distance+1));
               }
             }
           }
         }
       },
       createRiver(range, width) {
-        let highestPos = this.highestPos(0, 0, this.config.mapSize);
+        let highestPos = this.highestPos(this.config.mapSize/2, this.config.mapSize/2, this.config.mapSize/2);
         let highestPosX = highestPos.x;
         let highestPosY = highestPos.y;
         // console.log("最高点：", highestPosX, highestPosY);
