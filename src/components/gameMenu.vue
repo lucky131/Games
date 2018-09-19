@@ -114,7 +114,7 @@ export default {
           name: "Picross",
           path: "/picross",
           desc: "经典Picross",
-          color: "#5affb6",
+          color: "#5dffbd",
           mobile: false,
         },
         {
@@ -144,6 +144,13 @@ export default {
           desc: "自主研发，开发中...",
           color: "#6285ff",
           mobile: false,
+        },
+        {
+          name: "css画板",
+          path: "/cssDraw",
+          desc: "纯css画一些东西",
+          color: "#a6ff5d",
+          mobile: true,
         },
       ]
     }

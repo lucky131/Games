@@ -12,6 +12,7 @@ import digital from "../components/digital/digital"
 import wolf from "../components/wolf/wolf"
 import graduate from "../components/graduate/graduate"
 import eco from "../components/eco/eco"
+import cssDraw from "../components/cssDraw/cssDraw"
 
 Vue.use(Router)
 
@@ -71,6 +72,11 @@ export default new Router({
       path: "/eco",
       name: "eco",
       component: eco
-    }
+    },
+    {
+      path: "/cssDraw",
+      name: "cssDraw",
+      component: cssDraw
+    },
   ]
 })
