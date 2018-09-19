@@ -29,6 +29,15 @@
       <canvas id="c1" @mousemove="mousemove" @mouseout="mouseout"></canvas>
       <div class="ope">
         <el-form label-width="100px">
+          <el-form-item label="地图大小">
+            <el-input size="small" v-model="config.mapSize" :readonly="true"></el-input>
+          </el-form-item>
+          <el-form-item label="格子像素">
+            <el-input size="small" v-model="config.blockPix" :readonly="true"></el-input>
+          </el-form-item>
+          <el-form-item label="海平面">
+            <el-input size="small" v-model="config.seaLevel" :readonly="true"></el-input>
+          </el-form-item>
           <el-form-item label="陆地等高距">
             <el-input-number size="small" v-model="config.contourDistanceOfLand" :min="1" @change="renderMap()"></el-input-number>
           </el-form-item>
@@ -42,11 +51,13 @@
       </div>
     </div>
 
-    <div class="btns">
+    <div v-show="!isDialogShow" class="btns">
       <el-button type="primary" @click="isDialogShow=true">重开</el-button>
       <el-button type="primary" @click="start()">重绘</el-button>
-      <el-button type="primary" @click="seedingBtn()">传播</el-button>
-      <el-button type="primary" @click="windingBtn()">风</el-button>
+      <el-button type="primary" @click="addVege()">植物传播</el-button>
+      <el-button type="primary" @click="subVege()">植物枯萎</el-button>
+      <el-button type="primary" @click="changeSeaLevel(2)">降雨</el-button>
+      <el-button type="primary" @click="changeSeaLevel(-2)">蒸发</el-button>
     </div>
 
     <el-dialog
@@ -65,7 +76,7 @@
           <el-input-number v-model="config.blockPix" :min="1" :max="10" :step="1"></el-input-number>
         </el-form-item>
         <el-form-item label="海平面">
-          <el-input-number v-model="config.seaLevel" :min="0" :max="100" :step="5"></el-input-number>
+          <el-input-number v-model="config.seaLevel" :min="0" :step="2"></el-input-number>
         </el-form-item>
       </el-form>
       <span slot="footer" class="">
@@ -201,30 +212,19 @@
 
         //----生成水分
         //根据海平面高度填充地上水，无需地下水
-        for(let i=0;i<this.config.mapSize;i++){
-          for(let j=0;j<this.config.mapSize;j++){
-            this.map[i][j].overgroundWater=Math.max(this.config.seaLevel-this.map[i][j].altitude,0);
-          }
-        }
+        this.createOvergroundWater();
 
         //生成河流
-        this.createRiver(this.config.mapSize/10,6);
-        this.createRiver(this.config.mapSize/2,3);
-        this.createRiver(this.config.mapSize/2,3);
+        // this.createRiver(this.config.mapSize/10,6);
+        // this.createRiver(this.config.mapSize/2,3);
+        // this.createRiver(this.config.mapSize/2,3);
 
         //平整河水
         this.smoothOvergroundWater(1);
         this.smoothOvergroundWater(3);
 
         //生成地下水
-        for(let i=0;i<this.config.mapSize;i++){
-          for(let j=0;j<this.config.mapSize;j++){
-            if(this.map[i][j].overgroundWater>0){
-              let range = this.map[i][j].altitude/5 + this.map[i][j].overgroundWater/10;
-              this.changeUndergroundWater(i-range,j-range,i+range,j+range,Math.log(this.map[i][j].overgroundWater/50+1));
-            }
-          }
-        }
+        this.createUndergroundWater();
 
         //----生成植被
         //生成植被
@@ -405,21 +405,53 @@
           //curY=nextPos.y+Math.floor(Math.random()*width-width/2);
         }
       },
+      createOvergroundWater(){
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            this.map[i][j].overgroundWater = 0;
+          }
+        }
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            if(this.config.seaLevel-this.map[i][j].altitude>0){
+              this.map[i][j].overgroundWater = this.config.seaLevel-this.map[i][j].altitude;
+              this.map[i][j].vegetation = 0;
+            } else {
+              this.map[i][j].overgroundWater = 0;
+            }
+          }
+        }
+      },
+      createUndergroundWater(){
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            this.map[i][j].undergroundWater = 0;
+          }
+        }
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            if(this.map[i][j].overgroundWater>0){
+              let range = this.map[i][j].slope + this.map[i][j].overgroundWater/3;
+              this.changeUndergroundWater(i-range,j-range,i+range,j+range,Math.log(this.map[i][j].overgroundWater/50+1));
+            }
+          }
+        }
+      },
       createVegetation() {
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             //植物生长条件：
             //基准值 1/5
-            //地上水<1  y=-x+1  线性  0~1
-            //地下水>0  y=5.41*ln(x+1)  对数  0~+∞
+            //地上水<0.1  y=-10x+1  线性  0~1
+            //地下水>0  y=5*ln(x+1)  对数  0~+∞
             //海拔高生成少  y=200/(x+200)  反比例  1~+0
             //随机数 0.9~1.1
             //概率  y=v/(v+4)  反比例  0~1
             if(this.canGrowVegetation(i, j)){
               let value= 1/5
                 *(5*Math.log(this.map[i][j].undergroundWater+1))
-                *(-1*this.map[i][j].overgroundWater+1)
-                *(200/(this.map[i][j].altitude+200))
+                *(-10*this.map[i][j].overgroundWater+1)
+                *(200/((this.map[i][j].altitude-this.config.seaLevel)+200))
                 *(Math.random()/5+0.9);
               let prob=value/(value+3);
               if(Math.random()<prob){
@@ -431,7 +463,7 @@
         }
       },
       canGrowVegetation(i, j){
-        return (this.map[i][j].overgroundWater<1 && this.map[i][j].undergroundWater>0);
+        return (this.map[i][j].overgroundWater<0.1 && this.map[i][j].undergroundWater>0);
       },
       highestPos(x,y,range) {
         let pos={}, max=-10086;
@@ -593,7 +625,8 @@
           }
         }
       },
-      seedingBtn(){
+      addVege(){
+        this.winding();
         this.seeding();
         this.renderMap();
       },
@@ -608,7 +641,7 @@
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             let value = this.map[i][j].vegetation;
-            let times = 1 + Math.exp(-value/5);
+            let times = 1+Math.exp(-value/3);
             map2[i][j].vegetation = this.map[i][j].vegetation * times;
           }
         }
@@ -618,20 +651,37 @@
           }
         }
       },
-      windingBtn(){
-        this.winding();
-        this.renderMap();
-      },
       winding(){
         for(let i=0;i<this.config.mapSize;i++){
           for(let j=0;j<this.config.mapSize;j++){
             //符合植物生长条件
             if(this.canGrowVegetation(i, j)){
-              if(Math.random() < 0.03){
-                this.changeVegetation(i-1, j-1, i+1, j+1, 1);
+              if(Math.random() < 0.01){
+                this.changeVegetation(i-1, j-1, i+1, j+1, 0.5);
               }
             }
           }
+        }
+      },
+      subVege(){
+        for(let i=0;i<this.config.mapSize;i++){
+          for(let j=0;j<this.config.mapSize;j++){
+            if(this.map[i][j].vegetation<1){
+              this.map[i][j].vegetation = 0;
+            } else {
+              this.map[i][j].vegetation *= 0.8;
+            }
+          }
+        }
+        this.renderMap();
+      },
+      changeSeaLevel(value){
+        let to = this.config.seaLevel + value;
+        if(to>=0){
+          this.config.seaLevel = to;
+          this.createOvergroundWater();
+          this.createUndergroundWater();
+          this.renderMap();
         }
       },
     }
