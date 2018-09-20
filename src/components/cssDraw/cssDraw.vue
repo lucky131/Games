@@ -99,7 +99,7 @@
             25% {
               box-shadow:
                 1vw 5vw black,
-                14vw 0vw black,
+                14vw 0 black,
                 22vw 18vw rgba(0,0,0,0),
                 11vw 16vw rgba(0,0,0,0),
                 -1vw 13vw black,
@@ -110,7 +110,7 @@
             25.1% {
               box-shadow:
                 1vw 5vw black,
-                14vw 0vw black,
+                14vw 0 black,
                 22vw 2vw rgba(0,0,0,0),
                 11vw -2vw rgba(0,0,0,0),
                 -1vw 13vw black,
