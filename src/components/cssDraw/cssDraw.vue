@@ -19,6 +19,12 @@
         <div class="shadow"></div>
       </div>
     </div>
+    <div class="page" style="background-color: white">
+      <div class="wx">
+        <div class="head1"></div>
+        <div class="head2"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -57,7 +63,7 @@
           50% { transform: translateY(-5vw); }
         }
         &:before{
-          content: '';
+          content: "";
           width: 30vw;
           height: 5vw;
           border-radius: 50%;
@@ -75,7 +81,7 @@
           }
         }
         &:after{
-          content: '';
+          content: "";
           width: 1vw;
           height: 2vw;
           border-radius: 50%;
@@ -196,7 +202,7 @@
           50% { transform: rotate(40deg); }
         }
         &:before{
-          content: '';
+          content: "";
           width: 30vw;
           height: 5vw;
           border-radius: 50%;
@@ -296,6 +302,81 @@
           z-index: 5;
           background: linear-gradient(90deg, rgba(0,0,0,.339), rgba(0,0,0,.134), rgba(0,0,0,.032), rgba(0,0,0,0));
           transform: rotate(45deg) translateX(17vw);
+        }
+      }
+      .wx{
+        width: 25vw;
+        height: 25vw;
+        border-radius: 5vw;
+        background-color: #00D00C;
+        position: relative;
+        .head1{
+          width: 15vw;
+          height: 12vw;
+          border-radius: 50%;
+          border: 0.2vw solid #00D00C;
+          box-sizing: border-box;
+          background-color: white;
+          position: absolute;
+          top: 4vw;
+          left: 1vw;
+          &:before{
+            content: "";
+            width: 0vw;
+            height: 0vw;
+            border-top: 0 solid transparent;
+            border-left: 2vw solid transparent;
+            border-right: 2vw solid transparent;
+            border-bottom: 3.5vw solid white;
+            position: absolute;
+            top: 9.5vw;
+            left: 2vw;
+            transform: rotate(210deg);
+          }
+          &:after{
+            content: "";
+            width: 1vw;
+            height: 1vw;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow:
+              4.7vw 3.7vw #00D00C,
+              9.3vw 3.7vw #00D00C;
+          }
+        }
+        .head2{
+          width: 13vw;
+          height: 11vw;
+          border-radius: 50%;
+          border: 0.2vw solid #00D00C;
+          box-sizing: border-box;
+          background-color: white;
+          position: absolute;
+          top: 8vw;
+          left: 10vw;
+          &:before{
+            content: "";
+            width: 0vw;
+            height: 0vw;
+            border-top: 0 solid transparent;
+            border-left: 2vw solid transparent;
+            border-right: 2vw solid transparent;
+            border-bottom: 3.5vw solid white;
+            position: absolute;
+            top: 8vw;
+            left: 8vw;
+            transform: rotate(150deg);
+          }
+          &:after{
+            content: "";
+            width: 1vw;
+            height: 1vw;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow:
+              4vw 3vw #00D00C,
+              8vw 3vw #00D00C;
+          }
         }
       }
     }
