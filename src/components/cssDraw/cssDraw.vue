@@ -322,8 +322,6 @@
           left: 1vw;
           &:before{
             content: "";
-            width: 0vw;
-            height: 0vw;
             border-top: 0 solid transparent;
             border-left: 2vw solid transparent;
             border-right: 2vw solid transparent;
@@ -356,8 +354,6 @@
           left: 10vw;
           &:before{
             content: "";
-            width: 0vw;
-            height: 0vw;
             border-top: 0 solid transparent;
             border-left: 2vw solid transparent;
             border-right: 2vw solid transparent;
@@ -398,6 +394,12 @@
       let s = date.getSeconds();
       let totalS = h*60*60 + m*60 + s;
       $(".needle").css("animation-delay", "-"+totalS+"s");
+
+      if(this.$route.query.index){
+        let index = this.$route.query.index;
+        let pageHeight = window.innerHeight;
+        $(document).scrollTop(index * pageHeight);
+      }
     },
     methods: {
 
