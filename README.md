@@ -1,4 +1,9 @@
-# Games
+# Games by -3-
+## Run Dev
+```
+npm run dev
+```
+## Game Menu
 * Minesweeper 扫雷
 * Snake 贪吃蛇
 * Color 填色
@@ -10,3 +15,5 @@
 * Graduate 12班毕业去向
 * Eco 地形生成器
 * CssDraw 纯CSS绘制的一些图形
+## Build Page
+[Click Me](https://lucky131.github.io/GamesPage/)
