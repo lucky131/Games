@@ -25,6 +25,12 @@
         <div class="head2"></div>
       </div>
     </div>
+    <div class="page" style="background-color: #00002b">
+      <div class="solar">
+        <div class="sun"></div>
+        <div class="earth"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -373,6 +379,41 @@
               4vw 3vw #00D00C,
               8vw 3vw #00D00C;
           }
+        }
+      }
+      .solar{
+        width: 60vw;
+        height: 60vw;
+        position: relative;
+        .sun{
+          width: 10vw;
+          height: 10vw;
+          border-radius: 50%;
+          background: radial-gradient(#ff9e14, #ffd01f, #FFFF59, rgba(0,0,0,0) 70.7%);
+          position: absolute;
+          top: 25vw;
+          left: 25vw;
+          &:before{
+            content: "";
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(#FFFF59, rgba(0,0,0,0) 70.7%);
+            position: absolute;
+            opacity: 0.5;
+            animation: sun 2s ease-in-out infinite;
+            @keyframes sun {
+              50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+              }
+            }
+          }
+        }
+        .earth{
+          width: 2vw;
+          height: 2vw;
+          border-radius: 50%;
         }
       }
     }
