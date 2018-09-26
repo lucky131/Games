@@ -27,6 +27,7 @@
     </div>
     <div class="page" style="background-color: #00002b">
       <div class="solar">
+        <div class="track"></div>
         <div class="sun"></div>
         <div class="earth"></div>
       </div>
@@ -385,6 +386,16 @@
         width: 60vw;
         height: 60vw;
         position: relative;
+        .track{
+          width: 28.2vw;
+          height: 28.2vw;
+          border-radius: 50%;
+          border: 0.2vw solid #404060;
+          box-sizing: border-box;
+          position: absolute;
+          top: 15.9vw;
+          left: 15.9vw;
+        }
         .sun{
           width: 10vw;
           height: 10vw;
@@ -414,6 +425,45 @@
           width: 2vw;
           height: 2vw;
           border-radius: 50%;
+          background-color: #3a8ee6;
+          position: absolute;
+          top: 15vw;
+          left: 29vw;
+          transform-origin: 50% 15vw;
+          animation: earth 36.5s linear infinite;
+          @keyframes earth {
+            100% {
+              transform: rotate(-360deg);
+            }
+          }
+          &:before{
+            content: "";
+            width: 4.8vw;
+            height: 4.8vw;
+            border-radius: 50%;
+            border: 0.2vw solid #404060;
+            box-sizing: border-box;
+            position: absolute;
+            top: -1.4vw;
+            left: -1.4vw;
+          }
+          &:after{
+            content: "";
+            width: 0.6vw;
+            height: 0.6vw;
+            border-radius: 50%;
+            background-color: yellow;
+            position: absolute;
+            top: -1.6vw;
+            left: 0.7vw;
+            transform-origin: 50% 2.6vw;
+            animation: moon 3.0s linear infinite;
+            @keyframes moon {
+              100% {
+                transform: rotate(-360deg);
+              }
+            }
+          }
         }
       }
     }
