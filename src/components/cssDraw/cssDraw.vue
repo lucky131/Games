@@ -27,9 +27,19 @@
     </div>
     <div class="page" style="background-color: #00002b">
       <div class="solar">
-        <div class="track"></div>
+        <div class="track mercuryTrack"></div>
+        <div class="track venusTrack"></div>
+        <div class="track earthTrack"></div>
+        <div class="track marsTrack"></div>
+        <div class="track jupiterTrack"></div>
+        <div class="track saturnTrack"></div>
         <div class="sun"></div>
-        <div class="earth"></div>
+        <div class="planet mercury"></div>
+        <div class="planet venus"></div>
+        <div class="planet earth"></div>
+        <div class="planet mars"></div>
+        <div class="planet jupiter"></div>
+        <div class="planet saturn"></div>
       </div>
     </div>
   </div>
@@ -387,20 +397,52 @@
         height: 60vw;
         position: relative;
         .track{
-          width: 28.2vw;
-          height: 28.2vw;
           border-radius: 50%;
           border: 0.2vw solid #404060;
           box-sizing: border-box;
           position: absolute;
-          top: 15.9vw;
-          left: 15.9vw;
+          &.mercuryTrack{
+            width: 14.2vw;
+            height: 14.2vw;
+            top: 22.9vw;
+            left: 22.9vw;
+          }
+          &.venusTrack{
+            width: 20.2vw;
+            height: 20.2vw;
+            top: 19.9vw;
+            left: 19.9vw;
+          }
+          &.earthTrack{
+            width: 26.2vw;
+            height: 26.2vw;
+            top: 16.9vw;
+            left: 16.9vw;
+          }
+          &.marsTrack{
+            width: 32.2vw;
+            height: 32.2vw;
+            top: 13.9vw;
+            left: 13.9vw;
+          }
+          &.jupiterTrack{
+            width: 38.2vw;
+            height: 38.2vw;
+            top: 10.9vw;
+            left: 10.9vw;
+          }
+          &.saturnTrack{
+            width: 44.2vw;
+            height: 44.2vw;
+            top: 7.9vw;
+            left: 7.9vw;
+          }
         }
         .sun{
           width: 10vw;
           height: 10vw;
           border-radius: 50%;
-          background: radial-gradient(#ff9e14, #ffd01f, #FFFF59, rgba(0,0,0,0) 70.7%);
+          background: radial-gradient(#ff7a19, #ffa529, #FFFF59, rgba(0,0,0,0) 70.7%);
           position: absolute;
           top: 25vw;
           left: 25vw;
@@ -411,58 +453,107 @@
             border-radius: 50%;
             background: radial-gradient(#FFFF59, rgba(0,0,0,0) 70.7%);
             position: absolute;
-            opacity: 0.5;
+            opacity: 0.6;
             animation: sun 2s ease-in-out infinite;
             @keyframes sun {
               50% {
                 transform: scale(1.2);
-                opacity: 0.8;
+                opacity: 0.9;
               }
             }
           }
         }
-        .earth{
-          width: 2vw;
-          height: 2vw;
+        .planet{
           border-radius: 50%;
-          background-color: #3a8ee6;
           position: absolute;
-          top: 15vw;
-          left: 29vw;
-          transform-origin: 50% 15vw;
-          animation: earth 36.5s linear infinite;
-          @keyframes earth {
+          animation: planet linear infinite;
+          @keyframes planet {
             100% {
               transform: rotate(-360deg);
             }
           }
-          &:before{
-            content: "";
-            width: 4.8vw;
-            height: 4.8vw;
-            border-radius: 50%;
-            border: 0.2vw solid #404060;
-            box-sizing: border-box;
-            position: absolute;
-            top: -1.4vw;
-            left: -1.4vw;
+          &.mercury{
+            width: 0.8vw;
+            height: 0.8vw;
+            background-color: #d19c00;
+            top: 22.6vw;
+            left: 29.6vw;
+            transform-origin: 50% 7.4vw;
+            animation-duration: 8.8s;
           }
-          &:after{
-            content: "";
-            width: 0.6vw;
-            height: 0.6vw;
-            border-radius: 50%;
-            background-color: yellow;
-            position: absolute;
-            top: -1.6vw;
-            left: 0.7vw;
-            transform-origin: 50% 2.6vw;
-            animation: moon 3.0s linear infinite;
-            @keyframes moon {
-              100% {
-                transform: rotate(-360deg);
+          &.venus{
+            width: 2vw;
+            height: 2vw;
+            background-color: #cbae86;
+            top: 19vw;
+            left: 29vw;
+            transform-origin: 50% 11vw;
+            animation-duration: 22.5s;
+          }
+          &.earth{
+            width: 2vw;
+            height: 2vw;
+            background-color: #3d4e83;
+            /*background: linear-gradient(#000, #3d4e83);*/
+            top: 16vw;
+            left: 29vw;
+            transform-origin: 50% 14vw;
+            animation-duration: 36.5s;
+            &:before{
+              content: "";
+              width: 3.8vw;
+              height: 3.8vw;
+              border-radius: 50%;
+              border: 0.2vw solid #404060;
+              box-sizing: border-box;
+              position: absolute;
+              top: -0.9vw;
+              left: -0.9vw;
+            }
+            &:after{
+              content: "";
+              width: 0.6vw;
+              height: 0.6vw;
+              border-radius: 50%;
+              background-color: yellow;
+              position: absolute;
+              top: -1.1vw;
+              left: 0.7vw;
+              transform-origin: 50% 2.1vw;
+              animation: moon 3.0s linear infinite;
+              @keyframes moon {
+                100% {
+                  transform: rotate(-360deg);
+                }
               }
             }
+          }
+          &.mars{
+            width: 1vw;
+            height: 1vw;
+            background-color: #b06535;
+            top: 13.5vw;
+            left: 29.5vw;
+            transform-origin: 50% 16.5vw;
+            animation-duration: 68.7s;
+          }
+          &.jupiter{
+            width: 4vw;
+            height: 4vw;
+            background: linear-gradient(#a4937b, #cad2e3, #b2847e, #cad2e3, #b2847e, #cad2e3, #a4937b);
+            top: 9vw;
+            left: 28vw;
+            transform-origin: 50% 21vw;
+            animation-duration: 233.0s;
+          }
+          &.saturn{
+            width: 3.6vw;
+            height: 3.6vw;
+            background-color: #e8d3a6;
+            top: 6.2vw;
+            left: 28.2vw;
+            transform-origin: 50% 23.8vw;
+            animation-duration: 483.2s;
           }
         }
       }
@@ -484,7 +575,7 @@
       let m = date.getMinutes();
       let s = date.getSeconds();
       let totalS = h*60*60 + m*60 + s;
-      $(".needle").css("animation-delay", "-"+totalS+"s");
+      $(".needle, .planet").css("animation-delay", "-"+totalS+"s");
 
       if(this.$route.query.index){
         let index = this.$route.query.index;
