@@ -7,16 +7,18 @@
       <div class="rainbow"></div>
     </div>
     <div class="page" style="background-color: #4fb8ff">
+      <div class="mask clockMask time"></div>
       <div class="clock">
+        <div class="body"></div>
         <div class="tick top"></div>
         <div class="tick right"></div>
         <div class="tick bottom"></div>
         <div class="tick left"></div>
-        <div class="needle hour"></div>
-        <div class="needle minute"></div>
-        <div class="needle second"></div>
+        <div class="needle hour time"></div>
+        <div class="needle minute time"></div>
+        <div class="needle second time"></div>
         <div class="center"></div>
-        <div class="shadow"></div>
+        <div class="shadow time"></div>
       </div>
     </div>
     <div class="page" style="background-color: white">
@@ -34,12 +36,12 @@
         <div class="track jupiterTrack"></div>
         <div class="track saturnTrack"></div>
         <div class="sun"></div>
-        <div class="planet mercury"></div>
-        <div class="planet venus"></div>
-        <div class="planet earth"></div>
-        <div class="planet mars"></div>
-        <div class="planet jupiter"></div>
-        <div class="planet saturn"></div>
+        <div class="planet mercury time"></div>
+        <div class="planet venus time"></div>
+        <div class="planet earth time"></div>
+        <div class="planet mars time"></div>
+        <div class="planet jupiter time"></div>
+        <div class="planet saturn time"></div>
       </div>
     </div>
   </div>
@@ -61,6 +63,50 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      .mask{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 100;
+        &.clockMask{
+          animation: clockMask 86400s linear infinite;
+          @keyframes clockMask {
+            0%{
+              background-color: rgba(0, 0, 0, 0.7);
+            }
+            15%{
+              background-color: rgba(0, 0, 0, 0.6);
+            }
+            25%{
+              background-color: rgba(0, 0, 0, 0.4);
+            }
+            35%{
+              background-color: rgba(255, 255, 145, 0.3);
+            }
+            45%{
+              background-color: rgba(255,255,255,0);
+            }
+            55%{
+              background-color: rgba(255,255,255,0);
+            }
+            /*50%{*/
+              /*background-color: rgba(255,255,255,0);*/
+            /*}*/
+            65%{
+              background-color: rgba(184, 52, 77, 0.3);
+            }
+            75%{
+              background-color: rgba(0, 0, 0, 0.4);
+            }
+            85%{
+              background-color: rgba(0, 0, 0, 0.6);
+            }
+            100%{
+              background-color: rgba(0, 0, 0, 0.7);
+            }
+          }
+        }
+      }
       .rainy{
         width: 15vw;
         height: 15vw;
@@ -242,10 +288,16 @@
       .clock{
         width: 30vw;
         height: 30vw;
-        border-radius: 50%;
-        background-color: white;
-        box-shadow: 0 0 0 2vw #97dfff;
         position: relative;
+        .body{
+          width: 30vw;
+          height: 30vw;
+          border-radius: 50%;
+          background-color: white;
+          box-shadow: 0 0 0 2vw #97dfff;
+          position: absolute;
+          z-index: 2;
+        }
         .tick{
           width: 0.4vw;
           height: 2vw;
@@ -253,7 +305,7 @@
           position: absolute;
           top: 1vw;
           left: 14.8vw;
-          z-index: 1;
+          z-index: 3;
           transform-origin: 50% 14vw;
           &.top{transform: rotate(0deg)}
           &.right{transform: rotate(90deg)}
@@ -276,7 +328,7 @@
             background-color: #999;
             top: 7vw;
             left: 14.6vw;
-            z-index: 1;
+            z-index: 4;
             animation-duration: 43200s;
           }
           &.minute{
@@ -286,7 +338,7 @@
             background-color: #999;
             top: 3vw;
             left: 14.7vw;
-            z-index: 2;
+            z-index: 5;
             animation-duration: 3600s;
           }
           &.second{
@@ -296,7 +348,7 @@
             background-color: red;
             top: 3vw;
             left: 14.9vw;
-            z-index: 3;
+            z-index: 6;
             animation-duration: 60s;
           }
         }
@@ -308,17 +360,40 @@
           position: absolute;
           top: 14vw;
           left: 14vw;
-          z-index: 4;
+          z-index: 7;
         }
         .shadow{
           width: 34vw;
           height: 34vw;
           position: absolute;
-          top: -2vw;
+          top: 15vw;
           left: -2vw;
-          z-index: 5;
-          background: linear-gradient(90deg, rgba(0,0,0,.339), rgba(0,0,0,.134), rgba(0,0,0,.032), rgba(0,0,0,0));
-          transform: rotate(45deg) translateX(17vw);
+          z-index: 1;
+          background: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.3), rgba(0,0,0,.1), rgba(0,0,0,0));
+          transform-origin: 50% 0;
+          animation: shadow 86400s linear infinite;
+          @keyframes shadow {
+            0%{
+              transform: rotate(180deg) scaleY(2);
+              opacity: 0;
+            }
+            25%{
+              transform: rotate(90deg) scaleY(2);
+              opacity: 0;
+            }
+            50%{
+              transform: rotate(0deg) scaleY(0.8);
+              opacity: 1;
+            }
+            75%{
+              transform: rotate(-90deg) scaleY(2);
+              opacity: 0;
+            }
+            100%{
+              transform: rotate(-180deg) scaleY(2);
+              opacity: 0;
+            }
+          }
         }
       }
       .wx{
@@ -575,7 +650,7 @@
       let m = date.getMinutes();
       let s = date.getSeconds();
       let totalS = h*60*60 + m*60 + s;
-      $(".needle, .planet").css("animation-delay", "-"+totalS+"s");
+      $(".time").css("animation-delay", "-"+totalS+"s");
 
       if(this.$route.query.index){
         let index = this.$route.query.index;
