@@ -90,10 +90,10 @@
               background-color: rgba(0, 0, 0, 0.6);
             }
             25%{
-              background-color: rgba(0, 0, 0, 0.4);
+              background-color: rgba(65, 65, 32, 0.5);
             }
             35%{
-              background-color: rgba(255, 255, 145, 0.3);
+              background-color: rgba(176, 176, 89, 0.3);
             }
             45%{
               background-color: rgba(255,255,255,0);
@@ -101,14 +101,11 @@
             55%{
               background-color: rgba(255,255,255,0);
             }
-            /*50%{*/
-              /*background-color: rgba(255,255,255,0);*/
-            /*}*/
             65%{
-              background-color: rgba(184, 52, 77, 0.3);
+              background-color: rgba(184, 51, 48, 0.3);
             }
             75%{
-              background-color: rgba(0, 0, 0, 0.4);
+              background-color: rgba(82, 23, 21, 0.5);
             }
             85%{
               background-color: rgba(0, 0, 0, 0.6);
