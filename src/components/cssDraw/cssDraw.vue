@@ -44,6 +44,18 @@
         <div class="planet saturn time"></div>
       </div>
     </div>
+    <div class="page" style="background-color: white">
+      <div class="mask windmillMask"></div>
+      <div class="windmill">
+        <div class="wrap">
+          <div class="fan fan1"></div>
+          <div class="fan fan2"></div>
+          <div class="fan fan3"></div>
+          <div class="fan fan4"></div>
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -632,6 +644,102 @@
           }
         }
       }
+      .windmill{
+        width: 100%;
+        height: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .wrap{
+          width: 40vw;
+          height: 40vw;
+          position: relative;
+          transform-origin: 50% 50%;
+          animation: windmill 2s linear infinite;
+          @keyframes windmill {
+            100%{
+              transform: rotate(360deg);
+            }
+          }
+          .fan{
+            width: 10vw;
+            height: 10vw;
+            position: absolute;
+            top: 10vw;
+            left: 20vw;
+            transform-origin: 0 100%;
+            &:before{
+              content: "";
+              position: absolute;
+              border-top: 0 solid transparent;
+              border-left: 10vw solid transparent;
+              border-right: 10vw solid transparent;
+              border-bottom: 10vw solid;
+            }
+            &:after{
+              content: "";
+              width: 2vw;
+              height: 2vw;
+              top: -0.23vw;
+              left: 9.64vw;
+              position: absolute;
+              border-radius: 0 100% 0 0;
+              box-shadow: 0.4vw -0.4vw 0 0.35vw white;
+              transform-origin: 0 100%;
+              transform: rotate(-17.5deg) skew(17.5deg, 17.5deg);
+            }
+            &.fan1{
+              background: linear-gradient(#e74c3c 30%, #3d1510);
+              transform: rotate(0deg);
+              &:before{
+                border-bottom-color: #e74c3c;
+              }
+              &:after{
+                background-color: #e74c3c;
+              }
+            }
+            &.fan2{
+              background: linear-gradient(#f1c43c 30%, #483c12);
+              transform: rotate(90deg);
+              &:before{
+                border-bottom-color: #f1c43c;
+              }
+              &:after{
+                background-color: #f1c43c;
+              }
+            }
+            &.fan3{
+              background: linear-gradient(#2ecc75 30%, #134c2c);
+              transform: rotate(180deg);
+              &:before{
+                border-bottom-color: #2ecc75;
+              }
+              &:after{
+                background-color: #2ecc75;
+              }
+            }
+            &.fan4{
+              background: linear-gradient(#598ecd 30%, #1c2c3f);
+              transform: rotate(270deg);
+              &:before{
+                border-bottom-color: #598ecd;
+              }
+              &:after{
+                background-color: #598ecd;
+              }
+            }
+          }
+          .circle{
+            width: 2vw;
+            height: 2vw;
+            border-radius: 50%;
+            position: absolute;
+            background-color: white;
+            top: 19vw;
+          }
+        }
+      }
     }
   }
 </style>
@@ -645,6 +753,7 @@
       }
     },
     mounted(){
+      //css animation-delay
       let date = new Date();
       let h = date.getHours();
       let m = date.getMinutes();
@@ -652,6 +761,7 @@
       let totalS = h*60*60 + m*60 + s;
       $(".time").css("animation-delay", "-"+totalS+"s");
 
+      //定位某index
       if(this.$route.query.index){
         let index = this.$route.query.index;
         let pageHeight = window.innerHeight;
@@ -659,7 +769,9 @@
       }
     },
     methods: {
-
+      test(){
+        $(".windmill .wrap").css("animation-duration", "20s");
+      }
     }
   }
 </script>
