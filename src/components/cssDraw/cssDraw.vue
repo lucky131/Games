@@ -56,6 +56,22 @@
         </div>
       </div>
     </div>
+    <div class="page" style="background-color: black;">
+      <div class="eye">
+        <div class="wheel">
+          <div class="circle big"></div>
+          <div class="circle small"></div>
+          <div class="oneTick" v-for="n in 50" :key="n" :style="{transform: 'rotate('+(n*7.2)+'deg)'}">
+            <div class="tick left"></div>
+            <div class="tick right"></div>
+          </div>
+        </div>
+        <div class="bottom top"></div>
+        <div class="bottom left"></div>
+        <div class="bottom right"></div>
+        <div class="ground"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -735,6 +751,97 @@
             background-color: white;
             top: 19vw;
           }
+        }
+      }
+      .eye{
+        width: 48vw;
+        height: 48vw;
+        position: relative;
+        .wheel{
+          width: 48vw;
+          height: 48vw;
+          position: absolute;
+          transform-origin: 50% 50%;
+          animation: wheel 300s linear infinite;
+          @keyframes wheel {
+            100%{
+              transform: rotate(360deg);
+            }
+          }
+          .circle{
+            border-radius: 50%;
+            border: 0.3vw solid white;
+            box-sizing: border-box;
+            box-shadow: 0 0 1vw white;
+            position: absolute;
+            z-index: 1;
+            &.big{
+              width: 48vw;
+              height: 48vw;
+            }
+            &.small{
+              width: 42vw;
+              height: 42vw;
+              top: 3vw;
+              left: 3vw;
+            }
+          }
+          .oneTick{
+            width: 8vw;
+            height: 24vw;
+            position: absolute;
+            top: 0;
+            left: 20vw;
+            transform-origin: 50% 100%;
+            .tick{
+              width: 0.3vw;
+              height: 3.5vw;
+              background-color: #ff7b7b;
+              border-radius: 0.15vw;
+              box-shadow: 0 0 1vw #ff0000;
+              position: absolute;
+              top: 0;
+              left: 3.85vw;
+              transform-origin: 50% 0;
+              &.left{
+                transform: rotate(22deg);
+              }
+              &.right{
+                transform: rotate(-22deg);
+              }
+            }
+          }
+        }
+        .bottom{
+          width: 4vw;
+          border-radius: 0.5vw 0.5vw 0 0;
+          background: linear-gradient(yellow, #727200, #313100 80%);
+          position: absolute;
+          left: 22vw;
+          transform-origin: 50% 100%;
+          &.top{
+            height: 12vw;
+            top: 22vw;
+          }
+          &.left{
+            height: 44vw;
+            top: -10vw;
+            transform: rotate(240deg);
+          }
+          &.right{
+            height: 44vw;
+            top: -10vw;
+            transform: rotate(120deg);
+          }
+        }
+        .ground{
+          width: 1000vw;
+          height: 1000vw;
+          border-radius: 50%;
+          background-color: #222;
+          position: absolute;
+          top: 50vw;
+          left: -476vw;
         }
       }
     }
