@@ -152,6 +152,13 @@ export default {
           color: "#a6ff5d",
           mobile: true,
         },
+        {
+          name: "？",
+          path: "/tower",
+          desc: "？？？",
+          color: "#ff8161",
+          mobile: true,
+        },
       ]
     }
   },

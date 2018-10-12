@@ -13,6 +13,7 @@ import wolf from "../components/wolf/wolf"
 import graduate from "../components/graduate/graduate"
 import eco from "../components/eco/eco"
 import cssDraw from "../components/cssDraw/cssDraw"
+import tower from "../components/tower/tower"
 
 Vue.use(Router)
 
@@ -77,6 +78,11 @@ export default new Router({
       path: "/cssDraw",
       name: "cssDraw",
       component: cssDraw
+    },
+    {
+      path: "/tower",
+      name: "tower",
+      component: tower
     },
   ]
 })
