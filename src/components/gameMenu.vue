@@ -157,7 +157,7 @@ export default {
           path: "/tower",
           desc: "？？？",
           color: "#ff8161",
-          mobile: true,
+          mobile: false,
         },
       ]
     }

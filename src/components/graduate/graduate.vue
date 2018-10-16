@@ -76,7 +76,7 @@
       let echarts = require('echarts');
 
       this.$nextTick(() => {
-        let myChart1 = echarts.init(document.getElementById('map'));
+        let myChart1 = echarts.initGame(document.getElementById('map'));
         myChart1.setOption({
           title: {
             text: '地图可缩放 下面还有哦',
@@ -159,7 +159,7 @@
           }]
         });
 
-        let myChart3 = echarts.init(document.getElementById('pie'));
+        let myChart3 = echarts.initGame(document.getElementById('pie'));
         myChart3.setOption({
           title: {
             text: '读研 vs 就业',

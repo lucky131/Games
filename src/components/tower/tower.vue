@@ -20,7 +20,11 @@
       <div v-if="createData.red + createData.green + createData.blue >= 10" class="startGameBtn able" @click="finishCreate()"><i class="el-icon-check"></i></div>
       <div v-else class="startGameBtn disabled"><i class="el-icon-check"></i></div>
     </div>
+    <div v-else-if="UIController==='selectCard'" class="selectCardUI">
+      selectCard
+    </div>
     <div v-else-if="UIController==='normal'" class="normalUI"></div>
+    <div v-else-if="UIController===''" class=""></div>
   </div>
 </template>
 
@@ -90,12 +94,18 @@
         text-align: center;
         &.disabled{
           background-color: #ccc;
+          cursor: no-drop;
         }
         &.able{
           background-color: #00b400;
           cursor: pointer;
         }
       }
+    }
+    .selectCardUI{
+      width: 600px;
+      height: 600px;
+      background-color: yellow;
     }
     .normalUI{
       width: 600px;
@@ -106,42 +116,55 @@
 </style>
 
 <script>
-export default {
-  name: "tower",
-  data(){
-    return{
-      UIController: "create",
-      createData: {
-        red: 0,
-        green: 0,
-        blue: 0,
-      },
-      characterData: {
-        red: 0,
-        green: 0,
-        blue: 0,
-      },
-    }
-  },
-  mounted(){
-
-  },
-  methods: {
-    getCreateMax(color){
-      if(color === "red") return 10 - this.createData.green - this.createData.blue;
-      if(color === "green") return 10 - this.createData.red - this.createData.blue;
-      if(color === "blue") return 10 - this.createData.red - this.createData.green;
+  import allCards from "./card"
+  export default {
+    name: "tower",
+    data(){
+      return{
+        UIController: "",
+        createData: {},
+        characterData: {},
+        selectCardList: [],
+      }
     },
-    finishCreate(){
-      this.characterData.red = this.createData.red;
-      this.characterData.green = this.createData.green;
-      this.characterData.blue = this.createData.blue;
-      this.createData.red = 0;
-      this.createData.green = 0;
-      this.createData.blue = 0;
-      this.UIController = "normal";
-      alert(this.characterData.red + this.characterData.green + this.characterData.blue);
+    mixins: [allCards],
+    mounted(){
+      this.initGame();
+    },
+    methods: {
+      initGame(){
+        this.UIController = "create";
+        this.createData = {
+          red: 0,
+          green: 0,
+          blue: 0,
+        };
+        this.characterData = {
+          red: 0,
+          green: 0,
+          blue: 0,
+          deck: [],
+        };
+        this.selectCardList = [];
+      },
+      getCreateMax(color){
+        if(color === "red") return 10 - this.createData.green - this.createData.blue;
+        if(color === "green") return 10 - this.createData.red - this.createData.blue;
+        if(color === "blue") return 10 - this.createData.red - this.createData.green;
+      },
+      finishCreate(){
+        this.characterData.red = this.createData.red;
+        this.characterData.green = this.createData.green;
+        this.characterData.blue = this.createData.blue;
+        this.createData.red = 0;
+        this.createData.green = 0;
+        this.createData.blue = 0;
+        this.UIController = "selectCard";
+        this.selectCardList = [];
+        this.selectCardList.push({
+
+        });
+      }
     }
   }
-}
 </script>
