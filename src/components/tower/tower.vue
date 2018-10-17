@@ -1,41 +1,30 @@
 <template>
   <div class="wrap">
-    <div v-if="UIController==='create'" class="createUI">
-      <div class="title">创建角色</div>
-      <div class="control">
-        <div class="controlItem">
-          <div class="icon red"></div>
-          <el-input-number v-model="createData.red" :min="0" :max="getCreateMax('red')"></el-input-number>
+    <div v-if="UIController==='selectCard'" class="selectCardUI cardUI">
+      <div class="left">
+        <div class="list">
+          <div v-for="(card, index) in selectCardList" :key="index" :class="{oneCard: true, selected: card.selected}"
+               @mouseenter="mouseenterSelectCard(index)"
+               @mouseleave="mouseleaveSelectCard()"
+               @click="clickSelectCard(index)"></div>
         </div>
-        <div class="controlItem">
-          <div class="icon green"></div>
-          <el-input-number v-model="createData.green" :min="0" :max="getCreateMax('green')"></el-input-number>
-        </div>
-        <div class="controlItem">
-          <div class="icon blue"></div>
-          <el-input-number v-model="createData.blue" :min="0" :max="getCreateMax('blue')"></el-input-number>
-        </div>
-        <div class="rest">剩余{{10 - createData.red - createData.green - createData.blue}}点</div>
+        <div v-if="getSelectCardListNumber() === 1" class="confirm able">√</div>
+        <div v-else class="confirm disabled">{{getSelectCardListNumber()}}/1</div>
       </div>
-      <div v-if="createData.red + createData.green + createData.blue >= 10" class="startGameBtn able" @click="finishCreate()"><i class="el-icon-check"></i></div>
-      <div v-else class="startGameBtn disabled"><i class="el-icon-check"></i></div>
-    </div>
-    <div v-else-if="UIController==='selectCard'" class="selectCardUI">
-      selectCard
+      <div class="desc">
+        <div class="cardName" :style="{color: getQualityColor(cardDesc.quality)}">{{cardDesc.name}}</div>
+        <div class="cardDesc">{{cardDesc.desc}}</div>
+      </div>
     </div>
     <div v-else-if="UIController==='normal'" class="normalUI"></div>
-    <div v-else-if="UIController===''" class=""></div>
   </div>
 </template>
 
 <style scoped lang="scss">
-  .icon{
-    width: 30px;
-    height: 30px;
+  .cardUI{
     border-radius: 10px;
-    &.red{background-color: #f00}
-    &.green{background-color: #0f0}
-    &.blue{background-color: #00f}
+    overflow: hidden;
+    box-shadow: 5px 5px 20px rgba(0,0,0,.2);
   }
 </style>
 <style scoped lang="scss">
@@ -45,67 +34,65 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    .createUI{
-      width: 400px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,.2);
-      overflow: hidden;
-      .title{
-        width: 100%;
-        height: 50px;
-        line-height: 50px;
-        background-color: #ccc;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        text-align: center;
-      }
-      .control{
-        width: 100%;
-        padding-top: 15px;
-        .controlItem{
+    .selectCardUI{
+      width: 600px;
+      height: 500px;
+      display: flex;
+      .left{
+        width: 400px;
+        height: 100%;
+        .list{
           width: 100%;
-          height: 50px;
+          height: 400px;
+          padding: 16px 0 0 16px;
+          box-sizing: border-box;
           display: flex;
-          flex-flow: row nowrap;
-          justify-content: center;
-          align-items: center;
-          .icon{
-            margin-right: 30px;
+          flex-flow: row wrap;
+          align-content: start;
+          .oneCard{
+            width: 80px;
+            height: 80px;
+            background-color: #eee;
+            margin: 0 16px 16px 0;
+            box-sizing: border-box;
+            cursor: pointer;
+            &.selected{
+              border: 3px solid green;
+            }
           }
         }
-        .rest{
+        .confirm{
+          width: 100%;
+          height: 100px;
+          line-height: 100px;
+          color: white;
+          font-size: 50px;
+          font-weight: bold;
+          text-align: center;
+          &.able{background-color: green; cursor: pointer}
+          &.disabled{background-color: #ccc; cursor: no-drop}
+        }
+      }
+      .desc{
+        width: 200px;
+        height: 100%;
+        border-left: 1px solid #ccc;
+        box-sizing: border-box;
+        .cardName{
           width: 100%;
           height: 50px;
           line-height: 50px;
-          margin-top: 15px;
-          background-color: #e5e5e5;
+          font-size: 24px;
+          font-weight: bold;
           text-align: center;
-          font-size: 16px;
+          border-bottom: 1px solid #ccc;
+        }
+        .cardDesc{
+          width: 100%;
+          padding: 10px;
+          box-sizing: border-box;
         }
       }
-      .startGameBtn{
-        width: 100%;
-        height: 50px;
-        line-height: 50px;
-        color: white;
-        font-size: 30px;
-        text-align: center;
-        &.disabled{
-          background-color: #ccc;
-          cursor: no-drop;
-        }
-        &.able{
-          background-color: #00b400;
-          cursor: pointer;
-        }
-      }
-    }
-    .selectCardUI{
-      width: 600px;
-      height: 600px;
-      background-color: yellow;
     }
     .normalUI{
       width: 600px;
@@ -122,9 +109,9 @@
     data(){
       return{
         UIController: "",
-        createData: {},
         characterData: {},
         selectCardList: [],
+        cardDesc: {},
       }
     },
     mixins: [allCards],
@@ -133,37 +120,60 @@
     },
     methods: {
       initGame(){
-        this.UIController = "create";
-        this.createData = {
-          red: 0,
-          green: 0,
-          blue: 0,
-        };
+        this.UIController = "selectCard";
         this.characterData = {
-          red: 0,
-          green: 0,
-          blue: 0,
+          hp: 100,
+          maxHp: 100,
           deck: [],
         };
         this.selectCardList = [];
+        for(let i=100;i<=102;i++){
+          this.selectCardList.push({
+            id: i,
+            selected: false
+          });
+        }
+        this.cardDesc = {
+          id: 0,
+          name: "",
+          quality: 0,
+          desc: "",
+        };
       },
-      getCreateMax(color){
-        if(color === "red") return 10 - this.createData.green - this.createData.blue;
-        if(color === "green") return 10 - this.createData.red - this.createData.blue;
-        if(color === "blue") return 10 - this.createData.red - this.createData.green;
+      getQualityColor(quality){
+        if(quality === 0) return "#ccc";
+        if(quality === 1) return "#0088ff";
+        if(quality === 2) return "#a100eb";
+        if(quality === 3) return "#ff9600";
       },
-      finishCreate(){
-        this.characterData.red = this.createData.red;
-        this.characterData.green = this.createData.green;
-        this.characterData.blue = this.createData.blue;
-        this.createData.red = 0;
-        this.createData.green = 0;
-        this.createData.blue = 0;
-        this.UIController = "selectCard";
-        this.selectCardList = [];
-        this.selectCardList.push({
-
-        });
+      getSelectCardListNumber(){
+        let number = 0;
+        for(let index in this.selectCardList){
+          if(this.selectCardList[index].selected)
+            number++;
+        }
+        return number;
+      },
+      mouseenterSelectCard(index){
+        this.cardDesc = this.allCards[this.selectCardList[index].id];
+      },
+      mouseleaveSelectCard(){
+        this.cardDesc = {
+          id: 0,
+          name: "",
+          quality: 0,
+          desc: "",
+        };
+      },
+      clickSelectCard(index){
+        if(this.selectCardList[index].selected){
+          this.selectCardList[index].selected = false;
+        } else {
+          for(let i in this.selectCardList){
+            this.selectCardList[i].selected = false;
+          }
+          this.selectCardList[index].selected = true;
+        }
       }
     }
   }

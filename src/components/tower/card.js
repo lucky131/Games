@@ -4,9 +4,21 @@ export default {
       allCards: {
         100: {
           id: 100,
-          name: "",
+          name: "打",
           quality: 0,
-          desc: "",
+          desc: "打10",
+        },
+        101: {
+          id: 101,
+          name: "奶",
+          quality: 0,
+          desc: "奶5",
+        },
+        102: {
+          id: 102,
+          name: "莽",
+          quality: 0,
+          desc: "力量+3",
         },
       }
     }
