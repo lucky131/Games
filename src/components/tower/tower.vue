@@ -1,22 +1,25 @@
 <template>
   <div class="wrap">
-    <div v-if="UIController==='selectCard'" class="selectCardUI cardUI">
+    <div v-if="UIController==='menu'" class="menuUI">
+      <div class="logo">没起名v1.0</div>
+      <div class="menuBtn" @click="initGame()">Start</div>
+      <div class="menuBtn">Load</div>
+    </div>
+    <div v-else-if="UIController==='normal'" class="normalUI">
       <div class="left">
-        <div class="list">
-          <div v-for="(card, index) in selectCardList" :key="index" :class="{oneCard: true, selected: card.selected}"
-               @mouseenter="mouseenterSelectCard(index)"
-               @mouseleave="mouseleaveSelectCard()"
-               @click="clickSelectCard(index)"></div>
+        <div class="stat">
+          <div class="ball wrath" :style="{opacity: characterData.wrath/100}"></div>
+          <div class="ball greed" :style="{opacity: characterData.greed/100}"></div>
+          <div class="ball envy" :style="{opacity: characterData.envy/100}"></div>
         </div>
-        <div v-if="getSelectCardListNumber() === 1" class="confirm able">√</div>
-        <div v-else class="confirm disabled">{{getSelectCardListNumber()}}/1</div>
+        <div class="main">刚收到刚收到刚收到</div>
+        <div class="ope"></div>
       </div>
-      <div class="desc">
-        <div class="cardName" :style="{color: getQualityColor(cardDesc.quality)}">{{cardDesc.name}}</div>
-        <div class="cardDesc">{{cardDesc.desc}}</div>
+      <div class="right">
+        <div class="items"></div>
+        <div class="desc">大法</div>
       </div>
     </div>
-    <div v-else-if="UIController==='normal'" class="normalUI"></div>
   </div>
 </template>
 
@@ -34,70 +37,101 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    .selectCardUI{
-      width: 600px;
-      height: 500px;
+    .menuUI{
       display: flex;
-      .left{
-        width: 400px;
-        height: 100%;
-        .list{
-          width: 100%;
-          height: 400px;
-          padding: 16px 0 0 16px;
-          box-sizing: border-box;
-          display: flex;
-          flex-flow: row wrap;
-          align-content: start;
-          .oneCard{
-            width: 80px;
-            height: 80px;
-            background-color: #eee;
-            margin: 0 16px 16px 0;
-            box-sizing: border-box;
-            cursor: pointer;
-            &.selected{
-              border: 3px solid green;
-            }
-          }
-        }
-        .confirm{
-          width: 100%;
-          height: 100px;
-          line-height: 100px;
-          color: white;
-          font-size: 50px;
-          font-weight: bold;
-          text-align: center;
-          &.able{background-color: green; cursor: pointer}
-          &.disabled{background-color: #ccc; cursor: no-drop}
-        }
+      flex-flow: column nowrap;
+      align-items: center;
+      .logo{
+        width: 300px;
+        margin-bottom: 20px;
+        font-size: 32px;
+        text-align: center;
+        font-weight: bold;
+        cursor: default;
       }
-      .desc{
+      .menuBtn{
         width: 200px;
-        height: 100%;
-        border-left: 1px solid #ccc;
-        box-sizing: border-box;
-        .cardName{
-          width: 100%;
-          height: 50px;
-          line-height: 50px;
-          font-size: 24px;
-          font-weight: bold;
-          text-align: center;
-          border-bottom: 1px solid #ccc;
-        }
-        .cardDesc{
-          width: 100%;
-          padding: 10px;
-          box-sizing: border-box;
+        height: 50px;
+        margin-top: 20px;
+        background-color: white;
+        border-radius: 10px;
+        border: 2px solid black;
+        line-height: 50px;
+        text-align: center;
+        color: black;
+        font-size: 24px;
+        cursor: pointer;
+        transition: color, background-color 200ms;
+        &:hover{
+          background-color: black;
+          color: white;
         }
       }
     }
     .normalUI{
-      width: 600px;
-      height: 600px;
-      background-color: yellow;
+      display: flex;
+      flex-flow: row nowrap;
+      border: 1px solid #ccc;
+      .left{
+        width: 500px;
+        .stat{
+          width: 100%;
+          height: 100px;
+          border-bottom: 1px solid #ccc;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-around;
+          align-items: center;
+          .ball{
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            &.wrath{background-color: #ff442a}
+            &.greed{background-color: #233be8}
+            &.envy{background-color: #b419a8}
+            animation: ball 5s ease-in-out infinite alternate;
+            @keyframes ball {
+              from{
+                transform: scale(1);
+              }
+              to{
+                transform: scale(1.15);
+              }
+            }
+          }
+        }
+        .main{
+          width: 100%;
+          height: 500px;
+          padding: 10px;
+          border-bottom: 1px solid #ccc;
+          box-sizing: border-box;
+          overflow-y: auto;
+          font-size: 20px;
+        }
+        .ope{
+          width: 100%;
+          height: 200px;
+        }
+      }
+      .right{
+        width: 500px;
+        border-left: 1px solid #ccc;
+        .items{
+          width: 100%;
+          height: 500px;
+          border-bottom: 1px solid #ccc;
+          overflow-y: auto;
+        }
+        .desc{
+          width: 100%;
+          height: 300px;
+          padding: 10px;
+          box-sizing: border-box;
+          overflow-y: auto;
+          font-size: 20px;
+        }
+      }
     }
   }
 </style>
@@ -108,73 +142,23 @@
     name: "tower",
     data(){
       return{
-        UIController: "",
+        UIController: "menu",
         characterData: {},
-        selectCardList: [],
-        cardDesc: {},
       }
     },
     mixins: [allCards],
     mounted(){
-      this.initGame();
+
     },
     methods: {
       initGame(){
-        this.UIController = "selectCard";
+        this.UIController = "normal";
         this.characterData = {
-          hp: 100,
-          maxHp: 100,
-          deck: [],
-        };
-        this.selectCardList = [];
-        for(let i=100;i<=102;i++){
-          this.selectCardList.push({
-            id: i,
-            selected: false
-          });
-        }
-        this.cardDesc = {
-          id: 0,
-          name: "",
-          quality: 0,
-          desc: "",
+          wrath: 10,
+          greed: 10,
+          envy: 10,
         };
       },
-      getQualityColor(quality){
-        if(quality === 0) return "#ccc";
-        if(quality === 1) return "#0088ff";
-        if(quality === 2) return "#a100eb";
-        if(quality === 3) return "#ff9600";
-      },
-      getSelectCardListNumber(){
-        let number = 0;
-        for(let index in this.selectCardList){
-          if(this.selectCardList[index].selected)
-            number++;
-        }
-        return number;
-      },
-      mouseenterSelectCard(index){
-        this.cardDesc = this.allCards[this.selectCardList[index].id];
-      },
-      mouseleaveSelectCard(){
-        this.cardDesc = {
-          id: 0,
-          name: "",
-          quality: 0,
-          desc: "",
-        };
-      },
-      clickSelectCard(index){
-        if(this.selectCardList[index].selected){
-          this.selectCardList[index].selected = false;
-        } else {
-          for(let i in this.selectCardList){
-            this.selectCardList[i].selected = false;
-          }
-          this.selectCardList[index].selected = true;
-        }
-      }
     }
   }
 </script>
