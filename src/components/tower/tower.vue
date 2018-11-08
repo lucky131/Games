@@ -16,24 +16,25 @@
         <div class="ope">
           <div class="option"
                v-for="(option, index) in allEvents[event].options"
-               :key="index" @click="chooseOption(event, index)">{{option.text}}</div>
+               :key="index"
+               @click="chooseOption(event, index)">{{option.text}}</div>
         </div>
       </div>
       <div class="right">
-        <div class="items"></div>
-        <div class="desc"></div>
+        <div class="items">
+          <img class="item"
+               v-for="item in characterData.item"
+               :key="item"
+               :src="allItems[item].img"
+               @mouseenter="mouseenterItem(item)"
+               @mouseout="mouseoutItem()">
+        </div>
+        <div class="desc">{{displayItemId === 0 ? '' : allItems[displayItemId].name + '：' + allItems[displayItemId].desc}}</div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped lang="scss">
-  .cardUI{
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 5px 5px 20px rgba(0,0,0,.2);
-  }
-</style>
 <style scoped lang="scss">
   .wrap{
     width: 100vw;
@@ -145,8 +146,23 @@
         .items{
           width: 100%;
           height: 500px;
+          padding-bottom: 20px;
+          box-sizing: border-box;
           border-bottom: 1px solid #ccc;
           overflow-y: auto;
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: flex-start;
+          align-content: flex-start;
+          img.item{
+            width: 72px;
+            height: 72px;
+            margin: 20px 0 0 20px;
+            cursor: pointer;
+            &:hover{
+              background-color: #ccc;
+            }
+          }
         }
         .desc{
           width: 100%;
@@ -163,6 +179,7 @@
 
 <script>
   import event from "./event"
+  import item from "./item"
   export default {
     name: "tower",
     data(){
@@ -171,9 +188,10 @@
         characterData: {},
         events: [],
         event: null,
+        displayItemId: 0,
       }
     },
-    mixins: [event],
+    mixins: [event, item],
     mounted(){
 
     },
@@ -186,7 +204,8 @@
           greed: 10,
           item: []
         };
-        this.addEvents([0]);
+        this.addEvents(0);
+        this.gainItem(10);
         this.draw();
       },
       draw(){
@@ -263,21 +282,25 @@
           }
 
           //添加事件
-          this.addEvents(events);
+          this.addEvents(...events);
         }
       },
-      gainItem(id){
-        if(this.characterData.item.indexOf(id) === -1){
-          this.characterData.item.push(id);
+      gainItem(...ids){
+        for(let id of ids){
+          if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
+            this.characterData.item.push(id);
+          }
         }
       },
-      dropItem(id){
-        let index = this.characterData.item.indexOf(id);
-        if(index > -1){
-          this.characterData.item.splice(index, 1);
+      dropItem(...ids){
+        for(let id of ids){
+          let index = this.characterData.item.indexOf(id);
+          if(index > -1){
+            this.characterData.item.splice(index, 1);
+          }
         }
       },
-      addEvents(events){
+      addEvents(...events){
         for(let event of events){
           if(typeof event === "number"){
             //单个数字，表示单个事件，直接加入
@@ -298,6 +321,12 @@
             }
           }
         }
+      },
+      mouseenterItem(itemId){
+        this.displayItemId = itemId;
+      },
+      mouseoutItem(){
+        this.displayItemId = 0;
       }
     }
   }

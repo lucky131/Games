@@ -11,7 +11,7 @@ export default {
               nextEvent: 1
             }
           ],
-          once: false,
+          once: true
         },
         1: {
           id: 1,
@@ -19,7 +19,7 @@ export default {
           options: [
             {
               text: "点我",
-              result: [[5,0,0],[],[]],
+              result: [[5,0,0],[],[]]
             },
             {
               text: "点我吧",
@@ -30,7 +30,28 @@ export default {
               result: [[0,0,5],[],[]]
             }
           ],
-          result: [[],[],[]],
+          result: [[],[],[[2,3]]],
+        },
+        2: {
+          id: 2,
+          desc: "前方走来一位黑衣男子，看不清他的脸，上前打听，只知道他叫杠三杠，说完他就不见了...",
+          options: [
+            {
+              text: "...",
+              result: [[1,1,1],[],[]]
+            }
+          ],
+          once: true
+        },
+        3: {
+          id: 3,
+          desc: "你被雷劈了",
+          options: [
+            {
+              text: "...",
+              result: [[1,0,-1],[],[]]
+            }
+          ]
         },
         10086: {
           id: 10086,
