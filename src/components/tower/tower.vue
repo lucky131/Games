@@ -17,6 +17,7 @@
           <div class="option"
                v-for="(option, index) in allEvents[event].options"
                :key="index"
+               v-if="judgeCondition(allEvents[event].options[index].condition)"
                @click="chooseOption(event, index)">{{option.text}}</div>
         </div>
       </div>
@@ -185,7 +186,12 @@
     data(){
       return{
         UIController: "menu",
-        characterData: {},
+        characterData: {
+          wrath: 0,
+          envy: 0,
+          greed: 0,
+          item: []
+        },
         events: [],
         event: null,
         displayItemId: 0,
@@ -198,12 +204,8 @@
     methods: {
       initGame(){
         this.UIController = "normal";
-        this.characterData = {
-          wrath: 10,
-          envy: 10,
-          greed: 10,
-          item: []
-        };
+        this.characterData.item = [];
+        this.setAttr(30,30,30);
         this.addEvents(0);
         this.gainItem(10);
         this.draw();
@@ -231,9 +233,9 @@
         }
 
         //处理下一张
-        if(this.allEvents[id].options[index].nextEvent){
+        if(this.allEvents[id].options[index].next){
           //如果指定下一张
-          this.event = this.allEvents[id].options[index].nextEvent;
+          this.event = this.allEvents[id].options[index].next;
         } else {
           //否则随机抽
           this.draw();
@@ -285,6 +287,14 @@
           this.addEvents(...events);
         }
       },
+      setAttr(wrath, envy, greed){
+        if(wrath !== null)
+          this.characterData.wrath = wrath;
+        if(envy !== null)
+          this.characterData.envy = envy;
+        if(greed !== null)
+          this.characterData.greed = greed;
+      },
       gainItem(...ids){
         for(let id of ids){
           if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
@@ -304,23 +314,27 @@
         for(let event of events){
           if(typeof event === "number"){
             //单个数字，表示单个事件，直接加入
-            this.events.push(event);
+            this.addOneEvent(event);
           } else if(typeof event === "object"){
             //如果为数组，先判断其长度，为1或2
             if(event.length === 1){
               //若长度为1，则为单个事件，直接加入
-              this.events.push(event[0]);
+              this.addOneEvent(event[0]);
             } else if(event.length === 2){
               //若长度为2，则表示事件范围
               let min = event[0], max = event[1];
               for(let i = min; i <= max; i++){
                 if(this.allEvents[i]){
-                  this.events.push(i);
+                  this.addOneEvent(i);
                 }
               }
             }
           }
         }
+      },
+      addOneEvent(eventId){
+        if(this.events.indexOf(eventId) === -1)
+          this.events.push(eventId);
       },
       mouseenterItem(itemId){
         this.displayItemId = itemId;

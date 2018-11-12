@@ -8,10 +8,10 @@ export default {
           options: [
             {
               text: "...",
-              nextEvent: 1
+              next: 1
             }
           ],
-          once: true
+          once: false
         },
         1: {
           id: 1,
@@ -30,21 +30,41 @@ export default {
               result: [[0,0,5],[],[]]
             }
           ],
-          result: [[],[],[[2,3]]],
+          result: [[],[],[10]],
         },
-        2: {
-          id: 2,
-          desc: "前方走来一位黑衣男子，看不清他的脸，上前打听，只知道他叫杠三杠，说完他就不见了...",
+        10: {
+          id: 10,
+          desc: "前方是一座城堡废墟，看起来已经废弃了很久，杂草丛生，丝毫没有人类活动的痕迹，这里曾经是幸运三杠的地盘，不知道发生了什么，变成如此一番景象",
           options: [
             {
-              text: "...",
-              result: [[1,1,1],[],[]]
+              text: "走近看看",
+              result: [[0,-5,0],[],[]],
+              next: 11
+            },
+            {
+              text: "就此离开",
+              result: [[],[],[]]
             }
           ],
           once: true
         },
-        3: {
-          id: 3,
+        11: {
+          id: 11,
+          desc: "翻开当在路上的石头，前面似乎是主殿的残骸，关于这个幸运三杠，民间流传着很多传说，有的人说他的城堡里藏着很多宝藏",
+          options: [
+            {
+              text: "试着找找看",
+              result: [[-5,0,20],[11],[]],
+            },
+            {
+              text: "就此离开",
+              result: [[],[],[]]
+            }
+          ],
+          once: true
+        },
+        333: {
+          id: 333,
           desc: "你被雷劈了",
           options: [
             {
@@ -56,10 +76,10 @@ export default {
         10086: {
           id: 10086,
           desc: `
-          wrath 愤怒 war    战争 红马 大刀
-          envy  嫉妒 plague 瘟疫 白马 弓和皇冠
-          greed 贪婪 famine 饥荒 黑马 天平
-          ???   ？？ death  死亡 灰绿 镰刀？
+          wrath | 愤怒 | war    | 战争 | 红马 | 大刀
+          envy  | 嫉妒 | plague | 瘟疫 | 白马 | 弓和皇冠
+          greed | 贪婪 | famine | 饥荒 | 黑马 | 天平
+          ???   | ？？ | death  | 死亡 | 灰绿 | 镰刀？
           `,
           condition: [[10,20,30],[1,233]],
           options: [
