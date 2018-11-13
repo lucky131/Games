@@ -114,6 +114,7 @@
           box-sizing: border-box;
           overflow-y: auto;
           font-size: 20px;
+          white-space: pre-wrap;
         }
         .ope{
           width: 100%;
@@ -123,6 +124,7 @@
           .option{
             flex: 1 0 0;
             height: 100%;
+            padding: 0 10px;
             border-left: 1px solid #ccc;
             &:first-child{border-left: none}
             background-color: white;
@@ -172,6 +174,7 @@
           box-sizing: border-box;
           overflow-y: auto;
           font-size: 20px;
+          white-space: pre-wrap;
         }
       }
     }
@@ -211,10 +214,10 @@
         this.draw();
       },
       draw(){
-        let len = this.events.length, randIndex;
+        let len = this.events.length, randIndex, last = this.event;
         do{
           randIndex = Math.floor(Math.random() * len);
-        } while(!this.judgeCondition(this.allEvents[this.events[randIndex]].condition));
+        } while(!this.judgeCondition(this.allEvents[this.events[randIndex]].condition) || this.events[randIndex] === last);
         this.event = this.events[randIndex];
       },
       chooseOption(id, index){
@@ -324,16 +327,15 @@
               //若长度为2，则表示事件范围
               let min = event[0], max = event[1];
               for(let i = min; i <= max; i++){
-                if(this.allEvents[i]){
-                  this.addOneEvent(i);
-                }
+                this.addOneEvent(i);
               }
             }
           }
         }
       },
       addOneEvent(eventId){
-        if(this.events.indexOf(eventId) === -1)
+        //保证事件库里有此事件 且 事件池里的事件不重复
+        if(this.allEvents[eventId] && this.events.indexOf(eventId) === -1)
           this.events.push(eventId);
       },
       mouseenterItem(itemId){
