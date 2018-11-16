@@ -8,9 +8,9 @@
     <div v-else-if="UIController==='normal'" class="normalUI">
       <div class="left">
         <div class="stat">
-          <div class="ball wrath" :style="{opacity: characterData.wrath/100, animationDuration: 5200-50*characterData.wrath+'ms'}"></div>
-          <div class="ball envy" :style="{opacity: characterData.envy/100, animationDuration: 5200-50*characterData.envy+'ms'}"></div>
-          <div class="ball greed" :style="{opacity: characterData.greed/100, animationDuration: 5200-50*characterData.greed+'ms'}"></div>
+          <div class="ball wrath" :style="{opacity: characterData.wrath/100, animationDuration: Math.max(200, 5200-50*characterData.wrath)+'ms'}"></div>
+          <div class="ball envy" :style="{opacity: characterData.envy/100, animationDuration: Math.max(200, 5200-50*characterData.envy)+'ms'}"></div>
+          <div class="ball greed" :style="{opacity: characterData.greed/100, animationDuration: Math.max(200, 5200-50*characterData.greed)+'ms'}"></div>
         </div>
         <div class="main">{{allEvents[event].desc}}</div>
         <div class="ope">
@@ -207,10 +207,12 @@
     methods: {
       initGame(){
         this.UIController = "normal";
-        this.characterData.item = [];
         this.setAttr(30,30,30);
-        this.addEvents(0);
+        this.characterData.item = [];
         this.gainItem(10);
+        this.event = null;
+        this.events = [];
+        this.addEvents(0);
         this.draw();
       },
       draw(){
@@ -221,11 +223,38 @@
         this.event = this.events[randIndex];
       },
       chooseOption(id, index){
+        //死亡事件
+        if([2,3,4,5,6,7].indexOf(this.event) > -1){
+          this.initGame();
+          return;
+        }
+
         //处理result
         this.handleResult(this.allEvents[id].options[index].result);
         this.handleResult(this.allEvents[id].result);
         eval(this.allEvents[id].options[index].eval);
         eval(this.allEvents[id].eval);
+
+        //判断是否死亡
+        if(this.characterData.wrath <= 0){
+          this.event = 2;
+          return;
+        } else if(this.characterData.envy <= 0){
+          this.event = 3;
+          return;
+        } else if(this.characterData.greed <= 0){
+          this.event = 4;
+          return;
+        } else if(this.characterData.wrath > 100){
+          this.event = 5;
+          return;
+        } else if(this.characterData.envy > 100){
+          this.event = 6;
+          return;
+        } else if(this.characterData.greed > 100){
+          this.event = 7;
+          return;
+        }
 
         //处理once
         if(this.allEvents[id].once){
