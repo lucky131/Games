@@ -205,6 +205,14 @@
 
     },
     methods: {
+      message(text){
+        this.$message({
+          message: text,
+          type: "success",
+          duration: 2000,
+          showClose: false
+        });
+      },
       initGame(){
         this.UIController = "normal";
         this.setAttr(30,30,30);
@@ -327,19 +335,15 @@
         if(greed !== null)
           this.characterData.greed = greed;
       },
-      gainItem(...ids){
-        for(let id of ids){
-          if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
-            this.characterData.item.push(id);
-          }
+      gainItem(id){
+        if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
+          this.characterData.item.push(id);
         }
       },
-      dropItem(...ids){
-        for(let id of ids){
-          let index = this.characterData.item.indexOf(id);
-          if(index > -1){
-            this.characterData.item.splice(index, 1);
-          }
+      dropItem(id){
+        let index = this.characterData.item.indexOf(id);
+        if(index > -1){
+          this.characterData.item.splice(index, 1);
         }
       },
       addEvents(...events){
