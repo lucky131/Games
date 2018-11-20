@@ -335,6 +335,14 @@
         if(greed !== null)
           this.characterData.greed = greed;
       },
+      changeAttr(wrath, envy, greed){
+        if(wrath !== null)
+          this.characterData.wrath += wrath;
+        if(envy !== null)
+          this.characterData.envy += envy;
+        if(greed !== null)
+          this.characterData.greed += greed;
+      },
       gainItem(id){
         if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
           this.characterData.item.push(id);
@@ -367,8 +375,8 @@
         }
       },
       addOneEvent(eventId){
-        //保证事件库里有此事件 且 事件池里的事件不重复
-        if(this.allEvents[eventId] && this.events.indexOf(eventId) === -1)
+        //保证事件库里有此事件 且 此事件为非禁用 且 事件池里的事件不重复
+        if(this.allEvents[eventId] && !this.allEvents[eventId].disabled && this.events.indexOf(eventId) === -1)
           this.events.push(eventId);
       },
       mouseenterItem(itemId){
