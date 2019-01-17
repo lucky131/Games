@@ -14,6 +14,7 @@ import graduate from "../components/graduate/graduate"
 import eco from "../components/eco/eco"
 import cssDraw from "../components/cssDraw/cssDraw"
 import tower from "../components/tower/tower"
+import ccc from "../components/ccc/ccc"
 
 Vue.use(Router)
 
@@ -83,6 +84,11 @@ export default new Router({
       path: "/tower",
       name: "tower",
       component: tower
+    },
+    {
+      path: "/ccc",
+      name: "ccc",
+      component: ccc
     },
   ]
 })

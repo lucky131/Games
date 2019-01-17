@@ -141,7 +141,7 @@ export default {
         {
           name: "地形生成器",
           path: "/eco",
-          desc: "自主研发，开发中...",
+          desc: "自主研发，已搁浅",
           color: "#6285ff",
           mobile: false,
         },
@@ -153,12 +153,19 @@ export default {
           mobile: true,
         },
         {
-          name: "？",
+          name: "三灾",
           path: "/tower",
-          desc: "？？？",
+          desc: "文字冒险游戏，开发中...",
           color: "#ff8161",
           mobile: false,
         },
+        {
+          name: "ccc专用小工具",
+          path: "/ccc",
+          desc: "ccc专用小工具",
+          color: "#ff4967",
+          mobile: false,
+        }
       ]
     }
   },
