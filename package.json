@@ -11,6 +11,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "clipboard": "^2.0.4",
     "echarts": "^4.1.0",
     "element-ui": "^2.4.3",
     "jquery": "^3.3.1",
