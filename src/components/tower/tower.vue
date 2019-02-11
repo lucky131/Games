@@ -1,38 +1,61 @@
 <template>
   <div class="wrap">
+
     <div v-if="UIController==='menu'" class="menuUI">
       <div class="logo">没起名v1.0</div>
       <div class="menuBtn" @click="initGame()">Start</div>
       <div class="menuBtn">Load</div>
     </div>
+
     <div v-else-if="UIController==='normal'" class="normalUI">
-      <div class="left">
-        <div class="stat">
-          <div class="ball wrath" :style="{opacity: characterData.wrath/100, animationDuration: Math.max(200, 5200-50*characterData.wrath)+'ms'}"></div>
-          <div class="ball envy" :style="{opacity: characterData.envy/100, animationDuration: Math.max(200, 5200-50*characterData.envy)+'ms'}"></div>
-          <div class="ball greed" :style="{opacity: characterData.greed/100, animationDuration: Math.max(200, 5200-50*characterData.greed)+'ms'}"></div>
-        </div>
-        <div class="main">{{allEvents[event].desc}}</div>
-        <div class="ope">
-          <div class="option"
-               v-for="(option, index) in allEvents[event].options"
-               :key="index"
-               v-if="judgeCondition(allEvents[event].options[index].condition)"
-               @click="chooseOption(event, index)">{{option.text}}</div>
-        </div>
+      <div class="stat">
+        <div class="ball wrath" :style="{opacity: characterData.wrath/100, animationDuration: Math.max(200, 5200-50*characterData.wrath)+'ms'}"></div>
+        <div class="ball envy" :style="{opacity: characterData.envy/100, animationDuration: Math.max(200, 5200-50*characterData.envy)+'ms'}"></div>
+        <div class="ball greed" :style="{opacity: characterData.greed/100, animationDuration: Math.max(200, 5200-50*characterData.greed)+'ms'}"></div>
       </div>
-      <div class="right">
-        <div class="items">
-          <img class="item"
-               v-for="item in characterData.item"
-               :key="item"
-               :src="allItems[item].img"
-               @mouseenter="mouseenterItem(item)"
-               @mouseout="mouseoutItem()">
+      <div class="main">{{allEvents[event].desc}}</div>
+      <div class="ope">
+        <div class="option"
+             v-for="(option, index) in allEvents[event].options"
+             :key="index"
+             v-if="judgeCondition(allEvents[event].options[index].condition)"
+             @click="chooseOption(event, index)">{{option.text}}</div>
+      </div>
+      <div class="menuBar">
+        <div class="menuBarBtn" @click="UIController='bag'">
+          <i class="el-icon-goods"></i>
+          <span>背包</span>
         </div>
-        <div class="desc">{{displayItemId === 0 ? '' : allItems[displayItemId].name + '：' + allItems[displayItemId].desc}}</div>
+        <div class="menuBarBtn">
+          <i class="el-icon-setting"></i>
+          <span>系统</span>
+        </div>
       </div>
     </div>
+
+    <div v-else-if="UIController==='bag'" class="bagUI">
+      <div class="items">
+        <!--<img class="item"-->
+             <!--v-for="item in characterData.item"-->
+             <!--:key="item"-->
+             <!--:src="allItems[item].img"-->
+             <!--@mouseenter="mouseenterItem(item)"-->
+             <!--@mouseout="mouseoutItem()">-->
+        <img :class="{item: true, display: displayItemId===item}"
+             v-for="item in characterData.item"
+             :key="item"
+             :src="allItems[item].img"
+             @click="displayItemId=item">
+      </div>
+      <div class="desc">{{displayItemId === 0 ? '' : allItems[displayItemId].name + '：' + allItems[displayItemId].desc}}</div>
+      <div class="backRow" @click="UIController='normal'">
+        <div class="btn">
+          <i class="el-icon-back"></i>
+          <span>返回</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -75,106 +98,146 @@
       }
     }
     .normalUI{
+      width: 100%;
+      height: 100%;
       display: flex;
-      flex-flow: row nowrap;
-      border: 1px solid #ccc;
-      .left{
-        width: 500px;
-        .stat{
-          width: 100%;
-          height: 100px;
-          border-bottom: 1px solid #ccc;
-          display: flex;
-          flex-flow: row nowrap;
-          justify-content: space-around;
-          align-items: center;
-          .ball{
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            &.wrath{background-color: #ff442a}
-            &.envy{background-color: #b419a8}
-            &.greed{background-color: #233be8}
-            animation: ball ease-in-out infinite alternate;
-            @keyframes ball {
-              from{
-                transform: scale(1);
-              }
-              to{
-                transform: scale(1.15);
-              }
+      flex-flow: column nowrap;
+      .stat{
+        width: 100%;
+        height: 100px;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-around;
+        align-items: center;
+        .ball{
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          &.wrath{background-color: #ff442a}
+          &.envy{background-color: #b419a8}
+          &.greed{background-color: #233be8}
+          animation: ball ease-in-out infinite alternate;
+          @keyframes ball {
+            from{
+              transform: scale(1);
             }
-          }
-        }
-        .main{
-          width: 100%;
-          height: 500px;
-          padding: 10px;
-          border-bottom: 1px solid #ccc;
-          box-sizing: border-box;
-          overflow-y: auto;
-          font-size: 20px;
-          white-space: pre-wrap;
-        }
-        .ope{
-          width: 100%;
-          height: 150px;
-          display: flex;
-          flex-flow: row nowrap;
-          .option{
-            flex: 1 0 0;
-            height: 100%;
-            padding: 0 10px;
-            border-left: 1px solid #ccc;
-            &:first-child{border-left: none}
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: black;
-            font-size: 20px;
-            cursor: pointer;
-            transition: color, background-color 200ms;
-            &:hover{
-              background-color: black;
-              color: white;
+            to{
+              transform: scale(1.15);
             }
           }
         }
       }
-      .right{
-        width: 500px;
-        border-left: 1px solid #ccc;
-        .items{
+      .main{
+        width: 100%;
+        flex: 1 0 0;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        box-sizing: border-box;
+        overflow-y: auto;
+        font-size: 20px;
+        white-space: pre-wrap;
+      }
+      .ope{
+        width: 100%;
+        .option{
           width: 100%;
-          height: 500px;
-          padding-bottom: 20px;
-          box-sizing: border-box;
+          height: 60px;
+          padding: 0 10px;
           border-bottom: 1px solid #ccc;
-          overflow-y: auto;
+          background-color: white;
           display: flex;
-          flex-flow: row wrap;
-          justify-content: flex-start;
-          align-content: flex-start;
-          img.item{
-            width: 72px;
-            height: 72px;
-            margin: 20px 0 0 20px;
-            cursor: pointer;
-            &:hover{
-              background-color: #ccc;
-            }
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          color: black;
+          font-size: 20px;
+          cursor: pointer;
+          transition: color, background-color 200ms;
+          &:hover{
+            background-color: black;
+            color: white;
           }
         }
-        .desc{
-          width: 100%;
-          height: 250px;
-          padding: 10px;
-          box-sizing: border-box;
-          overflow-y: auto;
-          font-size: 20px;
-          white-space: pre-wrap;
+      }
+      .menuBar{
+        width: 100%;
+        height: 100px;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-around;
+        align-items: center;
+        .menuBarBtn{
+          width: 100px;
+          height: 100px;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          i{
+            font-size: 32px;
+            margin-bottom: 10px;
+          }
+        }
+      }
+    }
+    .bagUI{
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-flow: column nowrap;
+      .items{
+        width: 100%;
+        height: 400px;
+        padding-bottom: 20px;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ccc;
+        overflow-y: auto;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-content: flex-start;
+        img.item{
+          width: 72px;
+          height: 72px;
+          margin: 20px 0 0 20px;
+          cursor: pointer;
+          /*&:hover{*/
+            /*background-color: #ccc;*/
+          /*}*/
+          &.display{
+            background-color: #ccc;
+          }
+        }
+      }
+      .desc{
+        width: 100%;
+        flex: 1 0 0;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        box-sizing: border-box;
+        overflow-y: auto;
+        font-size: 20px;
+        white-space: pre-wrap;
+      }
+      .backRow{
+        width: 100%;
+        height: 100px;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-around;
+        align-items: center;
+        .btn{
+          width: 100px;
+          height: 100px;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          i{
+            font-size: 32px;
+            margin-bottom: 10px;
+          }
         }
       }
     }
@@ -218,6 +281,8 @@
         this.setAttr(30,30,30);
         this.characterData.item = [];
         this.gainItem(10);
+        this.gainItem(404);
+        this.gainItem(405);
         this.event = null;
         this.events = [];
         this.addEvents(0);
