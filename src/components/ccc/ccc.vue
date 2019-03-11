@@ -3,6 +3,8 @@
     <div class="title">Little Tools by -3-
       <el-tooltip placement="bottom">
         <div slot="content">
+          v1.2<br>
+          新增第二tab页<br>
           v1.1<br>
           清空<br>
           复制到剪切板<br>
@@ -10,24 +12,42 @@
           v1.0<br>
           第一版
         </div>
-        <span>v1.1</span>
+        <span>v1.2</span>
       </el-tooltip>
     </div>
-    <el-input
-      type="textarea"
-      :rows="10"
-      resize="none"
-      placeholder="请粘贴html"
-      v-model="inputHtml">
-    </el-input>
+    <el-tabs type="border-card">
+      <el-tab-pane label="1">
+        <el-input
+          type="textarea"
+          :rows="10"
+          resize="none"
+          placeholder="请粘贴html：div.tbody"
+          v-model="inputHtml1">
+        </el-input>
+        <div class="opeBtns">
+          <el-button type="primary" icon="el-icon-refresh" @click="transform1()">转换</el-button>
+          <el-button type="default" icon="el-icon-close" @click="clear1()">清空</el-button>
+          <el-button v-if="isCopyBtn1Show" class="copyBtn" type="success" icon="el-icon-share" data-clipboard-target="#result1">复制结果</el-button>
+        </div>
+        <div id="result1" class="result"></div>
+      </el-tab-pane>
 
-    <div class="opeBtns">
-      <el-button type="primary" icon="el-icon-refresh" @click="transform()">转换</el-button>
-      <el-button type="default" icon="el-icon-close" @click="clear()">清空</el-button>
-      <el-button v-if="isCopyBtnShow" class="copyBtn" type="success" icon="el-icon-share" data-clipboard-target="#result">复制结果</el-button>
-    </div>
-
-    <div id="result" class="result"></div>
+      <el-tab-pane label="2">
+        <el-input
+          type="textarea"
+          :rows="10"
+          resize="none"
+          placeholder="请粘贴html：div.tabs-content"
+          v-model="inputHtml2">
+        </el-input>
+        <div class="opeBtns">
+          <el-button type="primary" icon="el-icon-refresh" @click="transform2()">转换</el-button>
+          <el-button type="default" icon="el-icon-close" @click="clear2()">清空</el-button>
+          <el-button v-if="isCopyBtn2Show" class="copyBtn" type="success" icon="el-icon-share" data-clipboard-target="#result2">复制结果</el-button>
+        </div>
+        <div id="result2" class="result"></div>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -62,8 +82,10 @@
     name: "ccc",
     data(){
       return{
-        inputHtml: "",
-        isCopyBtnShow: false,
+        inputHtml1: "",
+        isCopyBtn1Show: false,
+        inputHtml2: "",
+        isCopyBtn2Show: false,
       }
     },
     created(){
@@ -88,14 +110,14 @@
       });
     },
     methods: {
-      transform(){
-        if(this.inputHtml.length === 0){
+      transform1(){
+        if(this.inputHtml1.length === 0){
           this.$message({
             message: '内容不能为空',
             type: 'error'
           });
         } else {
-          let dom = $("<div></div>").append($(this.inputHtml));
+          let dom = $("<div></div>").append($(this.inputHtml1));
           if(dom.find("div.tbody").length === 0){
             this.$message({
               message: '找不到div.tbody',
@@ -116,23 +138,60 @@
               }
               appendTableDom.append(appendTrDom);
             }
-            $("#result").empty();
-            $("#result").append(appendTableDom);
-            this.isCopyBtnShow = true;
+            $("#result1").empty();
+            $("#result1").append(appendTableDom);
+            this.isCopyBtn1Show = true;
           }
         }
       },
-      clear(){
-        this.inputHtml = "";
-        this.isCopyBtnShow = false;
-        $("#result").empty();
+      clear1(){
+        this.inputHtml1 = "";
+        this.isCopyBtn1Show = false;
+        $("#result1").empty();
       },
-      // copy(){
-      //   let dom = document.getElementById("result"); // 选择对象
-      //   console.log(dom);
-      //   document.execCommand("Copy"); // 执行浏览器复制命令
-      //   this.$alert("复制成功");
-      // }
+      transform2(){
+        if(this.inputHtml2.length === 0){
+          this.$message({
+            message: '内容不能为空',
+            type: 'error'
+          });
+        } else {
+          let dom = $("<div></div>").append($(this.inputHtml2));
+          if(dom.find("div.tabs-content").length === 0){
+            this.$message({
+              message: '找不到div.tabs-content',
+              type: 'error'
+            });
+          } else {
+            let tbodyDom = dom.find("div.tab-content.show > table > tbody");
+            let appendTableDom = $("<table border='1' cellpadding='5' cellspacing='0'><thead><tr><td>Rank</td><td>Name</td><td>Nationality</td><td>Points</td><td>Earnings</td></tr></thead></table>");
+            let rowNum = tbodyDom.children("tr").length;
+            let rank = 1, src, index1, index2, nation, names, points, earnings;
+            for(let i = 0; i < rowNum; i++){
+              let rowDom = tbodyDom.children("tr").eq(i);
+              rank = rowDom.children("td").eq(0).text().trim() || rank;
+              src = rowDom.children("td").eq(1).children("img").eq(0).attr("src");
+              index1 = src.indexOf("flag_");
+              index2 = src.indexOf(".png");
+              nation = src.substring(index1+5, index2).toUpperCase();
+              names = rowDom.children("td").eq(1).children("a").eq(0).text().trim();
+              points = rowDom.children("td").eq(2).text().trim();
+              earnings = rowDom.children("td").eq(3).text().trim();
+
+              appendTableDom.append(`<tr><td>${rank}</td><td>${names.split("/")[0]}</td><td>${nation}</td><td>${points}</td><td>${earnings}</td></tr>`);
+              appendTableDom.append(`<tr><td>${rank}</td><td>${names.split("/")[1]}</td><td>${nation}</td><td>${points}</td><td>${earnings}</td></tr>`);
+            }
+            $("#result2").empty();
+            $("#result2").append(appendTableDom);
+            this.isCopyBtn2Show = true;
+          }
+        }
+      },
+      clear2(){
+        this.inputHtml2 = "";
+        this.isCopyBtn2Show = false;
+        $("#result2").empty();
+      },
     }
   }
 </script>
