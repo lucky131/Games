@@ -26,7 +26,7 @@
           <i class="el-icon-goods"></i>
           <span>背包</span>
         </div>
-        <div class="menuBarBtn">
+        <div class="menuBarBtn" @click="UIController='system'">
           <i class="el-icon-setting"></i>
           <span>系统</span>
         </div>
@@ -35,12 +35,6 @@
 
     <div v-else-if="UIController==='bag'" class="bagUI">
       <div class="items">
-        <!--<img class="item"-->
-             <!--v-for="item in characterData.item"-->
-             <!--:key="item"-->
-             <!--:src="allItems[item].img"-->
-             <!--@mouseenter="mouseenterItem(item)"-->
-             <!--@mouseout="mouseoutItem()">-->
         <img :class="{item: true, display: displayItemId===item}"
              v-for="item in characterData.item"
              :key="item"
@@ -48,6 +42,18 @@
              @click="displayItemId=item">
       </div>
       <div class="desc">{{displayItemId === 0 ? '' : allItems[displayItemId].name + '：' + allItems[displayItemId].desc}}</div>
+      <div class="backRow" @click="UIController='normal'">
+        <div class="btn">
+          <i class="el-icon-back"></i>
+          <span>返回</span>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="UIController==='system'" class="systemUI">
+      <div class="systems">
+
+      </div>
       <div class="backRow" @click="UIController='normal'">
         <div class="btn">
           <i class="el-icon-back"></i>
@@ -154,7 +160,7 @@
           font-size: 20px;
           cursor: pointer;
           transition: color, background-color 200ms;
-          &:hover{
+          &:active{
             background-color: black;
             color: white;
           }
@@ -241,6 +247,37 @@
         }
       }
     }
+    .systemUI{
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-flow: column nowrap;
+      .systems{
+        width: 100%;
+        flex: 1 0 0;
+        border-bottom: 1px solid #ccc;
+      }
+      .backRow{
+        width: 100%;
+        height: 100px;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-around;
+        align-items: center;
+        .btn{
+          width: 100px;
+          height: 100px;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          i{
+            font-size: 32px;
+            margin-bottom: 10px;
+          }
+        }
+      }
+    }
   }
 </style>
 
@@ -265,7 +302,7 @@
     },
     mixins: [event, item],
     mounted(){
-
+      window.vue = this;
     },
     methods: {
       message(text){
@@ -407,6 +444,26 @@
           this.characterData.envy += envy;
         if(greed !== null)
           this.characterData.greed += greed;
+      },
+      swapAttr(type){
+        let temp;
+        switch (type){
+          case 0:
+            temp = this.characterData.envy;
+            this.characterData.envy = this.characterData.greed;
+            this.characterData.greed = temp;
+            break;
+          case 1:
+            temp = this.characterData.wrath;
+            this.characterData.wrath = this.characterData.greed;
+            this.characterData.greed = temp;
+            break;
+          case 2:
+            temp = this.characterData.wrath;
+            this.characterData.wrath = this.characterData.envy;
+            this.characterData.envy = temp;
+            break;
+        }
       },
       gainItem(id){
         if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
