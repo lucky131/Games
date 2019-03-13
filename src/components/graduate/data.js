@@ -2,21 +2,19 @@ export default {
   data(){
     return{
       data_city: [
-        {name: '北京', value: 5, list:
+        {name: '北京', value: 4, list:
             [
               '秦江丹：读研',
               '严曦冉：读研',
               '刘勇：读研',
               'C+P：读研',
-              'lyh：不读研的我表示很紧张'
             ]
         },
         {name: '天津', value: 0, list: []},
-        {name: '上海', value: 4, list:
+        {name: '上海', value: 3, list:
             [
               '杨乐：卖车',
               '刘伟棠：读研',
-              '一凡：搬砖',
               '汤海贝：就业'
             ]
         },
@@ -39,11 +37,12 @@ export default {
               '李云：读研'
             ]
         },
-        {name: '浙江', value: 17, list:
+        {name: '浙江', value: 19, list:
             [
               '亦哲：进化中...',
               'cx：读研',
               '宇城：读研',
+              '一凡：搬砖',
               '夏琦琦：就业',
               '何菲：就业',
               '阿花：读研',
@@ -54,6 +53,7 @@ export default {
               '煎饼：读研',
               '徐欣韵：读研',
               '钟冰玲：造假药',
+              'lyh：程序猿',
               '叶庆龙：程序猿',
               '方惠玲：就业',
               '叶余晔：读研',
@@ -139,7 +139,7 @@ export default {
         {name: '虞诗雅', where: '广东深圳', what: '读博！'},
         {name: '梅子康', where: '', what: ''},
         {name: '陈加棚', where: '北京', what: '读研'},
-        {name: '李宇豪', where: '北京', what: '写代码'},
+        {name: '李宇豪', where: '浙江杭州', what: '写代码'},
         {name: '赖俊宇', where: '', what: ''},
         {name: '叶庆龙', where: '浙江杭州', what: '和上上条一样'},
         {name: '方惠玲', where: '浙江杭州', what: '就业'},

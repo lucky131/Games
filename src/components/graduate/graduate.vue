@@ -66,7 +66,7 @@
     },
     mixins: [allData],
     created(){
-      document.title = "最近更新9/10 16:22";
+      document.title = "最近更新3/13 13:57";
     },
     mounted(){
       window.vuethis = this;
@@ -76,7 +76,7 @@
       let echarts = require('echarts');
 
       this.$nextTick(() => {
-        let myChart1 = echarts.initGame(document.getElementById('map'));
+        let myChart1 = echarts.init(document.getElementById('map'));
         myChart1.setOption({
           title: {
             text: '地图可缩放 下面还有哦',
@@ -159,7 +159,7 @@
           }]
         });
 
-        let myChart3 = echarts.initGame(document.getElementById('pie'));
+        let myChart3 = echarts.init(document.getElementById('pie'));
         myChart3.setOption({
           title: {
             text: '读研 vs 就业',
@@ -281,7 +281,7 @@
         1. pc端浏览效果更佳哦ovo
         2. 海外的同学放在了南海诸岛，点不到只能说明你手指粗
         3. 这个页面比当年那个图片版本强多了吧233
-        4. 持续更新的哦，所以如果你的信息改变了就联系书记吧
+        4. 持续更新的哦，所以如果你的信息改变了就联系我吧
         5. 此页面没有彩蛋
         6. 广告位出租`);
       }
