@@ -2,19 +2,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import menu from "../components/gameMenu"
-import minesweeper from "../components/minesweeper/minesweeper"
-import snake from "../components/snake/snake"
-import color from "../components/color/color"
-import jump from "../components/jump/jump"
-import link from "../components/link/link"
-import picross from "../components/picross/picross"
-import digital from "../components/digital/digital"
-import wolf from "../components/wolf/wolf"
-import graduate from "../components/graduate/graduate"
-import eco from "../components/eco/eco"
-import cssDraw from "../components/cssDraw/cssDraw"
-import tower from "../components/tower/tower"
-import ccc from "../components/ccc/ccc"
 
 Vue.use(Router)
 
@@ -28,67 +15,67 @@ export default new Router({
     {
       path: "/minesweeper",
       name: "minesweeper",
-      component: minesweeper
+      component: resolve => require(['@/components/minesweeper/minesweeper'], resolve)
     },
     {
       path: "/snake",
       name: "snake",
-      component: snake
+      component: resolve => require(['@/components/snake/snake'], resolve)
     },
     {
       path: "/color",
       name: "color",
-      component: color
+      component: resolve => require(['@/components/color/color'], resolve)
     },
     {
       path: "/link",
       name: "link",
-      component: link
+      component: resolve => require(['@/components/link/link'], resolve)
     },
     {
       path: "/jump",
       name: "jump",
-      component: jump
+      component: resolve => require(['@/components/jump/jump'], resolve)
     },
     {
       path: "/picross",
       name: "picross",
-      component: picross
+      component: resolve => require(['@/components/picross/picross'], resolve)
     },
     {
       path: "/digital",
       name: "digital",
-      component: digital
+      component: resolve => require(['@/components/digital/digital'], resolve)
     },
     {
       path: "/wolf",
       name: "wolf",
-      component: wolf
+      component: resolve => require(['@/components/wolf/wolf'], resolve)
     },
     {
       path: "/graduate",
       name: "graduate",
-      component: graduate
+      component: resolve => require(['@/components/graduate/graduate'], resolve)
     },
     {
       path: "/eco",
       name: "eco",
-      component: eco
+      component: resolve => require(['@/components/eco/eco'], resolve)
     },
     {
       path: "/cssDraw",
       name: "cssDraw",
-      component: cssDraw
+      component: resolve => require(['@/components/cssDraw/cssDraw'], resolve)
     },
     {
       path: "/tower",
       name: "tower",
-      component: tower
+      component: resolve => require(['@/components/tower/tower'], resolve)
     },
     {
       path: "/ccc",
       name: "ccc",
-      component: ccc
+      component: resolve => require(['@/components/ccc/ccc'], resolve)
     },
   ]
 })
