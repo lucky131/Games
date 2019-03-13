@@ -92,7 +92,8 @@
           length: 1,
           positions: [],
         },
-        food: {row: 0, col: 0}
+        food: {row: 0, col: 0},
+        isDestroyed: false,
       }
     },
     mounted: function(){
@@ -110,6 +111,9 @@
           that.snake.direction = "right";
         }
       });
+    },
+    destroyed(){
+      this.isDestroyed = true;
     },
     methods: {
       start(){
@@ -155,6 +159,7 @@
         this.step();
       },
       step(){
+        if(this.isDestroyed) return;
         let headPosition = this.snake.positions[0];
         let nextPosition = {};
         let tailPosition = this.snake.positions[this.snake.length-1];
