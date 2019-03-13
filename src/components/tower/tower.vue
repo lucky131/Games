@@ -97,7 +97,7 @@
         font-size: 24px;
         cursor: pointer;
         transition: color, background-color 200ms;
-        &:hover{
+        &:active{
           background-color: black;
           color: white;
         }
@@ -298,6 +298,7 @@
         events: [],
         event: null,
         displayItemId: 0,
+        notifyPromise: Promise.resolve()
       }
     },
     mixins: [event, item],
@@ -313,13 +314,19 @@
           showClose: false
         });
       },
+      notify(msg) {
+        this.notifyPromise = this.notifyPromise.then(this.$nextTick).then(()=>{
+          this.$notify({
+            message: msg,
+            showClose: false,
+            duration: 1500,
+          });
+        });
+      },
       initGame(){
         this.UIController = "normal";
         this.setAttr(30,30,30);
         this.characterData.item = [];
-        this.gainItem(10);
-        this.gainItem(404);
-        this.gainItem(405);
         this.event = null;
         this.events = [];
         this.addEvents(0);
@@ -333,7 +340,7 @@
         this.event = this.events[randIndex];
       },
       chooseOption(id, index){
-        //死亡事件
+        //已触发死亡事件，直接重开
         if([2,3,4,5,6,7].indexOf(this.event) > -1){
           this.initGame();
           return;
@@ -468,12 +475,14 @@
       gainItem(id){
         if(this.characterData.item.indexOf(id) === -1 && this.allItems[id]){
           this.characterData.item.push(id);
+          this.notify('获得道具：' + this.allItems[id].name);
         }
       },
       dropItem(id){
         let index = this.characterData.item.indexOf(id);
         if(index > -1){
           this.characterData.item.splice(index, 1);
+          this.notify('丢失道具：' + this.allItems[id].name);
         }
       },
       addEvents(...events){
@@ -501,12 +510,6 @@
         if(this.allEvents[eventId] && !this.allEvents[eventId].disabled && this.events.indexOf(eventId) === -1)
           this.events.push(eventId);
       },
-      mouseenterItem(itemId){
-        this.displayItemId = itemId;
-      },
-      mouseoutItem(){
-        this.displayItemId = 0;
-      }
     }
   }
 </script>
