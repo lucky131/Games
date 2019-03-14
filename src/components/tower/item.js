@@ -20,6 +20,24 @@ export default {
           desc: "用龙玉锻造的黑色长刀，散发着五彩斑斓的黑色，拥有极强的威力",
           img: require("./img/default.png"),
         },
+        13: {
+          id: 13,
+          name: "苹果",
+          desc: "从医生那儿获得的苹果，用于给猎人治病，不知道有没有效果",
+          img: require("./img/default.png"),
+        },
+        14: {
+          id: 14,
+          name: "皇冠",
+          desc: "小丑用来扮演国王的道具",
+          img: require("./img/default.png"),
+        },
+        15: {
+          id: 15,
+          name: "弓",
+          desc: "猎人无法拿起的一把弓，不知道这当中是什么秘密",
+          img: require("./img/default.png"),
+        },
         404: {
           id: 404,
           name: "乌金长杵",

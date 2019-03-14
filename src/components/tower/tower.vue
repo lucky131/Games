@@ -329,6 +329,7 @@
         this.characterData.item = [];
         this.event = null;
         this.events = [];
+        this.displayItemId = 0;
         this.addEvents(0);
         this.draw();
       },
