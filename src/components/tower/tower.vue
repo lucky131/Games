@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap">
+  <div class="wrap" :style="{height: height + 'px'}">
 
     <div v-if="UIController==='menu'" class="menuUI">
       <div class="logo">没起名v1.0</div>
@@ -68,7 +68,6 @@
 <style scoped lang="scss">
   .wrap{
     width: 100vw;
-    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -288,6 +287,7 @@
     name: "tower",
     data(){
       return{
+        height: 0,
         UIController: "menu",
         characterData: {
           wrath: 0,
@@ -304,6 +304,8 @@
     mixins: [event, item],
     mounted(){
       window.vue = this;
+
+      this.height = window.innerHeight;
     },
     methods: {
       message(text){
