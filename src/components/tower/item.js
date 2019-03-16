@@ -38,6 +38,12 @@ export default {
           desc: "猎人无法拿起的一把弓，不知道这当中是什么秘密",
           img: require("./img/default.png"),
         },
+        16: {
+          id: 16,
+          name: "天平",
+          desc: "在果林里偶然发现的一个小型天平，似乎是谁不小心丢在了这里",
+          img: require("./img/default.png"),
+        },
         404: {
           id: 404,
           name: "乌金长杵",
