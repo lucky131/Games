@@ -344,8 +344,12 @@
         this.event = this.events[randIndex];
       },
       chooseOption(id, index){
-        //已触发死亡事件，直接重开
-        if([2,3,4,5,6,7].indexOf(this.event) > -1){
+        //已触发结局事件，直接重开
+        // if([2,3,4,5,6,7,237].indexOf(this.event) > -1){
+        //   this.initGame();
+        //   return;
+        // }
+        if(this.allEvents[id].ending){
           this.initGame();
           return;
         }
