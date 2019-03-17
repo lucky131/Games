@@ -22,7 +22,7 @@
              @click="chooseOption(event, index)">{{option.text}}</div>
       </div>
       <div class="menuBar">
-        <div class="menuBarBtn" @click="UIController='bag'">
+        <div class="menuBarBtn" @click="UIController='bag';displayItemId=0;">
           <i class="el-icon-goods"></i>
           <span>背包</span>
         </div>
@@ -150,6 +150,7 @@
           height: 60px;
           padding: 0 10px;
           border-bottom: 1px solid #ccc;
+          box-sizing: border-box;
           background-color: white;
           display: flex;
           align-items: center;
