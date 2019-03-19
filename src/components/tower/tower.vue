@@ -26,10 +26,10 @@
           <i class="el-icon-goods"></i>
           <span>背包</span>
         </div>
-        <div class="menuBarBtn" @click="UIController='system'">
-          <i class="el-icon-setting"></i>
-          <span>系统</span>
-        </div>
+        <!--<div class="menuBarBtn" @click="UIController='system'">-->
+          <!--<i class="el-icon-setting"></i>-->
+          <!--<span>系统</span>-->
+        <!--</div>-->
       </div>
     </div>
 
@@ -109,9 +109,8 @@
       display: flex;
       flex-flow: column nowrap;
       .stat{
-        height: 100px;
-        background-image: linear-gradient(#E4D2A9 70%, #c3a670);
-        /*background-color: #E4D2A9;*/
+        height: 80px;
+        background-image: linear-gradient(#dbc38c 70%, #c3a670);
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
@@ -137,20 +136,22 @@
       .main{
         flex: 1 0 0;
         background-color: #c3a670;
-        color: #37291b;
+        box-shadow: inset 0 0 20px #ab8a58;
+        color: #4b3d1c;
         margin: 10px 10px 0 10px;
         border-radius: 10px;
         padding: 16px;
         box-sizing: border-box;
         overflow-y: auto;
         font-size: 20px;
+        font-weight: bold;
         white-space: pre-wrap;
       }
       .ope{
         .option{
           height: 60px;
-          background-color: #91754a;
-          border: 6px double #63412e;
+          background-image: linear-gradient(-45deg, #91754a, #a5895e);
+          border: 6px double #755f41;
           border-radius: 10px;
           margin: 10px;
           padding: 0 10px;
@@ -160,12 +161,8 @@
           justify-content: center;
           text-align: center;
           color: #f4ccac;
-          text-shadow: 0px 0px 2px #2c180a,
-          2px 0px 2px #2c180a,
-          0px 2px 2px #2c180a,
-          -2px 0px 2px #2c180a,
-          0px -2px 2px #2c180a;
           font-size: 20px;
+          font-weight: bold;
           cursor: pointer;
           transition: color, background-color 200ms;
           &:active{
@@ -176,7 +173,7 @@
       }
       .menuBar{
         width: 100%;
-        height: 100px;
+        height: 80px;
         background-color: #755f41;
         display: flex;
         flex-flow: row nowrap;
@@ -184,7 +181,7 @@
         align-items: center;
         .menuBarBtn{
           width: 100px;
-          height: 100px;
+          height: 100%;
           color: #f4ccac;
           display: flex;
           flex-flow: column nowrap;
@@ -192,7 +189,7 @@
           align-items: center;
           i{
             font-size: 32px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
           }
         }
       }
@@ -200,6 +197,7 @@
     .bagUI{
       width: 100%;
       height: 100%;
+      background-color: #dbc38c;
       display: flex;
       flex-flow: column nowrap;
       .items{
@@ -207,52 +205,57 @@
         height: 400px;
         padding-bottom: 20px;
         box-sizing: border-box;
-        border-bottom: 1px solid #ccc;
         overflow-y: auto;
         display: flex;
         flex-flow: row wrap;
         justify-content: flex-start;
         align-content: flex-start;
         img.item{
-          width: 72px;
-          height: 72px;
+          width: 64px;
+          height: 64px;
+          background-color: #c3ab75;
           margin: 20px 0 0 20px;
+          border: 4px solid transparent;
           cursor: pointer;
-          /*&:hover{*/
-            /*background-color: #ccc;*/
-          /*}*/
           &.display{
-            background-color: #ccc;
+            background-color: #938055;
+            border: 4px solid #4b3d1c;
           }
         }
       }
       .desc{
-        width: 100%;
         flex: 1 0 0;
-        padding: 10px;
-        border-bottom: 1px solid #ccc;
+        background-color: #c3a670;
+        box-shadow: inset 0 0 20px #ab8a58;
+        color: #4b3d1c;
+        margin: 10px;
+        border-radius: 10px;
+        padding: 16px;
         box-sizing: border-box;
         overflow-y: auto;
         font-size: 20px;
+        font-weight: bold;
         white-space: pre-wrap;
       }
       .backRow{
         width: 100%;
-        height: 100px;
+        height: 80px;
+        background-color: #755f41;
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
         align-items: center;
         .btn{
           width: 100px;
-          height: 100px;
+          height: 100%;
+          color: #f4ccac;
           display: flex;
           flex-flow: column nowrap;
           justify-content: center;
           align-items: center;
           i{
             font-size: 32px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
           }
         }
       }
