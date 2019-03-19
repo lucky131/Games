@@ -105,12 +105,13 @@
     .normalUI{
       width: 100%;
       height: 100%;
+      background-color: #dbc38c;
       display: flex;
       flex-flow: column nowrap;
       .stat{
-        width: 100%;
         height: 100px;
-        border-bottom: 1px solid #ccc;
+        background-image: linear-gradient(#E4D2A9 70%, #c3a670);
+        /*background-color: #E4D2A9;*/
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
@@ -119,9 +120,9 @@
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          &.wrath{background-color: #ff442a}
-          &.envy{background-color: #b419a8}
-          &.greed{background-color: #233be8}
+          &.wrath{background-color: #ff2f28}
+          &.envy{background-color: #b41aa4}
+          &.greed{background-color: #2432e8}
           animation: ball ease-in-out infinite alternate;
           @keyframes ball {
             from{
@@ -134,29 +135,36 @@
         }
       }
       .main{
-        width: 100%;
         flex: 1 0 0;
-        padding: 10px;
-        border-bottom: 1px solid #ccc;
+        background-color: #c3a670;
+        color: #37291b;
+        margin: 10px 10px 0 10px;
+        border-radius: 10px;
+        padding: 16px;
         box-sizing: border-box;
         overflow-y: auto;
         font-size: 20px;
         white-space: pre-wrap;
       }
       .ope{
-        width: 100%;
         .option{
-          width: 100%;
           height: 60px;
+          background-color: #91754a;
+          border: 6px double #63412e;
+          border-radius: 10px;
+          margin: 10px;
           padding: 0 10px;
-          border-bottom: 1px solid #ccc;
           box-sizing: border-box;
-          background-color: white;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
-          color: black;
+          color: #f4ccac;
+          text-shadow: 0px 0px 2px #2c180a,
+          2px 0px 2px #2c180a,
+          0px 2px 2px #2c180a,
+          -2px 0px 2px #2c180a,
+          0px -2px 2px #2c180a;
           font-size: 20px;
           cursor: pointer;
           transition: color, background-color 200ms;
@@ -169,6 +177,7 @@
       .menuBar{
         width: 100%;
         height: 100px;
+        background-color: #755f41;
         display: flex;
         flex-flow: row nowrap;
         justify-content: space-around;
@@ -176,6 +185,7 @@
         .menuBarBtn{
           width: 100px;
           height: 100px;
+          color: #f4ccac;
           display: flex;
           flex-flow: column nowrap;
           justify-content: center;
