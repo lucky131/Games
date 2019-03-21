@@ -2,9 +2,9 @@
   <div class="wrap" :style="{height: height + 'px'}">
 
     <div v-if="UIController==='menu'" class="menuUI">
-      <div class="logo">没起名v1.0</div>
+      <div class="logo">三灾 <sub>v1.0</sub></div>
       <div class="menuBtn" @click="initGame()">Start</div>
-      <div class="menuBtn">Load</div>
+      <!--<div class="menuBtn">Load</div>-->
     </div>
 
     <div v-else-if="UIController==='normal'" class="normalUI">
@@ -72,12 +72,17 @@
     justify-content: center;
     align-items: center;
     .menuUI{
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(#ead298, #cdb57e);
       display: flex;
       flex-flow: column nowrap;
+      justify-content: center;
       align-items: center;
       .logo{
         width: 300px;
         margin-bottom: 20px;
+        color: #4b3d1c;
         font-size: 32px;
         text-align: center;
         font-weight: bold;
@@ -87,12 +92,12 @@
         width: 200px;
         height: 50px;
         margin-top: 20px;
-        background-color: white;
+        background-image: linear-gradient(-45deg, #91754a, #a5895e);
+        border: 6px double #755f41;
         border-radius: 10px;
-        border: 2px solid black;
         line-height: 50px;
         text-align: center;
-        color: black;
+        color: #f4ccac;
         font-size: 24px;
         cursor: pointer;
         transition: color, background-color 200ms;
