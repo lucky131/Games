@@ -1,6 +1,11 @@
 <template>
   <div id="content">
-    <div :class="{block: true, mobileBlock: isMobile}" v-if="!isMobile || item.mobile" v-for="item in gameList" :key="item.name" :style="{backgroundColor: item.color}" @click="goto(item.path)">
+    <div :class="{block: true, mobileBlock: isMobile}"
+         v-if="!isMobile || item.mobile"
+         v-for="item in gameList"
+         :key="item.name"
+         :style="{backgroundColor: item.color}"
+         @click="goto(item.path)">
       <div class="innerBlock">
         <div class="name">{{item.name}}</div>
         <div v-if="!isMobile" class="desc">{{item.desc}}</div>
