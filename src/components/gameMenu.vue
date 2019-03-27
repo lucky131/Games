@@ -163,9 +163,16 @@ export default {
           name: "ccc专用小工具",
           path: "/ccc",
           desc: "ccc专用小工具",
-          color: "#ff4967",
+          color: "#b75fff",
           mobile: false,
-        }
+        },
+        {
+          name: "Three.js",
+          path: "/three",
+          desc: "three.js练习页面",
+          color: "#38ff38",
+          mobile: false,
+        },
       ]
     }
   },

@@ -77,5 +77,10 @@ export default new Router({
       name: "ccc",
       component: resolve => require(['@/components/ccc/ccc'], resolve)
     },
+    {
+      path: "/three",
+      name: "three",
+      component: resolve => require(['@/components/three/three'], resolve)
+    },
   ]
 })
