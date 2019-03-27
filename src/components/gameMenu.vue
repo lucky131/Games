@@ -155,7 +155,7 @@ export default {
         {
           name: "三灾",
           path: "/tower",
-          desc: "移动端文字冒险游戏，开发中...",
+          desc: "移动端文字冒险游戏",
           color: "#ff8161",
           mobile: true,
         },
