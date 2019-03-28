@@ -42,7 +42,7 @@
       init () {
         let container = document.getElementById('container');
 
-        this.camera = new Three.PerspectiveCamera(70, 1000/800, 0.01, 10);
+        this.camera = new Three.PerspectiveCamera(70, 1000/800, 0.1, 10);
         // this.camera = new Three.OrthographicCamera(-5,5,4,-4, 0.01, 100);
         this.camera.position.set(2,2,2)
         this.camera.lookAt(0,0,0)
