@@ -5,14 +5,25 @@
     <div id="pie" class="block" :style="{height: height+'px'}"></div>
     <div id="gradient2" class="gradient"></div>
     <div id="table">
-      <el-table :data="data_person" stripe @row-click="rowClick"
+      <el-table :data="data" stripe @row-click="rowClick"
                 :header-cell-style='{textAlign: "center"}'
                 :cell-style='{textAlign: "center"}'>
         <el-table-column label="Who" prop="name"></el-table-column>
-        <el-table-column label="Where" prop="where"></el-table-column>
-        <el-table-column label="What" prop="what"></el-table-column>
+        <el-table-column label="Where">
+          <template slot-scope="scope">
+            <span v-if="scope.row.where">{{scope.row.where}}</span>
+            <span v-else class="red">暂无数据</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="What">
+          <template slot-scope="scope">
+            <span v-if="scope.row.what">{{scope.row.what}}</span>
+            <span v-else class="red">暂无数据</span>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
+    <div class="info">以上个人数据若有变更或者需要补充的，请联系lyh，祝早日团圆♥</div>
     <div class="footer">
       <span @click="showInfo()">— 下面没有了 —</span>
     </div>
@@ -32,6 +43,9 @@
       width: 100%;
       padding: 20px 10px 0;
       box-sizing: border-box;
+      .red{
+        color: red;
+      }
     }
     .gradient{
       width: 100%;
@@ -43,12 +57,20 @@
     #gradient2{
       background: linear-gradient(#aaa, #fff);
     }
+    .info{
+      margin: 40px 0 10px;
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+      font-weight: bold;
+    }
     .footer{
       text-align: center;
       font-size: 12px;
       font-weight: bold;
       color: #999;
-      margin: 40px auto 10px;
+      margin: 0 auto 10px;
+      cursor: pointer;
     }
   }
 </style>
@@ -155,7 +177,7 @@
                 label:{show:false}
               }
             },
-            data: this.data_city
+            data: this.getCityData()
           }]
         });
 
@@ -214,7 +236,7 @@
                   show: false
                 }
               },
-              data: this.data_pie,
+              data: this.getPieData(),
               itemStyle: {
                 emphasis: {
                   shadowBlur: 10,
@@ -228,6 +250,22 @@
       });
     },
     methods: {
+      getCityData(){
+        return this.whereMap.map((cityName, index) => {
+          let list = [];
+          this.data.forEach(n => {
+            if(n.whereIndex === index){
+              list.push(`${n.name}：${n.what}`);
+            }
+          });
+          return {name: cityName, value: list.length, list: list};
+        });
+      },
+      getPieData(){
+        return this.whatMap.map((whatName, index) => {
+          return {value: this.data.filter(n => n.whatIndex === index).length, name: whatName};
+        });
+      },
       rowClick(row){
         if(row.name === "李宇豪"){
           this.egg++;
