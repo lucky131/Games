@@ -172,7 +172,7 @@ export default {
           mobile: false,
         },
         {
-          name: "Three.js",
+          name: "THREE.js",
           path: "/three",
           desc: "three.js练习页面",
           color: "#38ff38",
