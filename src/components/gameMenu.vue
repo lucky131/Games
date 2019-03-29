@@ -5,7 +5,7 @@
          v-for="item in gameList"
          :key="item.name"
          :style="{backgroundColor: item.color}"
-         @click="goto(item.path)">
+         @click="goto(item.path, item.newTab)">
       <div class="innerBlock">
         <div class="name">{{item.name}}</div>
         <div v-if="!isMobile" class="desc">{{item.desc}}</div>
@@ -177,6 +177,7 @@ export default {
           desc: "three.js练习页面",
           color: "#38ff38",
           mobile: false,
+          newTab: true,
         },
       ]
     }
@@ -199,8 +200,15 @@ export default {
     }
   },
   methods: {
-    goto(url){
-      this.$router.push(url);
+    goto(url, newTab){
+      if(newTab){
+        let page = this.$router.resolve({
+          name: "three",
+        });
+        window.open(page.href, '_blank');
+      } else {
+        this.$router.push(url);
+      }
     }
   }
 }

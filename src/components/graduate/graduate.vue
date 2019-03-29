@@ -88,7 +88,7 @@
     },
     mixins: [allData],
     created(){
-      document.title = "最近更新3/13 13:57";
+      document.title = "最近更新3/28 17:57";
     },
     mounted(){
       window.vuethis = this;
