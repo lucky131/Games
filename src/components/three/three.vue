@@ -87,7 +87,7 @@
         box.castShadow = true;
         this.scene.add(box);
 
-        let plane = new THREE.Mesh(new THREE.PlaneGeometry(10,4), new THREE.MeshLambertMaterial({color: "#6673ff"}));
+        let plane = new THREE.Mesh(new THREE.PlaneGeometry(10,4), new THREE.MeshLambertMaterial({color: "#6677ff"}));
         plane.rotation.x = -Math.PI / 2;
         plane.receiveShadow = true;
         this.scene.add(plane);
