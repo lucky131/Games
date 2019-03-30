@@ -34,6 +34,7 @@
     name: "three",
     data(){
       return{
+        res: {},
         camera: null,
         scene: null,
         renderer: null,
@@ -41,7 +42,11 @@
         gui: null,
         spotLight: null,
         spotLightHelper: null,
-        cubeList: [],
+        magicCube: {
+          block: 0,
+          length: 0,
+          cubeList: [],
+        },
         controls: {
           spotLightX: 0,
           spotLightY: 5,
@@ -58,34 +63,46 @@
       window.THREE = require("three");
       require("./lib/TrackballControls");
 
+      this.loadRes();
       this.init();
       this.initStats();
       this.initGui();
       this.animate();
     },
     methods: {
+      loadRes(){
+        this.res.right = new THREE.TextureLoader().load(require("./img/red.png"));
+        this.res.left = new THREE.TextureLoader().load(require("./img/orange.png"));
+        this.res.up = new THREE.TextureLoader().load(require("./img/white.png"));
+        this.res.down = new THREE.TextureLoader().load(require("./img/yellow.png"));
+        this.res.front = new THREE.TextureLoader().load(require("./img/green.png"));
+        this.res.back = new THREE.TextureLoader().load(require("./img/blue.png"));
+      },
       init () {
         let container = document.getElementById('container');
 
         //scene
         this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.FogExp2("#ccc", 0.005)
 
         //camera
-        this.camera = new THREE.PerspectiveCamera(70, 1000/800, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(50, 1000/800, 0.1, 1000);
         // this.camera = new THREE.OrthographicCamera(-5,5,4,-4, 0.01, 1000);
-        this.camera.position.set(20,20,20);
+        this.camera.position.set(15,20,30);
         this.camera.lookAt(0,0,0);
         this.trackballControls = new THREE.TrackballControls(this.camera, container);
+        this.trackballControls.rotateSpeed = 0.5;
+        this.trackballControls.zoomSpeed = 0.5;
         this.clock = new THREE.Clock();
 
         //render
         this.renderer = new THREE.WebGLRenderer({antialias: true}); //抗锯齿
         this.renderer.setSize(container.clientWidth, container.clientHeight);
-        this.renderer.setClearColor("#000");
+        this.renderer.setClearColor("#ccc");
         this.renderer.shadowMap.enabled = true;
 
         //light
-        let ambientLight = new THREE.AmbientLight("#666");
+        let ambientLight = new THREE.AmbientLight("#fff");
         this.scene.add(ambientLight);
 
         this.spotLight = new THREE.SpotLight("#fff");
@@ -96,41 +113,66 @@
         this.spotLight.castShadow = true;
         this.spotLight.shadow.mapSize.width = 2048;
         this.spotLight.shadow.mapSize.height = 2048;
-        this.scene.add(this.spotLight);
-        this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
-        this.scene.add(this.spotLightHelper);
+        // this.scene.add(this.spotLight);
 
-        //object
+        //helper
         this.scene.add(new THREE.AxesHelper(100));
+        this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
+        // this.scene.add(this.spotLightHelper);
 
+        //plane
         let plane = new THREE.Mesh(new THREE.PlaneGeometry(50,50), new THREE.MeshPhongMaterial({color: "#6677ff"}));
         plane.rotation.x = -Math.PI / 2;
         plane.receiveShadow = true;
-        this.scene.add(plane);
+        // this.scene.add(plane);
+
+        //magic cube
+        this.createMagicCube(3, 5);
 
         container.appendChild(this.renderer.domElement);
       },
-      addCube(){
-        let randomLength = Math.ceil(Math.random()*3);
-        let cube = new THREE.Mesh(
-          new THREE.BoxGeometry(randomLength, randomLength, randomLength),
-          new THREE.MeshPhongMaterial({color: Math.random()*0xffffff})
-        );
-        cube.position.x = Math.random()*40-20;
-        cube.position.z = Math.random()*40-20;
-        cube.position.y = Math.random()*10+randomLength/2;
-        cube.rotation.x = Math.random()*2*Math.PI;
-        cube.rotation.y = Math.random()*2*Math.PI;
-        cube.rotation.z = Math.random()*2*Math.PI;
-        cube.castShadow = true;
-        this.cubeList.push(cube);
-        this.scene.add(cube);
+      createMagicCube(block, length){
+        this.magicCube.block = block;
+        this.magicCube.length = length;
+        this.magicCube.cubeList = new Array(block*block*block);
+        for(let i = 0; i < block*block*block; i++){
+          let cube = this.getCube(i,block,length);
+          this.magicCube.cubeList[i] = cube;
+          this.scene.add(cube);
+        }
       },
-      clearAllCube(){
-        this.cubeList.forEach(cube => {
-          this.scene.remove(cube);
-        });
-        this.cubeList = [];
+      getCube(index, block, length){
+        if(index < 0 || index >= block*block*block) return null;
+        let inside = new THREE.MeshPhongMaterial({color: "#000"});
+        let materials = [inside, inside, inside, inside, inside, inside];
+        if(index < block*block)
+          materials[2] = new THREE.MeshPhongMaterial({map: this.res.up});
+        if(index >= block*block*block - block*block)
+          materials[3] = new THREE.MeshPhongMaterial({map: this.res.down});
+        if(index % block === block - 1)
+          materials[0] = new THREE.MeshPhongMaterial({map: this.res.right});
+        if(index % block === 0)
+          materials[1] = new THREE.MeshPhongMaterial({map: this.res.left});
+        if(index % (block * block) >= block*block-block)
+          materials[4] = new THREE.MeshPhongMaterial({map: this.res.front});
+        if(index % (block * block) < block)
+          materials[5] = new THREE.MeshPhongMaterial({map: this.res.back});
+        let geometry = new THREE.BoxGeometry(length, length, length);
+        let cube = new THREE.Mesh(geometry, materials);
+        let x = (index%block - (block-1)/2)*length;
+        let y = ((block-1)/2 - Math.floor(index/(block*block)))*length;
+        let z = (Math.floor(index%(block*block)/block) - (block-1)/2)*length;
+        cube.position.set(x,y,z);
+        return cube;
+      },
+      top(){
+        let group = new THREE.Object3D();
+        // for(let i=0;i<9;i++){
+        //   group.add(this.magicCube.cubeList[i]);
+        // }
+        group.add(this.magicCube.cubeList[0]);
+        // group.rotateY(Math.PI/2);
+        group.position.y += 5;
       },
       initStats(){
         this.stats = new Stats();
@@ -157,13 +199,7 @@
           spotLightDistance: this.spotLight.distance,
           spotLightAngle: this.spotLight.angle,
           spotLightPenumbra: this.spotLight.penumbra,
-          addCubeBtn: () => {this.addCube();},
-          add10CubeBtn: () => {
-            for(let i=0; i<10; i++){
-              this.addCube();
-            }
-          },
-          clearAllCubeBtn: () => {this.clearAllCube()},
+          topBtn: () => {this.top();},
         };
         this.gui.add(controls, "spotLightX", -50, 50, 1).onChange(val => {
           this.spotLight.position.x = val;
@@ -186,19 +222,18 @@
         this.gui.add(controls, "spotLightPenumbra", 0, 1, 0.01).onChange(val => {
           this.spotLight.penumbra = val;
         });
-        this.gui.add(controls, "addCubeBtn");
-        this.gui.add(controls, "add10CubeBtn");
-        this.gui.add(controls, "clearAllCubeBtn");
+        this.gui.add(controls, "topBtn");
       },
       animate () {
         //stats
         this.stats.update();
 
         //trackballControls
-        let delta = this.clock.getDelta();
+        let delta = this.clock.getDelta(); //距离上一帧的秒数
         this.trackballControls.update(delta);
 
-        this.spotLightHelper.update();
+        // this.spotLightHelper.update();
+
         requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);
       }
