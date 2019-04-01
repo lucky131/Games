@@ -61,7 +61,7 @@
         <div class="wheel">
           <div class="circle big"></div>
           <div class="circle small"></div>
-          <div class="oneTick" v-for="n in 50" :key="n" :style="{transform1: 'rotate('+(n*7.2)+'deg)'}">
+          <div class="oneTick" v-for="n in 50" :key="n" :style="{transform: 'rotate('+(n*7.2)+'deg)'}">
             <div class="tick left"></div>
             <div class="tick right"></div>
           </div>
