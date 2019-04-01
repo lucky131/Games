@@ -47,6 +47,10 @@
           length: 0,
           cubeList: [],
         },
+        rotateController: {
+          on: false,
+          target: 0,
+        },
         controls: {
           spotLightX: 0,
           spotLightY: 5,
@@ -87,11 +91,11 @@
 
         //camera
         this.camera = new THREE.PerspectiveCamera(50, 1000/800, 0.1, 1000);
-        // this.camera = new THREE.OrthographicCamera(-5,5,4,-4, 0.01, 1000);
+        // this.camera = new THREE.OrthographicCamera(-50,50,40,-40, 0.01, 1000);
         this.camera.position.set(15,20,30);
         this.camera.lookAt(0,0,0);
         this.trackballControls = new THREE.TrackballControls(this.camera, container);
-        this.trackballControls.rotateSpeed = 0.5;
+        this.trackballControls.rotateSpeed = 0.3;
         this.trackballControls.zoomSpeed = 0.5;
         this.clock = new THREE.Clock();
 
@@ -131,14 +135,24 @@
 
         container.appendChild(this.renderer.domElement);
       },
+      rotate2DMatrixArray(originArray, block){
+
+      },
       createMagicCube(block, length){
         this.magicCube.block = block;
         this.magicCube.length = length;
-        this.magicCube.cubeList = new Array(block*block*block);
-        for(let i = 0; i < block*block*block; i++){
-          let cube = this.getCube(i,block,length);
-          this.magicCube.cubeList[i] = cube;
-          this.scene.add(cube);
+        this.magicCube.cubeList = new Array(block);
+        let index = 0;
+        for(let i = 0; i < block; i++){
+          this.magicCube.cubeList[i] = new Array(block);
+          for(let j = 0; j < block; j++){
+            this.magicCube.cubeList[i][j] = new Array(block);
+            for(let k = 0; k < block; k++){
+              let cube = this.getCube(index++,block,length);
+              this.magicCube.cubeList[i][j][k] = cube;
+              this.scene.add(cube);
+            }
+          }
         }
       },
       getCube(index, block, length){
@@ -163,16 +177,36 @@
         let y = ((block-1)/2 - Math.floor(index/(block*block)))*length;
         let z = (Math.floor(index%(block*block)/block) - (block-1)/2)*length;
         cube.position.set(x,y,z);
+        cube.index = index;
         return cube;
       },
+      copyArray(array){
+        let result = [];
+        array.forEach(n => {
+          if(n instanceof Array)
+            result.push(this.copyArray(n));
+          else
+            result.push(n);
+        });
+        return result;
+      },
       top(){
-        let group = new THREE.Object3D();
-        // for(let i=0;i<9;i++){
-        //   group.add(this.magicCube.cubeList[i]);
-        // }
-        group.add(this.magicCube.cubeList[0]);
-        // group.rotateY(Math.PI/2);
-        group.position.y += 5;
+        let block = this.magicCube.block;
+        let quaternion = new THREE.Quaternion();
+        let v = new THREE.Vector3(0,1,0).normalize();
+        quaternion.setFromAxisAngle(v, Math.PI/2);
+        for(let i = 0; i < block; i++){
+          for(let j = 0; j < block; j++){
+            this.magicCube.cubeList[0][i][j].position.applyQuaternion(quaternion);
+            this.magicCube.cubeList[0][i][j].rotateOnAxis(v, Math.PI/2);
+          }
+        }
+        let copy = this.copyArray(this.magicCube.cubeList);
+        for(let i = 0; i < block; i++){
+          for(let j = 0; j < block; j++){
+            this.magicCube.cubeList[0][i][j] = copy[0][j][block-1-i];
+          }
+        }
       },
       initStats(){
         this.stats = new Stats();
