@@ -50,6 +50,12 @@
         rotateController: {
           on: false,
           target: 0,
+          current: 0,
+          step: 0,
+          v: null,
+          quaternion: null,
+          indexArray: null,
+          indexArray2: null
         },
         controls: {
           spotLightX: 0,
@@ -190,22 +196,85 @@
         });
         return result;
       },
-      top(){
+      rotateMagicCube(face){
         let block = this.magicCube.block;
-        let quaternion = new THREE.Quaternion();
-        let v = new THREE.Vector3(0,1,0).normalize();
-        quaternion.setFromAxisAngle(v, Math.PI/2);
-        for(let i = 0; i < block; i++){
-          for(let j = 0; j < block; j++){
-            this.magicCube.cubeList[0][i][j].position.applyQuaternion(quaternion);
-            this.magicCube.cubeList[0][i][j].rotateOnAxis(v, Math.PI/2);
+        if(!this.rotateController.on){
+          this.rotateController.on = true;
+          this.rotateController.current = 0;
+          this.rotateController.target = Math.PI / 2;
+          this.rotateController.step = 0.1;
+          this.rotateController.quaternion = new THREE.Quaternion();
+          this.rotateController.indexArray = new Array(block);
+          this.rotateController.indexArray2 = new Array(block);
+          for(let i = 0; i < block; i++){
+            this.rotateController.indexArray[i] = new Array(block);
+            this.rotateController.indexArray2[i] = new Array(block);
+          }
+          switch (face) {
+            case "up":
+              this.rotateController.v = new THREE.Vector3(0,1,0).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: 0, v2: i, v3: j};
+                  this.rotateController.indexArray2[i][j] = {v1: 0, v2: j, v3: block-1-i};
+                }
+              }
+              break;
+            case "down":
+              this.rotateController.v = new THREE.Vector3(0,1,0).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: block-1, v2: i, v3: j};
+                  this.rotateController.indexArray2[i][j] = {v1: block-1, v2: j, v3: block-1-i};
+                }
+              }
+              break;
+            case "right":
+              this.rotateController.v = new THREE.Vector3(1,0,0).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: j, v2: i, v3: block-1};
+                  this.rotateController.indexArray2[i][j] = {v1: block-1-i, v2: j, v3: block-1};
+                }
+              }
+              break;
+            case "left":
+              this.rotateController.v = new THREE.Vector3(1,0,0).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: j, v2: i, v3: 0};
+                  this.rotateController.indexArray2[i][j] = {v1: block-1-i, v2: j, v3: 0};
+                }
+              }
+              break;
+            case "front":
+              this.rotateController.v = new THREE.Vector3(0,0,1).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: i, v2: block-1, v3: j};
+                  this.rotateController.indexArray2[i][j] = {v1: j, v2: block-1, v3: block-1-i};
+                }
+              }
+              break;
+            case "back":
+              this.rotateController.v = new THREE.Vector3(0,0,1).normalize();
+              for(let i = 0; i < block; i++){
+                for(let j = 0; j < block; j++){
+                  this.rotateController.indexArray[i][j] = {v1: i, v2: 0, v3: j};
+                  this.rotateController.indexArray2[i][j] = {v1: j, v2: 0, v3: block-1-i};
+                }
+              }
+              break;
           }
         }
-        let copy = this.copyArray(this.magicCube.cubeList);
+      },
+      test(){
+        let block = this.magicCube.block;
         for(let i = 0; i < block; i++){
           for(let j = 0; j < block; j++){
-            this.magicCube.cubeList[0][i][j] = copy[0][j][block-1-i];
+            console.log(this.magicCube.cubeList[i][j].map(n => n.index).join(" "));
           }
+          console.log("");
         }
       },
       initStats(){
@@ -233,7 +302,13 @@
           spotLightDistance: this.spotLight.distance,
           spotLightAngle: this.spotLight.angle,
           spotLightPenumbra: this.spotLight.penumbra,
-          topBtn: () => {this.top();},
+          topBtn: () => {this.rotateMagicCube("up");},
+          downBtn: () => {this.rotateMagicCube("down")},
+          rightBtn: () => {this.rotateMagicCube("right");},
+          leftBtn: () => {this.rotateMagicCube("left")},
+          frontBtn: () => {this.rotateMagicCube("front");},
+          backBtn: () => {this.rotateMagicCube("back")},
+          testBtn: () => {this.test()},
         };
         this.gui.add(controls, "spotLightX", -50, 50, 1).onChange(val => {
           this.spotLight.position.x = val;
@@ -257,6 +332,12 @@
           this.spotLight.penumbra = val;
         });
         this.gui.add(controls, "topBtn");
+        this.gui.add(controls, "downBtn");
+        this.gui.add(controls, "rightBtn");
+        this.gui.add(controls, "leftBtn");
+        this.gui.add(controls, "frontBtn");
+        this.gui.add(controls, "backBtn");
+        this.gui.add(controls, "testBtn");
       },
       animate () {
         //stats
@@ -267,6 +348,62 @@
         this.trackballControls.update(delta);
 
         // this.spotLightHelper.update();
+
+        //rotateController
+        if(this.rotateController.on){
+          let block = this.magicCube.block;
+          if(this.rotateController.current + this.rotateController.step < this.rotateController.target){
+            this.rotateController.current += this.rotateController.step;
+            let angle = this.rotateController.step;
+            this.rotateController.quaternion.setFromAxisAngle(this.rotateController.v, angle);
+            for(let i = 0; i < block; i++){
+              for(let j = 0; j < block; j++){
+                this.magicCube.cubeList
+                  [this.rotateController.indexArray[i][j].v1]
+                  [this.rotateController.indexArray[i][j].v2]
+                  [this.rotateController.indexArray[i][j].v3]
+                  .position.applyQuaternion(this.rotateController.quaternion);
+                this.magicCube.cubeList
+                  [this.rotateController.indexArray[i][j].v1]
+                  [this.rotateController.indexArray[i][j].v2]
+                  [this.rotateController.indexArray[i][j].v3]
+                  .rotateOnWorldAxis(this.rotateController.v, angle);
+              }
+            }
+          } else {
+            let angle = this.rotateController.target - this.rotateController.current;
+            this.rotateController.quaternion.setFromAxisAngle(this.rotateController.v, angle);
+            for(let i = 0; i < block; i++){
+              for(let j = 0; j < block; j++){
+                this.magicCube.cubeList
+                  [this.rotateController.indexArray[i][j].v1]
+                  [this.rotateController.indexArray[i][j].v2]
+                  [this.rotateController.indexArray[i][j].v3]
+                  .position.applyQuaternion(this.rotateController.quaternion);
+                this.magicCube.cubeList
+                  [this.rotateController.indexArray[i][j].v1]
+                  [this.rotateController.indexArray[i][j].v2]
+                  [this.rotateController.indexArray[i][j].v3]
+                  .rotateOnAxis(this.rotateController.v, angle);
+              }
+            }
+            //cb
+            this.rotateController.on = false;
+            let copy = this.copyArray(this.magicCube.cubeList);
+            for(let i = 0; i < block; i++){
+              for(let j = 0; j < block; j++){
+                this.magicCube.cubeList
+                  [this.rotateController.indexArray[i][j].v1]
+                  [this.rotateController.indexArray[i][j].v2]
+                  [this.rotateController.indexArray[i][j].v3] =
+                  copy
+                    [this.rotateController.indexArray2[i][j].v1]
+                    [this.rotateController.indexArray2[i][j].v2]
+                    [this.rotateController.indexArray2[i][j].v3];
+              }
+            }
+          }
+        }
 
         requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);
