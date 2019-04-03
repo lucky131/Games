@@ -40,6 +40,7 @@
         renderer: null,
         stats: null,
         gui: null,
+        controls: null,
         spotLight: null,
         spotLightHelper: null,
         magicCube: {
@@ -56,11 +57,6 @@
           quaternion: null,
           indexArray: null,
           indexArray2: null
-        },
-        controls: {
-          spotLightX: 0,
-          spotLightY: 5,
-          spotLightZ: 5,
         },
         trackballControls: null,
         clock: null,
@@ -137,14 +133,22 @@
         // this.scene.add(plane);
 
         //magic cube
-        this.createMagicCube(3, 5);
+        this.createMagicCube(2, 5);
 
         container.appendChild(this.renderer.domElement);
       },
-      rotate2DMatrixArray(originArray, block){
-
-      },
       createMagicCube(block, length){
+        //先移除旧的魔方
+        if(this.magicCube.cubeList.length > 0){
+          let oldBlock = this.magicCube.block;
+          for(let i = 0; i < oldBlock; i++){
+            for(let j = 0; j < oldBlock; j++){
+              for(let k = 0; k < oldBlock; k++){
+                this.scene.remove(this.magicCube.cubeList[i][j][k]);
+              }
+            }
+          }
+        }
         this.magicCube.block = block;
         this.magicCube.length = length;
         this.magicCube.cubeList = new Array(block);
@@ -268,15 +272,6 @@
           }
         }
       },
-      test(){
-        let block = this.magicCube.block;
-        for(let i = 0; i < block; i++){
-          for(let j = 0; j < block; j++){
-            console.log(this.magicCube.cubeList[i][j].map(n => n.index).join(" "));
-          }
-          console.log("");
-        }
-      },
       initStats(){
         this.stats = new Stats();
         this.stats.setMode(0);
@@ -294,50 +289,14 @@
         }
 
         this.gui = new dat.GUI({width: 400});
-        let controls = {
-          spotLightX: this.spotLight.position.x,
-          spotLightY: this.spotLight.position.y,
-          spotLightZ: this.spotLight.position.z,
-          spotLightIntensity: this.spotLight.intensity,
-          spotLightDistance: this.spotLight.distance,
-          spotLightAngle: this.spotLight.angle,
-          spotLightPenumbra: this.spotLight.penumbra,
-          topBtn: () => {this.rotateMagicCube("up");},
-          downBtn: () => {this.rotateMagicCube("down")},
-          rightBtn: () => {this.rotateMagicCube("right");},
-          leftBtn: () => {this.rotateMagicCube("left")},
-          frontBtn: () => {this.rotateMagicCube("front");},
-          backBtn: () => {this.rotateMagicCube("back")},
-          testBtn: () => {this.test()},
+        this.controls = {
+          blockOfMagicCube: 3,
+          lengthOfMagicCube: 5,
+          createMagicCubeBtn: () => {this.createMagicCube(this.controls.blockOfMagicCube, this.lengthOfMagicCube)},
         };
-        this.gui.add(controls, "spotLightX", -50, 50, 1).onChange(val => {
-          this.spotLight.position.x = val;
-        });
-        this.gui.add(controls, "spotLightY", -50, 50, 1).onChange(val => {
-          this.spotLight.position.y = val;
-        });
-        this.gui.add(controls, "spotLightZ", -50, 50, 1).onChange(val => {
-          this.spotLight.position.z = val;
-        });
-        this.gui.add(controls, "spotLightIntensity", 0, 2, 0.01).onChange(val => {
-          this.spotLight.intensity = val;
-        });
-        this.gui.add(controls, "spotLightDistance", 0, 100, 1).onChange(val => {
-          this.spotLight.distance = val;
-        });
-        this.gui.add(controls, "spotLightAngle", 0, Math.PI/3, 0.01).onChange(val => {
-          this.spotLight.angle = val;
-        });
-        this.gui.add(controls, "spotLightPenumbra", 0, 1, 0.01).onChange(val => {
-          this.spotLight.penumbra = val;
-        });
-        this.gui.add(controls, "topBtn");
-        this.gui.add(controls, "downBtn");
-        this.gui.add(controls, "rightBtn");
-        this.gui.add(controls, "leftBtn");
-        this.gui.add(controls, "frontBtn");
-        this.gui.add(controls, "backBtn");
-        this.gui.add(controls, "testBtn");
+        this.gui.add(this.controls, "blockOfMagicCube", 1, 5, 1);
+        this.gui.add(this.controls, "lengthOfMagicCube", 1, 10, 1);
+        this.gui.add(this.controls, "createMagicCubeBtn");
       },
       animate () {
         //stats
@@ -384,7 +343,7 @@
                   [this.rotateController.indexArray[i][j].v1]
                   [this.rotateController.indexArray[i][j].v2]
                   [this.rotateController.indexArray[i][j].v3]
-                  .rotateOnAxis(this.rotateController.v, angle);
+                  .rotateOnWorldAxis(this.rotateController.v, angle);
               }
             }
             //cb
