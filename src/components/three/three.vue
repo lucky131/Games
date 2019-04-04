@@ -41,8 +41,6 @@
         stats: null,
         gui: null,
         controls: null,
-        spotLight: null,
-        spotLightHelper: null,
         magicCube: {
           block: 0,
           length: 0,
@@ -112,31 +110,15 @@
         let ambientLight = new THREE.AmbientLight("#fff");
         this.scene.add(ambientLight);
 
-        this.spotLight = new THREE.SpotLight("#fff");
-        this.spotLight.position.set(-25,30,10);
-        this.spotLight.distance = 60;
-        this.spotLight.angle = 0.5;
-        this.spotLight.penumbra = 0.1;
-        this.spotLight.castShadow = true;
-        this.spotLight.shadow.mapSize.width = 2048;
-        this.spotLight.shadow.mapSize.height = 2048;
-        // this.scene.add(this.spotLight);
-
-        //helper
-        this.scene.add(new THREE.AxesHelper(100));
-        this.spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
-        // this.scene.add(this.spotLightHelper);
-
-        //plane
-        let plane = new THREE.Mesh(new THREE.PlaneGeometry(50,50), new THREE.MeshPhongMaterial({color: "#6677ff"}));
-        plane.rotation.x = -Math.PI / 2;
-        plane.receiveShadow = true;
-        // this.scene.add(plane);
-
         //magic cube
         this.createMagicCube(3, 5);
 
         container.appendChild(this.renderer.domElement);
+
+        //event
+        container.addEventListener("mousedown", (event) => {
+          console.log(event);
+        }, false);
       },
       createMagicCube(block, length){
         //先移除旧的魔方
@@ -290,8 +272,6 @@
         //trackballControls
         let delta = this.clock.getDelta(); //距离上一帧的秒数
         this.trackballControls.update(delta);
-
-        // this.spotLightHelper.update();
 
         //rotateController
         if(this.rotateController.on){
