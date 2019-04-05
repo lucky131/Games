@@ -41,10 +41,16 @@
         stats: null,
         gui: null,
         controls: null,
+        mouse: null,
+        raycaster: null,
         magicCube: {
           block: 0,
           length: 0,
           cubeList: [],
+        },
+        clickController: {
+          on: false,
+          cube: null,
         },
         rotateController: {
           on: false,
@@ -57,7 +63,7 @@
           indexArray: null,
           indexArray2: null
         },
-        trackballControls: null,
+        cameraController: null,
         clock: null,
       }
     },
@@ -67,6 +73,7 @@
     mounted(){
       window.THREE = require("three");
       require("./lib/TrackballControls");
+      require("./lib/OrbitControls")
 
       this.loadRes();
       this.init();
@@ -88,16 +95,18 @@
 
         //scene
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2("#ccc", 0.005)
+        this.scene.fog = new THREE.FogExp2("#ccc", 0.005);
+        this.scene.add(new THREE.AxesHelper(50));
 
         //camera
         this.camera = new THREE.PerspectiveCamera(50, 1000/800, 0.1, 1000);
         // this.camera = new THREE.OrthographicCamera(-50,50,40,-40, 0.01, 1000);
         this.camera.position.set(15,20,30);
         this.camera.lookAt(0,0,0);
-        this.trackballControls = new THREE.TrackballControls(this.camera, container);
-        this.trackballControls.rotateSpeed = 0.3;
-        this.trackballControls.zoomSpeed = 0.5;
+        this.cameraController = new THREE.TrackballControls(this.camera, container);
+        this.cameraController.rotateSpeed = 0.2;
+        this.cameraController.zoomSpeed = 1;
+        this.cameraController.dynamicDampingFactor = 0.5;
         this.clock = new THREE.Clock();
 
         //render
@@ -115,10 +124,83 @@
 
         container.appendChild(this.renderer.domElement);
 
+        //mouse
+        this.mouse = new THREE.Vector2();
+
+        //raycaster
+        this.raycaster = new THREE.Raycaster();
+
         //event
         container.addEventListener("mousedown", (event) => {
-          console.log(event);
+          this.mouse.x = (event.clientX/event.target.width)*2-1;
+          this.mouse.y = -(event.clientY/event.target.height)*2+1;
+
+          this.raycaster.setFromCamera(this.mouse, this.camera);
+          let intersects = this.raycaster.intersectObjects(this.scene.children).filter(n => n.object.isCube);
+          if(intersects.length > 0){
+            this.clickController.on = true;
+            this.clickController.cube = intersects[0].object;
+            this.cameraController.enabled = false;
+          }
         }, false);
+        container.addEventListener("mouseup", (event) => {
+          if(this.clickController.on){
+            this.mouse.x = (event.clientX/event.target.width)*2-1;
+            this.mouse.y = -(event.clientY/event.target.height)*2+1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            let intersects = this.raycaster.intersectObjects(this.scene.children).filter(n => n.object.isCube);
+            if(intersects.length > 0){
+              let before = {
+                i: this.clickController.cube.positionIndex.i,
+                j: this.clickController.cube.positionIndex.j,
+                k: this.clickController.cube.positionIndex.k
+              };
+              let after = {
+                i: intersects[0].object.positionIndex.i,
+                j: intersects[0].object.positionIndex.j,
+                k: intersects[0].object.positionIndex.k
+              };
+              if(before.i !== after.i || before.j !== after.j || before.k !== after.k){
+                if(before.i === after.i && before.j !== after.j && before.k !== after.k){
+                  let direction = this.judgeRotateDirection(before.j, before.k, after.j, after.k);
+                  if(direction !== 0){
+                    this.rotateMagicCube("U", before.i, direction===1 ? true: false);
+                  }
+                } else if(before.k === after.k && before.i !== after.i && before.j !== after.j){
+                  let direction = this.judgeRotateDirection(before.i, before.j, after.i, after.j);
+                  if(direction !== 0){
+                    this.rotateMagicCube("R", this.magicCube.block-1-before.k, direction===1 ? false: true);
+                  }
+                } else if(before.j === after.j && before.i !== after.i && before.k !== after.k){
+                  let direction = this.judgeRotateDirection(before.i, before.k, after.i, after.k);
+                  if(direction !== 0){
+                    this.rotateMagicCube("F", this.magicCube.block-1-before.j, direction===1 ? true: false);
+                  }
+                }
+              }
+            }
+            //cb
+            this.clickController.on = false;
+            this.clickController.cube = null;
+            this.cameraController.enabled = true;
+          }
+        }, false);
+      },
+      judgeRotateDirection(x1, y1, x2, y2) {
+        let p1 = "c", p2 = "c", block = this.magicCube.block;
+        if(x1===0 && y1>=0 && y1<block) p1 = "u";
+        else if(x1===block-1 && y1>=0 && y1<block) p1 = "d";
+        else if(y1===0 && x1>=0 && x1<block) p1 = "l";
+        else if(y1===block-1 && x1>=0 && x1<block) p1 = "r";
+        if(x2===0 && y2>=0 && y2<block) p2 = "u";
+        else if(x2===block-1 && y2>=0 && y2<block) p2 = "d";
+        else if(y2===0 && x2>=0 && x2<block) p2 = "l";
+        else if(y2===block-1 && x2>=0 && x2<block) p2 = "r";
+        if(p1==="c" || p2==="c") return 0;
+        if((p1==="u" && p2==="l") || (p1==="l" && p2==="d") || (p1==="d" && p2==="r") || (p1==="r" && p2==="u")) return 1;
+        if((p1==="u" && p2==="r") || (p1==="r" && p2==="d") || (p1==="d" && p2==="l") || (p1==="l" && p2==="u")) return -1;
+        return 0;
       },
       createMagicCube(block, length){
         //先移除旧的魔方
@@ -150,27 +232,32 @@
       },
       getCube(index, block, length){
         if(index < 0 || index >= block*block*block) return null;
+        let i = Math.floor(index/(block*block));
+        let j = Math.floor(index%(block*block)/block);
+        let k = index%block;
         let inside = new THREE.MeshPhongMaterial({color: "#000"});
         let materials = [inside, inside, inside, inside, inside, inside];
-        if(index < block*block)
+        if(i === 0)
           materials[2] = new THREE.MeshPhongMaterial({map: this.res.up});
-        if(index >= block*block*block - block*block)
+        if(i === block-1)
           materials[3] = new THREE.MeshPhongMaterial({map: this.res.down});
-        if(index % block === block - 1)
+        if(k === block-1)
           materials[0] = new THREE.MeshPhongMaterial({map: this.res.right});
-        if(index % block === 0)
+        if(k === 0)
           materials[1] = new THREE.MeshPhongMaterial({map: this.res.left});
-        if(index % (block * block) >= block*block-block)
+        if(j === block-1)
           materials[4] = new THREE.MeshPhongMaterial({map: this.res.front});
-        if(index % (block * block) < block)
+        if(j === 0)
           materials[5] = new THREE.MeshPhongMaterial({map: this.res.back});
         let geometry = new THREE.BoxGeometry(length, length, length);
         let cube = new THREE.Mesh(geometry, materials);
-        let x = (index%block - (block-1)/2)*length;
-        let y = ((block-1)/2 - Math.floor(index/(block*block)))*length;
-        let z = (Math.floor(index%(block*block)/block) - (block-1)/2)*length;
+        let x = (k - (block-1)/2)*length;
+        let y = ((block-1)/2 - i)*length;
+        let z = (j - (block-1)/2)*length;
         cube.position.set(x,y,z);
+        cube.isCube = true;
         cube.index = index;
+        cube.positionIndex = {i,j,k};
         return cube;
       },
       copyArray(array){
@@ -257,7 +344,7 @@
           anticlockwise: true,
           rotateBtn: () => {this.rotateMagicCube(this.controls.rotateFace, this.controls.rotateLevel, this.controls.anticlockwise)}
         };
-        this.gui.add(this.controls, "blockOfMagicCube", 1, 5, 1);
+        this.gui.add(this.controls, "blockOfMagicCube", 3, 5, 1);
         this.gui.add(this.controls, "lengthOfMagicCube", 1, 10, 1);
         this.gui.add(this.controls, "createMagicCubeBtn");
         this.gui.add(this.controls, "rotateFace", ["U", "R", "F"]);
@@ -271,7 +358,7 @@
 
         //trackballControls
         let delta = this.clock.getDelta(); //距离上一帧的秒数
-        this.trackballControls.update(delta);
+        this.cameraController.update(delta);
 
         //rotateController
         if(this.rotateController.on){
@@ -314,6 +401,7 @@
             //cb
             this.rotateController.on = false;
             let copy = this.copyArray(this.magicCube.cubeList);
+            //cube对象位置更新
             for(let i = 0; i < block; i++){
               for(let j = 0; j < block; j++){
                 this.magicCube.cubeList
@@ -324,6 +412,14 @@
                     [this.rotateController.indexArray2[i][j].v1]
                     [this.rotateController.indexArray2[i][j].v2]
                     [this.rotateController.indexArray2[i][j].v3];
+              }
+            }
+            //positionIndex保持绝对位置不变
+            for(let i = 0; i < block; i++){
+              for(let j = 0; j < block; j++){
+                for(let k = 0; k < block; k++){
+                  this.magicCube.cubeList[i][j][k].positionIndex = {i,j,k};
+                }
               }
             }
           }
