@@ -172,9 +172,9 @@ export default {
           mobile: false,
         },
         {
-          name: "THREE.js",
-          path: "/three",
-          desc: "three.js练习页面",
+          name: "魔方",
+          path: "/magicCube",
+          desc: "用three.js创建的魔方游戏，支持3-5阶，自由旋转视角",
           color: "#38ff38",
           mobile: false,
           newTab: true,

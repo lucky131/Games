@@ -31,7 +31,7 @@
   import * as dat from 'dat.gui'
 
   export default {
-    name: "three",
+    name: "magicCube",
     data(){
       return{
         res: {},

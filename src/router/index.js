@@ -78,9 +78,9 @@ export default new Router({
       component: resolve => require(['@/components/ccc/ccc'], resolve)
     },
     {
-      path: "/three",
+      path: "/magicCube",
       name: "three",
-      component: resolve => require(['@/components/three/three'], resolve)
+      component: resolve => require(['@/components/magicCube/magicCube'], resolve)
     },
   ]
 })
