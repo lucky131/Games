@@ -16,5 +16,6 @@ npm run dev
 * Eco 地形生成器
 * CssDraw 纯CSS绘制的一些图形
 * Tower 移动端文字冒险游戏
+* MagicCube 3D魔方
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
