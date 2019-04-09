@@ -10,8 +10,8 @@
     height: 100vh;
     display: flex;
     flex-flow: row nowrap;
-    /*justify-content: center;*/
-    /*align-items: center;*/
+    justify-content: center;
+    align-items: center;
     #container{
       width: 1000px;
       height: 800px;
@@ -73,7 +73,6 @@
     mounted(){
       window.THREE = require("three");
       require("./lib/TrackballControls");
-      require("./lib/OrbitControls")
 
       this.loadRes();
       this.init();
@@ -132,8 +131,8 @@
 
         //event
         container.addEventListener("mousedown", (event) => {
-          this.mouse.x = (event.clientX/event.target.width)*2-1;
-          this.mouse.y = -(event.clientY/event.target.height)*2+1;
+          this.mouse.x = (event.offsetX/event.target.width)*2-1;
+          this.mouse.y = -(event.offsetY/event.target.height)*2+1;
 
           this.raycaster.setFromCamera(this.mouse, this.camera);
           let intersects = this.raycaster.intersectObjects(this.scene.children).filter(n => n.object.isCube);
@@ -145,8 +144,8 @@
         }, false);
         container.addEventListener("mouseup", (event) => {
           if(this.clickController.on){
-            this.mouse.x = (event.clientX/event.target.width)*2-1;
-            this.mouse.y = -(event.clientY/event.target.height)*2+1;
+            this.mouse.x = (event.offsetX/event.target.width)*2-1;
+            this.mouse.y = -(event.offsetY/event.target.height)*2+1;
 
             this.raycaster.setFromCamera(this.mouse, this.camera);
             let intersects = this.raycaster.intersectObjects(this.scene.children).filter(n => n.object.isCube);
@@ -189,18 +188,45 @@
       },
       judgeRotateDirection(x1, y1, x2, y2) {
         let p1 = "c", p2 = "c", block = this.magicCube.block;
-        if(x1===0 && y1>=0 && y1<block) p1 = "u";
-        else if(x1===block-1 && y1>=0 && y1<block) p1 = "d";
-        else if(y1===0 && x1>=0 && x1<block) p1 = "l";
-        else if(y1===block-1 && x1>=0 && x1<block) p1 = "r";
-        if(x2===0 && y2>=0 && y2<block) p2 = "u";
-        else if(x2===block-1 && y2>=0 && y2<block) p2 = "d";
-        else if(y2===0 && x2>=0 && x2<block) p2 = "l";
-        else if(y2===block-1 && x2>=0 && x2<block) p2 = "r";
+        p1 = this.judgePosition(x1, y1);
+        p2 = this.judgePosition(x2, y2);
         if(p1==="c" || p2==="c") return 0;
-        if((p1==="u" && p2==="l") || (p1==="l" && p2==="d") || (p1==="d" && p2==="r") || (p1==="r" && p2==="u")) return 1;
-        if((p1==="u" && p2==="r") || (p1==="r" && p2==="d") || (p1==="d" && p2==="l") || (p1==="l" && p2==="u")) return -1;
+        if((p1==="u" && p2==="l") || (p1==="l" && p2==="d") || (p1==="d" && p2==="r") || (p1==="r" && p2==="u")
+        || (p1==="u" && p2==="dl") || (p1==="l" && p2==="dr") || (p1==="d" && p2==="ur") || (p1==="r" && p2==="ul")
+        || (p1==="ul" && p2==="d") || (p1==="dl" && p2==="r") || (p1==="dr" && p2==="u") || (p1==="ur" && p2==="l")) return 1;
+        if((p1==="u" && p2==="r") || (p1==="r" && p2==="d") || (p1==="d" && p2==="l") || (p1==="l" && p2==="u")
+        || (p1==="u" && p2==="dr") || (p1==="r" && p2==="dl") || (p1==="d" && p2==="ul") || (p1==="l" && p2==="ur")
+        || (p1==="ul" && p2==="r") || (p1==="ur" && p2==="d") || (p1==="dr" && p2==="l") || (p1==="dl" && p2==="u")) return -1;
         return 0;
+      },
+      judgePosition(x, y){
+        let block = this.magicCube.block;
+        if(x === 0){
+          if(y === 0){
+            return "ul";
+          } else if(y === block-1){
+            return "ur";
+          } else if(y>0 && y<block-1){
+            return "u";
+          }
+        } else if(x === block-1){
+          if(y === 0){
+            return "dl";
+          } else if(y === block-1){
+            return "dr";
+          } else if(y>0 && y<block-1){
+            return "d";
+          }
+        } else if(x>0 && x<block-1){
+          if(y === 0){
+            return "l";
+          } else if(y === block-1){
+            return "r";
+          } else if(y>0 && y<block-1){
+            return "c";
+          }
+        }
+        return "c";
       },
       createMagicCube(block, length){
         //先移除旧的魔方
