@@ -2,13 +2,15 @@
   <div id="content">
     <div :class="{block: true, mobileBlock: isMobile}"
          v-if="!isMobile || item.mobile"
-         v-for="item in gameList"
-         :key="item.name"
-         :style="{backgroundColor: item.color}"
-         @click="goto(item.path, item.newTab)">
-      <div class="innerBlock">
-        <div class="name">{{item.name}}</div>
+         v-for="(item, index) in gameList"
+         :key="index"
+         :style="{backgroundColor: item.color}">
+      <div class="innerBlock" @click="goto(index)">
+        <div class="name">{{(index+1) + '. ' + item.name}}</div>
         <div v-if="!isMobile" class="desc">{{item.desc}}</div>
+      </div>
+      <div v-if="item.loading" class="loading">
+        <i class="el-icon-loading"></i>
       </div>
     </div>
   </div>
@@ -23,8 +25,9 @@
     align-items: stretch;
     align-content: stretch;
     .block{
-      min-width: 25%;
+      min-width: 20%;
       flex: 1;
+      position: relative;
       cursor: pointer;
       &.mobileBlock{
         min-width: 100%;
@@ -58,15 +61,30 @@
           transition: color 500ms;
           font-size: 12px;
         }
+        &:hover{
+          background-color: rgba(0,0,0,0);
+          .name{
+            color: rgba(0,0,0,.75);
+          }
+          .desc{
+            color: rgba(0,0,0,.5);
+          }
+        }
       }
-      .innerBlock:hover{
-        background-color: rgba(0,0,0,0);
-        .name{
-          color: rgba(0,0,0,.75);
-        }
-        .desc{
-          color: rgba(0,0,0,.5);
-        }
+      .loading{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(255,255,255,.5);
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 64px;
+        cursor: no-drop;
       }
     }
   }
@@ -79,61 +97,63 @@ export default {
     return {
       width: 0,
       isMobile: false,
+      loading: false,
       gameList: [
         {
           name: "扫雷",
           path: "/minesweeper",
           desc: "经典扫雷，左键打开，右键插旗",
           color: "#b0b0b0",
-          mobile: false,
+          loading: false,
         },
         {
           name: "贪吃蛇",
           path: "/snake",
           desc: "贪吃蛇，WASD或方向键操控",
           color: "#707070",
-          mobile: false,
+          loading: false,
         },
         {
           name: "填色",
           path: "/color",
           desc: "填色使之成渐变状",
           color: "#ff5e52",
-          mobile: false,
+          loading: false,
         },
         {
           name: "连连看",
           path: "/link",
           desc: "经典连连看，左键操作，无解需要刷新重来",
           color: "#ffef6e",
-          mobile: false,
+          loading: false,
         },
         {
           name: "跳一跳",
           path: "/jump",
           desc: "横版跳跃游戏，WASD或方向键操控，开发中...",
           color: "#6df8ff",
-          mobile: false,
+          loading: false,
         },
         {
           name: "Picross",
           path: "/picross",
           desc: "经典Picross",
           color: "#5dffbd",
-          mobile: false,
+          loading: false,
         },
         {
           name: "猜数字",
           path: "/digital",
           desc: "经典猜数字游戏 - Bulls and Cows",
           color: "#e19bff",
-          mobile: false,
+          loading: false,
         },
         {
           name: "狼人杀上帝助手",
           path: "/wolf",
           desc: "狼人kill专用发牌器",
           color: "#ffbc64",
+          loading: false,
           mobile: true,
         },
         {
@@ -141,6 +161,7 @@ export default {
           path: "/graduate",
           desc: "110900010643",
           color: "#ff7381",
+          loading: false,
           mobile: true,
         },
         {
@@ -148,13 +169,14 @@ export default {
           path: "/eco",
           desc: "自主研发，已搁浅",
           color: "#6285ff",
-          mobile: false,
+          loading: false,
         },
         {
           name: "css画板",
           path: "/cssDraw",
           desc: "纯css画一些东西",
           color: "#a6ff5d",
+          loading: false,
           mobile: true,
         },
         {
@@ -162,6 +184,7 @@ export default {
           path: "/tower",
           desc: "移动端文字冒险游戏",
           color: "#ff8161",
+          loading: false,
           mobile: true,
         },
         {
@@ -169,14 +192,14 @@ export default {
           path: "/ccc",
           desc: "ccc专用小工具",
           color: "#b75fff",
-          mobile: false,
+          loading: false,
         },
         {
           name: "魔方",
           path: "/magicCube",
           desc: "用three.js创建的魔方游戏，支持3-5阶，自由旋转视角",
           color: "#38ff38",
-          mobile: false,
+          loading: false,
           newTab: true,
         },
       ]
@@ -198,16 +221,27 @@ export default {
     if(this.isMobile){
       this.$message("移动端支持功能较少，使用pc端查看完整功能");
     }
+    window.addEventListener("resize", event => {
+      this.width = window.innerWidth;
+      this.isMobile = this.width < 450;
+    });
   },
   methods: {
-    goto(url, newTab){
-      if(newTab){
-        let page = this.$router.resolve({
-          name: "three",
-        });
-        window.open(page.href, '_blank');
-      } else {
-        this.$router.push(url);
+    goto(index){
+      if(!this.loading){
+        if(this.gameList[index].newTab){
+          let page = this.$router.resolve({
+            path: this.gameList[index].path
+          });
+          window.open(page.href, '_blank');
+        } else {
+          this.gameList[index].loading = true;
+          this.loading = true;
+          this.$router.push(this.gameList[index].path, () => {
+            this.gameList[index].loading = false;
+            this.loading = false;
+          });
+        }
       }
     }
   }
