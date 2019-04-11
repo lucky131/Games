@@ -55,7 +55,7 @@ export default new Router({
     {
       path: "/graduate",
       name: "graduate",
-      component: () => import('@/components/graduate/graduate')
+      component: () => import('../components/graduate/graduate')
     },
     {
       path: "/eco",
@@ -85,7 +85,7 @@ export default new Router({
     {
       path: "/three",
       name: "three",
-      component: () => import('@/components/three/three')
+      component: () => import('../components/three/three')
     },
   ]
 })
