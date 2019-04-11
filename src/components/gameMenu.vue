@@ -202,6 +202,14 @@ export default {
           loading: false,
           newTab: true,
         },
+        {
+          name: "？？？",
+          path: "/three",
+          desc: "？？？",
+          color: "#fdff48",
+          loading: false,
+          newTab: true,
+        },
       ]
     }
   },
