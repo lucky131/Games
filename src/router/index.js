@@ -15,72 +15,77 @@ export default new Router({
     {
       path: "/minesweeper",
       name: "minesweeper",
-      component: resolve => require(['@/components/minesweeper/minesweeper'], resolve)
+      component: () => import("../components/minesweeper/minesweeper")
     },
     {
       path: "/snake",
       name: "snake",
-      component: resolve => require(['@/components/snake/snake'], resolve)
+      component: () => import("../components/snake/snake")
     },
     {
       path: "/color",
       name: "color",
-      component: resolve => require(['@/components/color/color'], resolve)
+      component: () => import("../components/color/color")
     },
     {
       path: "/link",
       name: "link",
-      component: resolve => require(['@/components/link/link'], resolve)
+      component: () => import("../components/link/link")
     },
     {
       path: "/jump",
       name: "jump",
-      component: resolve => require(['@/components/jump/jump'], resolve)
+      component: () => import("../components/jump/jump")
     },
     {
       path: "/picross",
       name: "picross",
-      component: resolve => require(['@/components/picross/picross'], resolve)
+      component: () => import("../components/picross/picross")
     },
     {
       path: "/digital",
       name: "digital",
-      component: resolve => require(['@/components/digital/digital'], resolve)
+      component: () => import("../components/digital/digital")
     },
     {
       path: "/wolf",
       name: "wolf",
-      component: resolve => require(['@/components/wolf/wolf'], resolve)
+      component: () => import("../components/wolf/wolf")
     },
     {
       path: "/graduate",
       name: "graduate",
-      component: resolve => require(['@/components/graduate/graduate'], resolve)
+      component: () => import('@/components/graduate/graduate')
     },
     {
       path: "/eco",
       name: "eco",
-      component: resolve => require(['@/components/eco/eco'], resolve)
+      component: () => import("../components/eco/eco")
     },
     {
       path: "/cssDraw",
       name: "cssDraw",
-      component: resolve => require(['@/components/cssDraw/cssDraw'], resolve)
+      component: () => import("../components/cssDraw/cssDraw")
     },
     {
       path: "/tower",
       name: "tower",
-      component: resolve => require(['@/components/tower/tower'], resolve)
+      component: () => import("../components/tower/tower")
     },
     {
       path: "/ccc",
       name: "ccc",
-      component: resolve => require(['@/components/ccc/ccc'], resolve)
+      component: () => import("../components/ccc/ccc")
     },
     {
       path: "/magicCube",
+      name: "magicCube",
+      component: () => import("../components/magicCube/magicCube")
+    },
+    {
+      path: "/three",
       name: "three",
-      component: resolve => require(['@/components/magicCube/magicCube'], resolve)
+      component: () => import('@/components/three/three')
     },
   ]
 })
