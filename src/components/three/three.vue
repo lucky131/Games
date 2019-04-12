@@ -12,6 +12,12 @@
         <el-form-item v-if="controller.editStatus==='add'" label="颜色：">
           <el-color-picker v-model="controller.color"></el-color-picker>
         </el-form-item>
+        <el-form-item label="光线：">
+          <el-radio-group v-model="controller.light" @change="onLightChange">
+            <el-radio label="spot">聚光灯</el-radio>
+            <el-radio label="direct">平行光</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="辅助线：">
           <el-radio-group v-model="controller.axesHelper" @change="onAxesHelperChange">
             <el-radio :label="true">开</el-radio>
@@ -61,6 +67,7 @@
         controller: {
           editStatus: "add",
           color: "#ffc06c",
+          light: "spot",
           axesHelper: true,
         },
         blocks: {},
@@ -68,6 +75,7 @@
         res: {},
         camera: null,
         cameraController: null,
+        lights: [],
         clock: null,
         scene: null,
         axesHelper: null,
@@ -104,31 +112,33 @@
         this.scene.add(this.axesHelper);
 
         //camera
-        this.camera = new THREE.PerspectiveCamera(50, 800/800, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(50, 800/800, 0.01, 1000);
         // this.camera = new THREE.OrthographicCamera(-50,50,50,-50, 0.01, 1000);
-        this.camera.position.set(100,100,100);
+        this.camera.position.set(10,30,40);
         this.camera.lookAt(0,0,0);
-        this.camera.position.y = 120;
         this.cameraController = new THREE.OrbitControls(this.camera, container);
+        this.cameraController.userPanSpeed = 0.2;
         this.clock = new THREE.Clock();
 
         //render
         this.renderer = new THREE.WebGLRenderer({antialias: true}); //抗锯齿
         this.renderer.setSize(container.clientWidth, container.clientHeight);
-        this.renderer.setClearColor("#fff");
+        this.renderer.setClearColor("#000");
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         //light
-        let ambientLight = new THREE.AmbientLight("#999");
-        this.scene.add(ambientLight);
-        let directionalLight1 = new THREE.DirectionalLight("#fff", 1);
-        directionalLight1.position.set(3,5,5);
-        this.scene.add(directionalLight1);
-        let directionalLight2 = new THREE.DirectionalLight("#fff", 0.5);
-        directionalLight2.position.set(-5,5,-3);
-        this.scene.add(directionalLight2);
+        this.createLight(this.controller.light);
 
         //plane
-        this.createBlockZone(-5,-1,-5, 5,-1,5, "ground", "#5fcc5a");
+        // let plane = new THREE.Mesh(
+        //   new THREE.PlaneBufferGeometry(50,50),
+        //   new THREE.MeshLambertMaterial({color: "#ff8dcc"})
+        // );
+        // plane.rotation.x = -Math.PI/2;
+        // plane.position.y = 2;
+        // this.scene.add(plane);
+        this.createBlockZone(-5,-1,-5, 5,-1,5, "ground", "#8eed6a");
         this.createAllTransparentBlock();
 
         container.appendChild(this.renderer.domElement);
@@ -182,7 +192,7 @@
 
           function filterTransparentIntersects(arr) {
             if(arr.length === 0) return [];
-            let firstNotTransparentBlockIndex = arr.length-1;
+            let firstNotTransparentBlockIndex = arr.length;
             for(let i=0; i<arr.length; i++){
               if(arr[i].object.type !== "transparent"){
                 firstNotTransparentBlockIndex = i;
@@ -239,6 +249,41 @@
           }
         }, false);
       },
+      createLight(type){
+        this.lights.forEach(light => {
+          this.scene.remove(light);
+        });
+        this.lights = [];
+        let ambient;
+        switch (type) {
+          case "spot":
+            ambient = new THREE.AmbientLight( 0xffffff, 0.5 );
+            let spotLight = new THREE.SpotLight("#fff");
+            spotLight.intensity = 1;
+            spotLight.distance = 100;
+            spotLight.angle = 0.6;
+            spotLight.position.set(10,40,20);
+            spotLight.lookAt(0,0,0);
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize.width = 1024;
+            spotLight.shadow.mapSize.height = 1024;
+            spotLight.shadow.camera.near = 0.01;
+            spotLight.shadow.camera.far = 1000;
+            this.lights.push(ambient, spotLight);
+            break;
+          case "direct":
+            ambient = new THREE.AmbientLight( 0xffffff, 0.5 );
+            let directionalLight1 = new THREE.DirectionalLight("#fff", 0.75);
+            directionalLight1.position.set(3,5,5);
+            let directionalLight2 = new THREE.DirectionalLight("#fff", 0.25);
+            directionalLight2.position.set(-5,5,-3);
+            this.lights.push(ambient, directionalLight1, directionalLight2);
+            break;
+        }
+        this.lights.forEach(light => {
+          this.scene.add(light);
+        });
+      },
       selectBlock(block, isSelected){
         if(isSelected){
           if(block.type === "transparent"){
@@ -282,8 +327,12 @@
         block.type = type;
         block.xyz = {x,y,z};
         block.material.transparent = true;
+        block.castShadow = true;
+        block.receiveShadow = true;
         if(type === "transparent"){
           block.material.opacity = 0;
+          block.castShadow = false;
+          block.receiveShadow = false;
         }
         this.blocks[`${x},${y},${z}`] = block;
         this.scene.add(block);
@@ -360,6 +409,9 @@
           this.selectBlock(this.selectedBlock, false);
           this.selectedBlock = null;
         }
+      },
+      onLightChange(v){
+        this.createLight(v);
       },
       onAxesHelperChange(v){
         this.axesHelper.visible = v;
