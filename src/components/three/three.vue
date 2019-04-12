@@ -148,12 +148,13 @@
           let status = this.controller.editStatus;
           switch (status) {
             case "add":
-              let intersects = this.raycaster.intersectObjects(this.scene.children).filter(n => n.object.type === "transparent");
+              let intersects = this.raycaster.intersectObjects(this.scene.children);
+              intersects = filterIntersects(intersects);
               if(intersects.length > 0){
                 if(this.selectedBlock){
                   this.selectedBlock.material.opacity = 0;
                 }
-                this.selectedBlock = intersects[0].object;
+                this.selectedBlock = intersects[getMinIndex(intersects.map(i => this.raycaster.ray.distanceToPoint(i.object.position)))].object;
                 this.selectedBlock.material.opacity = 0.5;
               } else {
                 if(this.selectedBlock){
@@ -164,6 +165,30 @@
               break;
             case "remove":
               break;
+          }
+
+          function filterIntersects(arr) {
+            if(arr.length === 0) return [];
+            let firstNotTransparentBlockIndex = arr.length-1;
+            for(let i=0; i<arr.length; i++){
+              if(arr[i].object.type !== "transparent"){
+                firstNotTransparentBlockIndex = i;
+                break;
+              }
+            }
+            return arr.slice(0, firstNotTransparentBlockIndex);
+          }
+          function getMinIndex(arr) {
+            if(arr.length === 0) return -1;
+            if(arr.length === 1) return 0;
+            let min = arr[0], minIndex = 0;
+            for(let i=1; i<arr.length; i++){
+              if(arr[i] < min){
+                min = arr[i];
+                minIndex = i;
+              }
+            }
+            return minIndex;
           }
         }, false);
         container.addEventListener("mousedown", (event) => {
