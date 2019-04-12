@@ -4,7 +4,7 @@
     <div class="controller">
       <el-form label-width="100px">
         <el-form-item label="模式：">
-          <el-radio-group v-model="controller.editStatus">
+          <el-radio-group v-model="controller.editStatus" @change="onEditStatusChange">
             <el-radio label="add">新增</el-radio>
             <el-radio label="remove">移除</el-radio>
           </el-radio-group>
@@ -13,7 +13,7 @@
           <el-color-picker v-model="controller.color"></el-color-picker>
         </el-form-item>
         <el-form-item label="辅助线：">
-          <el-radio-group v-model="controller.axesHelper" @change="onHelperChange">
+          <el-radio-group v-model="controller.axesHelper" @change="onAxesHelperChange">
             <el-radio :label="true">开</el-radio>
             <el-radio :label="false">关</el-radio>
           </el-radio-group>
@@ -146,28 +146,41 @@
           this.mouse.y = -(event.offsetY/event.target.height)*2+1;
           this.raycaster.setFromCamera(this.mouse, this.camera);
           let status = this.controller.editStatus;
+          let intersects = this.raycaster.intersectObjects(this.scene.children);
           switch (status) {
             case "add":
-              let intersects = this.raycaster.intersectObjects(this.scene.children);
-              intersects = filterIntersects(intersects);
+              intersects = filterTransparentIntersects(intersects);
               if(intersects.length > 0){
                 if(this.selectedBlock){
-                  this.selectedBlock.material.opacity = 0;
+                  this.selectBlock(this.selectedBlock, false);
                 }
                 this.selectedBlock = intersects[getMinIndex(intersects.map(i => this.raycaster.ray.distanceToPoint(i.object.position)))].object;
-                this.selectedBlock.material.opacity = 0.5;
+                this.selectBlock(this.selectedBlock, true);
               } else {
                 if(this.selectedBlock){
-                  this.selectedBlock.material.opacity = 0;
+                  this.selectBlock(this.selectedBlock, false);
                   this.selectedBlock = null;
                 }
               }
               break;
             case "remove":
+              intersects = intersects.filter(n => n.object.type === "block");
+              if(intersects.length > 0){
+                if(this.selectedBlock){
+                  this.selectBlock(this.selectedBlock, false);
+                }
+                this.selectedBlock = intersects[0].object;
+                this.selectBlock(this.selectedBlock, true);
+              } else {
+                if(this.selectedBlock){
+                  this.selectBlock(this.selectedBlock, false);
+                  this.selectedBlock = null;
+                }
+              }
               break;
           }
 
-          function filterIntersects(arr) {
+          function filterTransparentIntersects(arr) {
             if(arr.length === 0) return [];
             let firstNotTransparentBlockIndex = arr.length-1;
             for(let i=0; i<arr.length; i++){
@@ -213,10 +226,33 @@
                 }
                 break;
               case "remove":
+                if(this.selectedBlock){
+                  let pp = this.selectedBlock.xyz;
+                  this.scene.remove(this.selectedBlock);
+                  delete this.blocks[`${pp.x},${pp.y},${pp.z}`];
+                  this.selectedBlock = null;
+                  this.clearTransparentBlock();
+                  this.createAllTransparentBlock();
+                }
                 break;
             }
           }
         }, false);
+      },
+      selectBlock(block, isSelected){
+        if(isSelected){
+          if(block.type === "transparent"){
+            block.material.opacity = 0.5;
+          } else if(block.type === "block"){
+            block.material.opacity = 0.5
+          }
+        } else {
+          if(block.type === "transparent"){
+            block.material.opacity = 0;
+          } else if(block.type === "block"){
+            block.material.opacity = 1;
+          }
+        }
       },
       createBlockZone(x1,y1,z1, x2,y2,z2, type, color){
         let x_min = Math.min(x1, x2),
@@ -245,8 +281,8 @@
         block.position.set(pp.x, pp.y, pp.z);
         block.type = type;
         block.xyz = {x,y,z};
+        block.material.transparent = true;
         if(type === "transparent"){
-          block.material.transparent = true;
           block.material.opacity = 0;
         }
         this.blocks[`${x},${y},${z}`] = block;
@@ -319,7 +355,13 @@
         requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);
       },
-      onHelperChange(v){
+      onEditStatusChange(v){
+        if(this.selectedBlock){
+          this.selectBlock(this.selectedBlock, false);
+          this.selectedBlock = null;
+        }
+      },
+      onAxesHelperChange(v){
         this.axesHelper.visible = v;
       },
     }
