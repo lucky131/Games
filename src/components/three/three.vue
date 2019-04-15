@@ -275,6 +275,7 @@
           }
         }, false);
       },
+      //重新生成光线
       createLight(type){
         this.lights.forEach(light => {
           this.scene.remove(light);
@@ -310,6 +311,7 @@
           this.scene.add(light);
         });
       },
+      //修改block的选择状态
       selectBlock(block, isSelected){
         if(isSelected){
           if(block.type === "transparent"){
@@ -325,6 +327,7 @@
           }
         }
       },
+      //三维批量执行createBlock
       createBlockZone(x1,y1,z1, x2,y2,z2, type, color){
         let x_min = Math.min(x1, x2),
           x_max = Math.max(x1, x2),
@@ -340,6 +343,7 @@
           }
         }
       },
+      //生成一个块
       createBlock(x,y,z, type, color){
         let material;
         if(type === "transparent")
@@ -371,6 +375,7 @@
           z: z * this.config.blockSize
         }
       },
+      //生成所有透明方块，递归调用createTransparentBlock
       createAllTransparentBlock(){
         for(let key in this.blocks){
           let block = this.blocks[key];
@@ -393,10 +398,12 @@
           if(position[5]) this.createTransparentBlock(block.xyz.x, block.xyz.y, block.xyz.z-1);
         }
       },
+      //生成一个透明方块
       createTransparentBlock(x,y,z){
         if(this.blocks[`${x},${y},${z}`]) return;
         this.createBlock(x,y,z, "transparent");
       },
+      //清除所有透明方块
       clearTransparentBlock(){
         for(let key in this.blocks){
           let block = this.blocks[key];
@@ -406,6 +413,7 @@
           }
         }
       },
+      //清除并重绘所有透明方块
       refreshTransparentBlock(){
         this.clearTransparentBlock();
         this.createAllTransparentBlock();
