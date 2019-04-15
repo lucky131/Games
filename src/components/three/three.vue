@@ -94,6 +94,7 @@
             "#5e5ce4",
             "#faff7c",
           ],
+          groundColor: "#8eed6a",
         },
         controller: {
           editStatus: "add",
@@ -164,7 +165,7 @@
         this.createLight(this.controller.light);
 
         //plane
-        this.createBlockZone(-5,-1,-5, 5,-1,5, "ground", "#8eed6a");
+        this.createBlockZone(-5,-1,-5, 5,-1,5, "ground", this.config.groundColor);
         this.createAllTransparentBlock();
 
         container.appendChild(this.renderer.domElement);
@@ -315,6 +316,7 @@
       selectBlock(block, isSelected){
         if(isSelected){
           if(block.type === "transparent"){
+            block.material.color = new THREE.Color(this.controller.color);
             block.material.opacity = 0.5;
           } else if(block.type === "block"){
             block.material.opacity = 0.5
@@ -344,10 +346,7 @@
         }
       },
       //生成一个块
-      createBlock(x,y,z, type, color){
-        let material;
-        if(type === "transparent")
-          color = this.config.selectedBlockColor;
+      createBlock(x,y,z, type, color="#fff"){
         let block = new THREE.Mesh(
           new THREE.BoxGeometry(this.config.blockSize, this.config.blockSize, this.config.blockSize),
           new THREE.MeshLambertMaterial({color: color})
