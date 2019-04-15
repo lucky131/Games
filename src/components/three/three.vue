@@ -10,7 +10,11 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="controller.editStatus==='add'" label="颜色：">
-          <el-color-picker v-model="controller.color"></el-color-picker>
+          <div class="formRow">
+            <div :class="{colorPicker: true, seleced: controller.colorIndex === index}" v-for="(color, index) in config.defaultColors" :key="index" :style="{backgroundColor: color}" @click="changeColor(index)"></div>
+            <div :class="{colorPicker: true, others: true, seleced: controller.colorIndex === -1}" @click="changeColor(-1)"></div>
+            <el-color-picker v-if="controller.colorIndex === -1" v-model="controller.color"></el-color-picker>
+          </div>
         </el-form-item>
         <el-form-item label="光线：">
           <el-radio-group v-model="controller.light" @change="onLightChange">
@@ -47,6 +51,27 @@
       height: 800px;
       background-color: white;
       border-left: 1px solid black;
+      .formRow{
+        display: flex;
+        flex-flow: row wrap;
+        .colorPicker{
+          width: 40px;
+          height: 40px;
+          line-height: 40px;
+          border-radius: 4px;
+          margin-right: 6px;
+          color: white;
+          font-size: 32px;
+          text-align: center;
+          cursor: pointer;
+          &.seleced:before{
+            content: "√";
+          }
+          &.others{
+            background-image: linear-gradient(90deg, #e24224, #e0ff22, #2bff82, #2a4dff);
+          }
+        }
+      }
     }
   }
 </style>
@@ -63,10 +88,17 @@
         config: {
           blockSize: 4,
           selectedBlockColor: "#5e64dd",
+          defaultColors: [
+            "#308f2d",
+            "#ad7126",
+            "#5e5ce4",
+            "#faff7c",
+          ],
         },
         controller: {
           editStatus: "add",
-          color: "#ffc06c",
+          colorIndex: 0,
+          color: "",
           light: "spot",
           axesHelper: true,
         },
@@ -103,6 +135,7 @@
       //初始化
       init(){
         let container = document.getElementById('container');
+        this.changeColor(0);
 
         //scene
         this.scene = new THREE.Scene();
@@ -131,13 +164,6 @@
         this.createLight(this.controller.light);
 
         //plane
-        // let plane = new THREE.Mesh(
-        //   new THREE.PlaneBufferGeometry(50,50),
-        //   new THREE.MeshLambertMaterial({color: "#ff8dcc"})
-        // );
-        // plane.rotation.x = -Math.PI/2;
-        // plane.position.y = 2;
-        // this.scene.add(plane);
         this.createBlockZone(-5,-1,-5, 5,-1,5, "ground", "#8eed6a");
         this.createAllTransparentBlock();
 
@@ -409,6 +435,11 @@
           this.selectBlock(this.selectedBlock, false);
           this.selectedBlock = null;
         }
+      },
+      changeColor(index){
+        this.controller.colorIndex = index;
+        if(index !== -1)
+          this.controller.color = this.config.defaultColors[index];
       },
       onLightChange(v){
         this.createLight(v);
