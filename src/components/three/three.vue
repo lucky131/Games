@@ -9,14 +9,14 @@
             <el-radio label="remove">移除</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="controller.editStatus==='add'" label="颜色：">
+        <el-form-item v-if="controller.editStatus==='add'" label="方块颜色：">
           <div class="formRow">
             <div :class="{colorPicker: true, seleced: controller.colorIndex === index}" v-for="(color, index) in config.defaultColors" :key="index" :style="{backgroundColor: color}" @click="changeColor(index)"></div>
             <div :class="{colorPicker: true, others: true, seleced: controller.colorIndex === -1}" @click="changeColor(-1)"></div>
             <el-color-picker v-if="controller.colorIndex === -1" v-model="controller.color"></el-color-picker>
           </div>
         </el-form-item>
-        <el-form-item label="光线：">
+        <el-form-item label="光源类型：">
           <el-radio-group v-model="controller.light" @change="onLightChange">
             <el-radio label="spot">聚光灯</el-radio>
             <el-radio label="direct">平行光</el-radio>
@@ -28,8 +28,41 @@
             <el-radio :label="false">关</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="存/读：">
+          <el-button type="primary" size="medium" round @click="showSave()">保存</el-button>
+          <el-button type="success" size="medium" round @click="showLoad()">读取</el-button>
+        </el-form-item>
       </el-form>
     </div>
+
+    <el-dialog
+      title="保存"
+      center
+      :visible.sync="isSaveDialogShow"
+      width="500px">
+      <el-input id="saveInput" readonly v-model="saveCode"></el-input>
+      <span slot="footer" class="">
+        <el-button class="copyBtn" type="primary" data-clipboard-target="#saveInput">复制</el-button>
+        <el-button @click="isSaveDialogShow = false">关闭</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog
+      title="读取"
+      center
+      :visible.sync="isLoadDialogShow"
+      width="500px">
+      <el-input v-model="loadCode" placeholder="请粘贴编码"></el-input>
+      <el-row style="margin-top: 20px">
+        <span style="margin: 0 10px">预留存档：</span>
+        <el-button v-for="(n, index) in defaultLoadCode" :key="index" type="primary" round size="small" @click="loadCode=n.code">{{n.name}}</el-button>
+      </el-row>
+      <span slot="footer" class="">
+        <el-button class="copyBtn" type="success" @click="loadBtn()">读取</el-button>
+        <el-button @click="isLoadDialogShow = false">关闭</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -80,6 +113,7 @@
   import * as THREE from 'three'
   import * as Stats from 'stats-js'
   import * as dat from 'dat.gui'
+  import Clipboard from "clipboard/dist/clipboard.min"
 
   export default {
     name: "three",
@@ -103,6 +137,16 @@
           light: "spot",
           axesHelper: true,
         },
+        isSaveDialogShow: false,
+        isLoadDialogShow: false,
+        saveCode: "",
+        loadCode: "",
+        defaultLoadCode: [
+          {
+            name: "预留一",
+            code: "#308f2d:-1,0,-2;0,0,-2;1,0,-2;1,0,-1;1,0,0;0,0,0;-1,0,0;1,0,1;1,0,2;0,0,2;-1,0,2;-3,0,0;-4,0,0;3,0,0;4,0,0"
+          }
+        ],
         blocks: {},
         selectedBlock: null,
         res: {},
@@ -127,6 +171,16 @@
       this.init();
       this.initStats();
       this.animate();
+
+      //初始化剪切板工具
+      let clipboard = new Clipboard('.copyBtn');
+      clipboard.on('success', e => {
+        e.clearSelection();
+        this.$message({
+          message: '复制成功',
+          type: 'success'
+        });
+      });
     },
     methods: {
       //加载资源
@@ -449,10 +503,86 @@
           this.controller.color = this.config.defaultColors[index];
       },
       onLightChange(v){
+        if(v === "direct")
+          this.$message({
+            message: "平行光渲染阴影耗大量性能，已关闭阴影",
+            duration: 1500
+          });
         this.createLight(v);
       },
       onAxesHelperChange(v){
         this.axesHelper.visible = v;
+      },
+      showSave(){
+        // `#308f2d:1,0,-1;2,0,1;1,0,4.#5e5ce4:-2,0,1;-2,1,1`
+        let resultObj = {}, resultArr = [], result = "";
+        for(let key in this.blocks){
+          let block = this.blocks[key];
+          let color, pp;
+          if(block.type === "block"){
+            color = "#" + block.material.color.getHexString();
+            pp = `${block.xyz.x},${block.xyz.y},${block.xyz.z}`;
+            if(!resultObj[color]){
+              resultObj[color] = [pp];
+            } else {
+              resultObj[color].push(pp);
+            }
+          }
+        }
+        for(let color in resultObj){
+          resultArr.push(color + ":" + resultObj[color].join(";"));
+        }
+        result = resultArr.join(".");
+        this.saveCode = result;
+        this.isSaveDialogShow = true;
+      },
+      showLoad(){
+        this.loadCode = "";
+        this.isLoadDialogShow = true;
+      },
+      loadBtn(){
+        // `#308f2d:1,0,-1;2,0,1;1,0,4.#5e5ce4:-2,0,1;-2,1,1`
+        let code = this.loadCode;
+        if(code.trim().length === 0)
+          return this.$message.error("编码格式不正确，请检查！");
+        let numberReg = /^-?\d+$/;
+        let blocks = [];
+        let arr1 = code.split(".");
+        arr1.forEach(str => {
+          if(str.indexOf(":") !== 7 || str.lastIndexOf(":") !== 7)
+            return this.$message.error("编码格式不正确，请检查！");
+          let arr2 = str.split(":");
+          let color = arr2[0];
+          let arr3 = arr2[1].split(";");
+          arr3.forEach(ppstr => {
+            let pparr = ppstr.split(",");
+            if(pparr.length !== 3)
+              return this.$message.error("编码格式不正确，请检查！");
+            if(!numberReg.test(pparr[0]) || !numberReg.test(pparr[1]) || !numberReg.test(pparr[2]))
+              return this.$message.error("编码格式不正确，请检查！");
+            blocks.push({
+              x: parseInt(pparr[0]),
+              y: parseInt(pparr[1]),
+              z: parseInt(pparr[2]),
+              color: color
+            });
+          });
+        });
+
+        //解析完成
+        for(let key in this.blocks){
+          let block = this.blocks[key];
+          if(block.type !== "ground"){
+            this.scene.remove(block);
+            delete this.blocks[key];
+          }
+        }
+        blocks.forEach(block => {
+          this.createBlock(block.x, block.y, block.z, "block", block.color);
+        });
+        this.createAllTransparentBlock();
+        this.isLoadDialogShow = false;
+        this.$message.success("加载完毕");
       },
     }
   }
