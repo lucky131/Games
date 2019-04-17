@@ -3,10 +3,11 @@
     <div id="container"></div>
     <div class="controller">
       <el-form label-width="100px">
-        <el-form-item label="模式：">
+        <el-form-item label="鼠标模式：">
           <el-radio-group v-model="controller.editStatus" @change="onEditStatusChange">
             <el-radio label="add">新增</el-radio>
             <el-radio label="remove">移除</el-radio>
+            <el-radio label="copy">复制颜色</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="controller.editStatus==='add'" label="方块颜色：">
@@ -27,6 +28,10 @@
             <el-radio :label="true">开</el-radio>
             <el-radio :label="false">关</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="其他功能：">
+          <el-button size="medium" round @click="resetCamera()">重置视角</el-button>
+          <el-button size="medium" round @click="clearAllBlockBtn()">清空方块</el-button>
         </el-form-item>
         <el-form-item label="存/读：">
           <el-button type="primary" size="medium" round @click="showSave()">保存</el-button>
@@ -83,7 +88,8 @@
       width: 400px;
       height: 800px;
       background-color: white;
-      border-left: 1px solid black;
+      padding-top: 20px;
+      box-sizing: border-box;
       .formRow{
         display: flex;
         flex-flow: row wrap;
@@ -205,7 +211,7 @@
         this.camera.position.set(10,30,40);
         this.camera.lookAt(0,0,0);
         this.cameraController = new THREE.OrbitControls(this.camera, container);
-        this.cameraController.userPanSpeed = 0.2;
+        this.cameraController.userPanSpeed = 1;
         this.clock = new THREE.Clock();
 
         //render
@@ -255,6 +261,21 @@
               }
               break;
             case "remove":
+              intersects = intersects.filter(n => n.object.type === "block");
+              if(intersects.length > 0){
+                if(this.selectedBlock){
+                  this.selectBlock(this.selectedBlock, false);
+                }
+                this.selectedBlock = intersects[0].object;
+                this.selectBlock(this.selectedBlock, true);
+              } else {
+                if(this.selectedBlock){
+                  this.selectBlock(this.selectedBlock, false);
+                  this.selectedBlock = null;
+                }
+              }
+              break;
+            case "copy":
               intersects = intersects.filter(n => n.object.type === "block");
               if(intersects.length > 0){
                 if(this.selectedBlock){
@@ -324,6 +345,13 @@
                   this.selectedBlock = null;
                   this.clearTransparentBlock();
                   this.createAllTransparentBlock();
+                }
+                break;
+              case "copy":
+                if(this.selectedBlock){
+                  this.controller.colorIndex = -1;
+                  this.controller.color = "#" + this.selectedBlock.material.color.getHexString();
+                  this.controller.editStatus = "add";
                 }
                 break;
             }
@@ -420,6 +448,16 @@
         this.blocks[`${x},${y},${z}`] = block;
         this.scene.add(block);
       },
+      //清空所有非地面方块
+      clearAllBlock(){
+        for(let key in this.blocks){
+          let block = this.blocks[key];
+          if(block.type !== "ground"){
+            this.scene.remove(block);
+            delete this.blocks[key];
+          }
+        }
+      },
       //逻辑坐标 -> 物理坐标
       xyz2PhysicalPosition(x,y,z){
         return {
@@ -513,6 +551,20 @@
       onAxesHelperChange(v){
         this.axesHelper.visible = v;
       },
+      resetCamera(){
+        this.camera.position.set(10,30,40);
+        this.camera.lookAt(0,0,0);
+      },
+      clearAllBlockBtn(){
+        this.$confirm("确定删除所有方块？", "提示", {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.clearAllBlock();
+          this.createAllTransparentBlock();
+        })
+      },
       showSave(){
         // `#308f2d:1,0,-1;2,0,1;1,0,4.#5e5ce4:-2,0,1;-2,1,1`
         let resultObj = {}, resultArr = [], result = "";
@@ -570,13 +622,7 @@
         });
 
         //解析完成
-        for(let key in this.blocks){
-          let block = this.blocks[key];
-          if(block.type !== "ground"){
-            this.scene.remove(block);
-            delete this.blocks[key];
-          }
-        }
+        this.clearAllBlock();
         blocks.forEach(block => {
           this.createBlock(block.x, block.y, block.z, "block", block.color);
         });
