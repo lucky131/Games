@@ -17,6 +17,12 @@
             <el-color-picker v-if="controller.colorIndex === -1" v-model="controller.color"></el-color-picker>
           </div>
         </el-form-item>
+        <el-form-item label="相机类型：">
+          <el-radio-group v-model="controller.camera" @change="onCameraChange">
+            <el-radio label="perspective">透视相机</el-radio>
+            <el-radio label="orthographic">正交相机</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="光源类型：">
           <el-radio-group v-model="controller.light" @change="onLightChange">
             <el-radio label="spot">聚光灯</el-radio>
@@ -141,6 +147,7 @@
           editStatus: "add",
           colorIndex: 0,
           color: "",
+          camera: "perspective",
           light: "spot",
           axesHelper: true,
         },
@@ -174,26 +181,13 @@
       window.THREE = require("three");
       require("../magicCube/lib/OrbitControls");
 
-      this.loadRes();
       this.init();
       this.initStats();
+      this.initClipboard();
+      this.initEvent();
       this.animate();
-
-      //初始化剪切板工具
-      let clipboard = new Clipboard('.copyBtn');
-      clipboard.on('success', e => {
-        e.clearSelection();
-        this.$message({
-          message: '复制成功',
-          type: 'success'
-        });
-      });
     },
     methods: {
-      //加载资源
-      loadRes(){
-
-      },
       //初始化
       init(){
         let container = document.getElementById('container');
@@ -203,17 +197,14 @@
         this.scene = new THREE.Scene();
 
         //axesHelper
-        this.axesHelper = new THREE.AxesHelper(1000);
+        let axesHelper1 = new THREE.AxesHelper(1000);
+        let axesHelper2 = new THREE.AxesHelper(-1000);
+        this.axesHelper = new THREE.Object3D();
+        this.axesHelper.add(axesHelper1, axesHelper2);
         this.scene.add(this.axesHelper);
 
         //camera
-        this.camera = new THREE.PerspectiveCamera(50, 800/800, 0.01, 1000);
-        // this.camera = new THREE.OrthographicCamera(-50,50,50,-50, 0.01, 1000);
-        this.camera.position.set(10,30,40);
-        this.camera.lookAt(0,0,0);
-        this.cameraController = new THREE.OrbitControls(this.camera, container);
-        this.cameraController.userPanSpeed = 1;
-        this.clock = new THREE.Clock();
+        this.createCamera(this.controller.camera);
 
         //render
         this.renderer = new THREE.WebGLRenderer({antialias: true}); //抗锯齿
@@ -237,8 +228,20 @@
 
         //raycaster
         this.raycaster = new THREE.Raycaster();
-
-        //event
+      },
+      //初始化剪切板工具
+      initClipboard(){
+        let clipboard = new Clipboard('.copyBtn');
+        clipboard.on('success', e => {
+          e.clearSelection();
+          this.$message({
+            message: '复制成功',
+            type: 'success'
+          });
+        });
+      },
+      //初始化鼠标事件
+      initEvent(){
         container.addEventListener("mousemove", (event) => {
           this.mouse.x = (event.offsetX/event.target.width)*2-1;
           this.mouse.y = -(event.offsetY/event.target.height)*2+1;
@@ -358,6 +361,17 @@
             }
           }
         }, false);
+      },
+      //重新生成相机
+      createCamera(type){
+        if(type === "perspective")
+          this.camera = new THREE.PerspectiveCamera(50, 800/800, 0.01, 1000);
+        else
+          this.camera = new THREE.OrthographicCamera(-30,30,30,-30, 0.01, 1000);
+        this.resetCamera();
+        this.cameraController = new THREE.OrbitControls(this.camera, container);
+        this.cameraController.userPanSpeed = 1;
+        this.clock = new THREE.Clock();
       },
       //重新生成光线
       createLight(type){
@@ -541,6 +555,9 @@
         if(index !== -1)
           this.controller.color = this.config.defaultColors[index];
       },
+      onCameraChange(v){
+        this.createCamera(v);
+      },
       onLightChange(v){
         if(v === "direct")
           this.$message({
@@ -553,7 +570,10 @@
         this.axesHelper.visible = v;
       },
       resetCamera(){
-        this.camera.position.set(10,30,40);
+        if(this.controller.camera === "perspective")
+          this.camera.position.set(10,30,40);
+        else
+          this.camera.position.set(20,20,20);
         this.camera.lookAt(0,0,0);
       },
       clearAllBlockBtn(){
