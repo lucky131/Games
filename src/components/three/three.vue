@@ -120,6 +120,7 @@
   import * as Stats from 'stats-js'
   import * as dat from 'dat.gui'
   import Clipboard from "clipboard/dist/clipboard.min"
+  import {Base64} from "js-base64"
 
   export default {
     name: "three",
@@ -150,7 +151,7 @@
         defaultLoadCode: [
           {
             name: "预留一",
-            code: "#308f2d:-1,0,-2;0,0,-2;1,0,-2;1,0,-1;1,0,0;0,0,0;-1,0,0;1,0,1;1,0,2;0,0,2;-1,0,2;-3,0,0;-4,0,0;3,0,0;4,0,0"
+            code: "IzMwOGYyZDotMSwwLC0yOzAsMCwtMjsxLDAsLTI7MSwwLC0xOzEsMCwwOzAsMCwwOy0xLDAsMDsxLDAsMTsxLDAsMjswLDAsMjstMSwwLDI7LTMsMCwwOy00LDAsMDszLDAsMDs0LDAsMA=="
           }
         ],
         blocks: {},
@@ -585,7 +586,7 @@
           resultArr.push(color + ":" + resultObj[color].join(";"));
         }
         result = resultArr.join(".");
-        this.saveCode = result;
+        this.saveCode = Base64.encode(result);
         this.isSaveDialogShow = true;
       },
       showLoad(){
@@ -594,7 +595,12 @@
       },
       loadBtn(){
         // `#308f2d:1,0,-1;2,0,1;1,0,4.#5e5ce4:-2,0,1;-2,1,1`
-        let code = this.loadCode;
+        let code;
+        try {
+          code = Base64.decode(this.loadCode);
+        } catch (e) {
+          return this.$message.error("编码格式不正确，请检查！");
+        }
         if(code.trim().length === 0)
           return this.$message.error("编码格式不正确，请检查！");
         let numberReg = /^-?\d+$/;

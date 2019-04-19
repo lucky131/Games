@@ -16,6 +16,7 @@
     "echarts": "^4.1.0",
     "element-ui": "^2.4.3",
     "jquery": "^3.3.1",
+    "js-base64": "^2.5.1",
     "stats-js": "^1.0.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
