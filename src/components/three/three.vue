@@ -35,6 +35,12 @@
             <el-radio :label="false">关</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="性能面板：">
+          <el-radio-group v-model="controller.stats" @change="onStatsChange">
+            <el-radio :label="true">开</el-radio>
+            <el-radio :label="false">关</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="其他功能：">
           <el-button size="medium" round @click="resetCamera()">重置视角</el-button>
           <el-button size="medium" round @click="clearAllBlockBtn()">清空方块</el-button>
@@ -149,7 +155,8 @@
           color: "",
           camera: "perspective",
           light: "spot",
-          axesHelper: true,
+          axesHelper: false,
+          stats: false,
         },
         isSaveDialogShow: false,
         isLoadDialogShow: false,
@@ -157,8 +164,12 @@
         loadCode: "",
         defaultLoadCode: [
           {
-            name: "预留一",
+            name: "-3-",
             code: "IzMwOGYyZDotMSwwLC0yOzAsMCwtMjsxLDAsLTI7MSwwLC0xOzEsMCwwOzAsMCwwOy0xLDAsMDsxLDAsMTsxLDAsMjswLDAsMjstMSwwLDI7LTMsMCwwOy00LDAsMDszLDAsMDs0LDAsMA=="
+          },
+          {
+            name: "错觉",
+            code: "IzVlNWNlNDowLDAsMDswLDAsMTswLDAsLTE7MCwwLC0yOzAsMCwyOzAsMSwyOzAsMiwyOzAsMywyOzAsNCwyOzAsNCwxOzAsNCwwOzAsNCwtMTsyLDUsMDsyLDYsMDsyLDQsMDsyLDMsMA=="
           }
         ],
         blocks: {},
@@ -202,6 +213,7 @@
         this.axesHelper = new THREE.Object3D();
         this.axesHelper.add(axesHelper1, axesHelper2);
         this.scene.add(this.axesHelper);
+        this.onAxesHelperChange(this.controller.axesHelper);
 
         //camera
         this.createCamera(this.controller.camera);
@@ -530,6 +542,7 @@
         this.stats.domElement.style.position = 'fixed';
         this.stats.domElement.style.left = '0px';
         this.stats.domElement.style.top = '0px';
+        this.onStatsChange(this.controller.stats);
         // document.getElementById("container").appendChild(this.stats.domElement);
         document.body.appendChild(this.stats.domElement);
       },
@@ -569,11 +582,14 @@
       onAxesHelperChange(v){
         this.axesHelper.visible = v;
       },
+      onStatsChange(v){
+        this.stats.domElement.style.opacity = (v ? '1' : '0')
+      },
       resetCamera(){
         if(this.controller.camera === "perspective")
-          this.camera.position.set(10,30,40);
+          this.camera.position.set(20,40,50);
         else
-          this.camera.position.set(20,20,20);
+          this.camera.position.set(100,100,100);
         this.camera.lookAt(0,0,0);
       },
       clearAllBlockBtn(){
