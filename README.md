@@ -1,6 +1,7 @@
 # Games by -3-
 ## Run Dev
 ```
+npm install
 npm run dev
 ```
 ## Game Menu
@@ -17,5 +18,9 @@ npm run dev
 * CssDraw 纯CSS绘制的一些图形
 * Tower 移动端文字冒险游戏
 * MagicCube 3D魔方
+* GangEditor 杠·地图编辑器
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
+## Author
+Name: -3-（杠三杠）  
+QQ: 542723049
