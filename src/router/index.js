@@ -83,9 +83,9 @@ export default new Router({
       component: () => import("../components/magicCube/magicCube")
     },
     {
-      path: "/three",
-      name: "three",
-      component: () => import('../components/three/three')
+      path: "/gangEditor",
+      name: "gangEditor",
+      component: () => import('../components/gangEditor/gangEditor')
     },
   ]
 })

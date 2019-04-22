@@ -203,9 +203,9 @@ export default {
           newTab: true,
         },
         {
-          name: "？？？",
-          path: "/three",
-          desc: "？？？",
+          name: "杠·地图编辑器",
+          path: "/gangEditor",
+          desc: "用three.js创建的地图编辑器",
           color: "#fdff48",
           loading: false,
           newTab: true,
