@@ -72,7 +72,7 @@
     },
     mounted(){
       window.THREE = require("three");
-      require("./lib/TrackballControls");
+      require("../../lib/three/TrackballControls");
 
       this.loadRes();
       this.init();

@@ -190,7 +190,7 @@
     },
     mounted(){
       window.THREE = require("three");
-      require("../magicCube/lib/OrbitControls");
+      require("../../lib/three/OrbitControls");
 
       this.init();
       this.initStats();
