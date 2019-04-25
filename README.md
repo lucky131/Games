@@ -24,3 +24,4 @@ npm run dev
 ## Author
 Name: -3-（杠三杠）  
 QQ: 542723049
+[![996.ICU](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
