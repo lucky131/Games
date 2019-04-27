@@ -1,4 +1,4 @@
-# Games by -3-
+# Games by -3- [![996.ICU](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 ## Run Dev
 ```
 npm install
