@@ -303,7 +303,7 @@
   import event from "./event"
   import item from "./item"
   export default {
-    name: "tower",
+    name: "tripleDisaster",
     data(){
       return{
         height: 0,

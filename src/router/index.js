@@ -68,9 +68,9 @@ export default new Router({
       component: () => import("../components/cssDraw/cssDraw")
     },
     {
-      path: "/tower",
-      name: "tower",
-      component: () => import("../components/tower/tower")
+      path: "/tripleDisaster",
+      name: "tripleDisaster",
+      component: () => import("../components/tripleDisaster/tripleDisaster")
     },
     {
       path: "/ccc",
