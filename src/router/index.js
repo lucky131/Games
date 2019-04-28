@@ -87,5 +87,10 @@ export default new Router({
       name: "gangEditor",
       component: () => import('../components/gangEditor/gangEditor')
     },
+    {
+      path: "/gangCompany",
+      name: "gangCompany",
+      component: () => import('../components/gangCompany/gangCompany')
+    },
   ]
 })

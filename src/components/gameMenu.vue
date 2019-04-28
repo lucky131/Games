@@ -203,6 +203,14 @@ export default {
           loading: false,
           newTab: true,
         },
+        {
+          name: "杠三杠科技有限公司",
+          path: "/gangCompany",
+          desc: "移动端经营模拟类有",
+          color: "#fbff1a",
+          loading: false,
+          mobile: true,
+        },
       ]
     }
   },
