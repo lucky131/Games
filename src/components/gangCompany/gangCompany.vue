@@ -12,18 +12,21 @@
       <div class="main-top">
         <div class="main-top-left">
           <div class="row">第{{day}}天 {{weekday}}</div>
-          <div class="row">总资产：{{money}}</div>
-          <div class="row">今日预计收益：233</div>
+          <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+          <div class="row">今日预计收益：
+            <span :class="{'green': totalEarn>0, 'gray': totalEarn===0, 'red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
+          </div>
         </div>
         <div class="main-top-next">下班</div>
       </div>
       <div v-if="mainType === 'personal'" class="main-center personal">
-        <div class="info-label">总资产</div><div class="info-value">{{money}}</div>
+        <div class="info-label">总资产</div><div class="info-value">{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
       </div>
       <div v-else-if="mainType === 'company'" class="main-center company">
         <div class="opes">
           <div class="ope-btn" @click="UIController='decoration'"><i class="el-icon-brush"></i><span>装修</span></div>
-          <div class="ope-btn"><i class="el-icon-office-building"></i><span>迁址</span></div>
+          <div class="ope-btn" @click="UIController='relocation'"><i class="el-icon-office-building"></i><span>迁址</span></div>
+          <div class="ope-btn" @click="UIController='server'"><i class="el-icon-cloudy"></i><span>服务器</span></div>
           <div class="ope-btn"><i class="el-icon-bank-card"></i><span>贷款</span></div>
           <div class="ope-btn"><i class="el-icon-news"></i><span>广告</span></div>
         </div>
@@ -32,22 +35,23 @@
           <div class="card-content">
             <div class="info-label">公司名称</div><div class="info-value">杭州三杠科技有限公司</div>
             <div class="info-label">公司地址</div><div class="info-value">{{company.building.address}}</div>
-            <div class="info-label">公司规模</div><div class="info-value">1人 / {{company.building.size}}人</div>
+            <div class="info-label">公司规模</div><div class="info-value">1人 / {{$u.formatIntegerNumber(company.building.size, config.formatIntegerNumberMode)}}人</div>
+            <div class="info-label">办公环境</div><div class="info-value" v-html="environmentHtml"></div>
           </div>
         </div>
         <div class="card">
           <div class="card-title">每日盈利</div>
           <div class="card-content">
-            <div class="info-label">基本盈利</div><div class="info-value">0</div>
+            <div class="info-label">基本盈利</div><div class="info-value">{{$u.formatIntegerNumber(profit.base, config.formatIntegerNumberMode)}}</div>
           </div>
         </div>
         <div class="card">
           <div class="card-title">每日开销</div>
           <div class="card-content">
-            <div class="info-label">房租</div><div class="info-value">{{company.building.rent}}</div>
-            <div class="info-label">电费</div><div class="info-value">100</div>
-            <div class="info-label">网费</div><div class="info-value">50</div>
-            <div class="info-label">广告费</div><div class="info-value">200</div>
+            <div class="info-label">房租</div><div class="info-value">{{$u.formatIntegerNumber(cost.rent, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">电费</div><div class="info-value">{{$u.formatIntegerNumber(cost.electricity, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">网费</div><div class="info-value">{{$u.formatIntegerNumber(cost.net, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">广告费</div><div class="info-value">{{$u.formatIntegerNumber(cost.ad, config.formatIntegerNumberMode)}}</div>
           </div>
         </div>
       </div>
@@ -61,15 +65,42 @@
 
     <div v-else-if="UIController === 'decoration'" class="page decoration">
       <div class="decoration-header">
-        <div class="row">总资产：{{money}}</div>
-        <div class="row">办公环境：</div>
+        <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+        <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
       </div>
       <div class="decoration-content">
         <one-decoration v-for="(d, index) in allDecorations" :key="d.value"
-                        :text="d.name" :size="company.building.size" :price="d.price" :money="money" :already-buy="company.decoration[index]"
+                        :text="d.name" :size="company.building.size" :price="d.price" :money="money" :already-buy="company.decoration[index]" :config="config"
                         @buy="buyDecoration(index)"></one-decoration>
       </div>
       <div class="decoration-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <div v-else-if="UIController === 'relocation'" class="page relocation">
+      <div class="relocation-content">
+        <div class="tips">提示：迁址完毕后所有的装修都会重置，即使之前装修过的地址，再次迁回来，也不会有原有的装修记录，需要重新装修，请慎重考虑</div>
+        <one-building v-for="(b, index) in allBuildings" :key="b.id"
+                      :name="b.address" :size="b.size" :rent="b.rent" :is-now="company.building.id===b.id" :config="config"
+                      @buy="buyBuilding(index)"></one-building>
+      </div>
+      <div class="relocation-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <div v-else-if="UIController === 'server'" class="page server">
+      <div class="server-header">
+        <div class="title-row">服务器使用率</div>
+        <div class="progress-row">
+          <div class="progress"><el-progress :text-inside="true" :stroke-width="18" :percentage="serversSizeRate"></el-progress></div>
+          <div class="info">{{$u.formatHardDiskSize(company.serversSize) + '/' + $u.formatHardDiskSize(serversMaxSize)}}</div>
+        </div>
+      </div>
+      <div class="server-content">
+        <div class="tips">减少服务器时，若已使用的容量大于了缩减后的总容量，则会丢失数据，请慎重</div>
+        <one-server v-for="(s, index) in allServers" :key="index"
+                    :name="s.name" :desc="s.desc" :size="s.size" :price="s.price" :number="company.server[index]" :config="config"
+                    @change="changeServer($event, index)"></one-server>
+      </div>
+      <div class="server-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <div v-else-if="UIController === 'xxx'" class="page xxx"></div>
@@ -128,7 +159,11 @@
           flex: 1 0 0;
           height: 100%;
           padding: 8px 20px;
-          .row{}
+          .row{
+            .green{color: green}
+            .gray{color: gray}
+            .red{color: red}
+          }
         }
         .main-top-next{
           width: 60px;
@@ -172,7 +207,9 @@
                 font-size: 24px;
                 margin-bottom: 4px;
               }
-              span{}
+              span{
+                font-size: 12px;
+              }
             }
           }
           .card{
@@ -241,9 +278,7 @@
         height: 60px;
         background-color: $headerFooterGray;
         padding: 8px 20px;
-        .row{
-
-        }
+        .row{}
       }
       .decoration-content{
         width: 100%;
@@ -259,24 +294,97 @@
         text-align: center;
       }
     }
+    .relocation{
+      .relocation-content{
+        width: 100%;
+        flex: 1 0 0;
+        overflow-y: auto;
+        .tips{
+          width: 100%;
+          padding: 10px 20px;
+          background-color: $headerFooterGray;
+          font-size: 12px;
+        }
+      }
+      .relocation-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
+    .server{
+      .server-header{
+        width: 100%;
+        height: 70px;
+        padding: 10px 20px 0;
+        background-color: $headerFooterGray;
+        border-bottom: 1px solid #aaa;
+        .title-row{
+          font-size: 16px;
+          margin-bottom: 4px;
+        }
+        .progress-row{
+          width: 100%;
+          display: flex;
+          flex-flow: row nowrap;
+          align-items: center;
+          .progress{
+            flex: 1 0 0;
+            margin-right: 20px;
+          }
+          .info{
+            font-size: 12px;
+          }
+        }
+      }
+      .server-content{
+        width: 100%;
+        flex: 1 0 0;
+        overflow-y: auto;
+        .tips{
+          width: 100%;
+          padding: 10px 20px;
+          background-color: $headerFooterGray;
+          font-size: 12px;
+        }
+      }
+      .server-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
   }
 </style>
 
 <script>
   //components
-  import oneDecoration from "./one-decoration"
+  import oneBuilding from "./components/one-building"
+  import oneDecoration from "./components/one-decoration"
+  import oneServer from "./components/one-server"
 
-  //mixins
-  import buildings from "./buildings"
-  import decorations from "./decorations"
+  //db mixins
+  import buildings from "./db/buildings"
+  import decorations from "./db/decorations"
+  import servers from "./db/servers"
 
   export default {
     name: "gangCompany",
-    mixins: [buildings, decorations],
-    components: {oneDecoration},
+    mixins: [buildings, decorations, servers],
+    components: {oneBuilding, oneDecoration, oneServer},
     data(){
       return{
         height: 0,
+        config: {
+          formatIntegerNumberMode: 1,
+        },
+
         UIController: "",
         tutorialCompleteText: "我是杠三杠，最近刚创立了杭州三杠科技有限公司，目前公司只有我一个人，我得想办法扩张公司的规模...",
         tutorialText: "",
@@ -307,19 +415,9 @@
             size: 0,
             rent: 0,
           },
-          decoration: [
-            false, //blanket
-            false, //wall
-            false, //windows
-            false, //light
-            false, //table
-            false, //wc
-            false, //plant
-            false, //sofa
-            false, //airCon
-            false, //coffee
-            false, //snack
-          ],
+          decoration: [],
+          server: [],
+          serversSize: 0,
         },
         employee: {}
       }
@@ -327,13 +425,86 @@
     computed: {
       weekday(){
         return ["星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][this.day % 7];
-      }
+      },
+      environment(){
+        let e = 0;
+        this.allDecorations.forEach((d, index) => {
+          if(this.company.decoration[index]){
+            e += d.environmentWeight;
+          }
+        });
+        return e;
+      },
+      environmentHtml(){
+        if(this.environment < 25) return `<span style="color: #cc1900">恶心</span>`
+        if(this.environment < 50) return `<span style="color: #cc9000">难受</span>`
+        if(this.environment < 75) return `<span style="color: #7f7f7f">一般</span>`
+        if(this.environment < 100) return `<span style="color: #008bd7">舒适</span>`
+        return `<span style="color: #00c21a">宜居</span>`
+      },
+      profit(){
+        return {
+          base: 1350,
+        }
+      },
+      cost(){
+        let net = 0;
+        this.allServers.forEach((s, index) => {
+          net += s.price * this.company.server[index];
+        });
+        return {
+          rent: this.company.building.rent,
+          electricity: this.electricityCost,
+          net: net,
+          ad: 200,
+        }
+      },
+      electricityCost(){
+        let e = 0;
+        this.allDecorations.forEach((d, index) => {
+          if(this.company.decoration[index]){
+            e += d.electricity;
+          }
+        });
+        return e * this.company.building.size;
+      },
+      totalProfit(){
+        let n = 0;
+        let profit = this.profit;
+        for(let key in profit){
+          n += profit[key]
+        }
+        return n;
+      },
+      totalCost(){
+        let n = 0;
+        let cost = this.cost;
+        for(let key in cost){
+          n += cost[key]
+        }
+        return n;
+      },
+      totalEarn(){
+        return this.totalProfit - this.totalCost;
+      },
+      serversMaxSize(){
+        let size = 0;
+        this.allServers.forEach((s, index) => {
+          size += s.size * this.company.server[index];
+        });
+        return size;
+      },
+      serversSizeRate(){
+        if(this.serversMaxSize === 0) return 0;
+        return Math.round(this.company.serversSize/this.serversMaxSize*100*100)/100;
+      },
     },
     mounted(){
       window.vue = this;
       this.height = window.innerHeight;
 
       this.initGame();
+      console.log(this.$u);
     },
     methods: {
       initGame(){
@@ -343,25 +514,16 @@
         this.isTutorialAnimating = true;
         this.tutorialAnimationTimer = null;
         this.mainType = "personal";
-        this.money = 5000;
+        this.money = 1233884466;
         this.day = 1;
         this.personal = {};
         this.company = {
           building: this.allBuildings[0],
-          decoration: [
-            false, //blanket
-            false, //wall
-            false, //windows
-            false, //light
-            false, //table
-            false, //wc
-            false, //plant
-            false, //sofa
-            false, //airCon
-            false, //coffee
-            false, //snack
-          ],
+          decoration: [],
+          server: [0,0,0,0,0,0,0,0],
+          serversSize: 3500,
         };
+        this.initDecoration();
         this.employee = {};
 
         this.tutorialAnimationTimer = setInterval(() => {
@@ -374,6 +536,21 @@
           }
         }, 100);
       },
+      initDecoration(){
+        this.company.decoration = [
+          false, //  0 blanket
+          false, //  1 wall
+          false, //  2 windows
+          false, //  3 light
+          false, //  4 table
+          false, //  5 wc
+          false, //  6 plant
+          false, //  7 sofa
+          false, //  8 airCon
+          false, //  9 coffee
+          false, // 10 snack
+        ];
+      },
       skipTutorialAnimating(){
         if(this.isTutorialAnimating){
           clearInterval(this.tutorialAnimationTimer);
@@ -383,8 +560,22 @@
       },
       buyDecoration(index){
         this.money -= this.company.building.size * this.allDecorations[index].price;
-        this.company.decoration[index] = true;
-      }
+        // this.company.decoration[index] = true; 这么写无法获取变化
+        this.$set(this.company.decoration, index, true);
+      },
+      buyBuilding(index){
+        this.company.building = this.allBuildings[index];
+        //重置decoration
+        this.initDecoration();
+      },
+      changeServer(num, index){
+        let n = this.company.server[index] + num;
+        this.$set(this.company.server, index, n);
+        //如果减少服务器后硬盘不足，则清除多出的数据
+        if(this.company.serversSize > this.serversMaxSize){
+          this.company.serversSize = this.serversMaxSize;
+        }
+      },
     }
   }
 </script>

@@ -1,9 +1,9 @@
 <template>
   <div class="one-decoration">
-    <div class="text">{{text}} {{size * price}}</div>
+    <div class="text">{{text}} {{$u.formatIntegerNumber(size*price, config.formatIntegerNumberMode)}}</div>
     <div v-if="alreadyBuy" class="buy-btn disabled">已买</div>
-    <div v-else-if="money >= size * price" class="buy-btn able" @click="buy()">购买</div>
-    <div v-else class="buy-btn disabled">无法购买</div>
+    <div v-else-if="money < size * price" class="buy-btn disabled">无法购买</div>
+    <div v-else class="buy-btn able" @click="buy()">购买</div>
   </div>
 </template>
 
@@ -44,6 +44,7 @@
       price: Number,
       money: Number,
       alreadyBuy: Boolean,
+      config: Object,
     },
     data(){
       return{
