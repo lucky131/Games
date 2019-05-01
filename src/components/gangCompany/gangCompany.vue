@@ -5,7 +5,8 @@
       <div class="tutorial-complete-text">{{tutorialCompleteText}}
         <div class="tutorial-text">{{tutorialText}}</div>
       </div>
-      <div class="tutorial-btn" :class="{'tutorial-btn__transparent': isTutorialAnimating}" @click.stop="UIController='main'"><i class="el-icon-arrow-right"></i></div>
+      <div v-if="isTutorialAnimating" class="tutorial-btn tutorial-btn__transparent"></div>
+      <div v-else class="tutorial-btn" @click.stop="UIController='main'"><i class="el-icon-arrow-right"></i></div>
     </div>
 
     <div v-else-if="UIController === 'main'" class="page main">
@@ -14,7 +15,7 @@
           <div class="row">第{{day}}天 {{weekday}}</div>
           <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
           <div class="row">今日预计收益：
-            <span :class="{'green': totalEarn>0, 'gray': totalEarn===0, 'red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
+            <span :class="{'__text-green': totalEarn>0, '__text-gray': totalEarn===0, '__text-red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
           </div>
         </div>
         <div class="main-top-next">下班</div>
@@ -55,7 +56,30 @@
           </div>
         </div>
       </div>
-      <div v-else-if="mainType === 'employee'" class="main-center employee"></div>
+      <div v-else-if="mainType === 'employee'" class="main-center employee">
+        <div class="position-block">
+          <div class="position-name">BOSS</div>
+          <div class="position-content">
+            <div class="one-people">
+              <div class="left">
+                <div class="name">杠三杠</div>
+                <div class="row2">心情：好</div>
+                <div class="row3">日薪：100</div>
+              </div>
+              <div class="right"></div>
+            </div>
+            <div class="one-people">
+              <div class="left">
+                <div class="name">杠三杠</div>
+                <div class="row2">心情：好</div>
+                <div class="row3">日薪：100</div>
+              </div>
+              <div class="right"></div>
+            </div>
+            <div class="recruit-btn"><i class="el-icon-s-custom"></i> 招聘新员工</div>
+          </div>
+        </div>
+      </div>
       <div class="main-bottom">
         <div v-for="type in mainTypes" :key="type.value"
              class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === type.value}"
@@ -95,7 +119,7 @@
         </div>
       </div>
       <div class="server-content">
-        <div class="tips">减少服务器时，若已使用的容量大于了缩减后的总容量，则会丢失数据，请慎重</div>
+        <div class="tips">提示：减少服务器时，若已使用的容量大于了缩减后的总容量，则会丢失数据，请慎重</div>
         <one-server v-for="(s, index) in allServers" :key="index"
                     :name="s.name" :desc="s.desc" :size="s.size" :price="s.price" :number="company.server[index]" :config="config"
                     @change="changeServer($event, index)"></one-server>
@@ -110,9 +134,23 @@
 
 <style scoped lang="scss">
   $headerFooterGray: #e1e1e6;
+  $textRed: #F56C6C;
+  $textOrange: #E6A23C;
+  $textGray: #909399;
+  $textBlue: #409EFF;
+  $textGreen: #67C23A;
+
   *{
     box-sizing: border-box;
   }
+  /deep/ {
+    .__text-red{color: $textRed}
+    .__text-orange{color: $textOrange}
+    .__text-gray{color: $textGray}
+    .__text-blue{color: $textBlue}
+    .__text-green{color: $textGreen}
+  }
+
   .gang-company{
     width: 100vw;
     .page{
@@ -159,19 +197,16 @@
           flex: 1 0 0;
           height: 100%;
           padding: 8px 20px;
-          .row{
-            .green{color: green}
-            .gray{color: gray}
-            .red{color: red}
-          }
+          .row{}
         }
         .main-top-next{
           width: 60px;
           height: 60px;
           line-height: 60px;
-          background-color: lightgreen;
+          background-color: #67C23A;
           border-radius: 10px;
           margin: 10px;
+          color: white;
           font-size: 20px;
           text-align: center;
         }
@@ -213,35 +248,83 @@
             }
           }
           .card{
-            margin-left: 10px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            &:last-child{margin-top: 0}
+            margin: 0 10px 10px;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 0 4px rgba(0,0,0,.1);
+            box-shadow: 0 0 6px rgba(0,0,0,.1);
             .card-title{
-              height: 30px;
-              line-height: 30px;
+              height: 40px;
+              line-height: 40px;
               background-color: #e7eaef;
-              padding-left: 10px;
+              text-align: center;
+              font-size: 18px;
+              font-weight: bold;
             }
             .card-content{
-              padding-top: 20px;
+              padding: 10px 20px 0;
               .info-label{
                 text-align: center;
-                font-size: 20px;
+                font-size: 16px;
               }
               .info-value{
                 text-align: center;
+                size: 14px;
                 color: #888;
-                margin-bottom: 20px;
+                margin-bottom: 10px;
               }
             }
           }
         }
         &.employee{
-          background-color: lightpink;
+          padding-top: 10px;
+          .position-block{
+            margin: 0 10px 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 6px rgba(0,0,0,.1);
+            .position-name{
+              height: 40px;
+              line-height: 40px;
+              background-color: #e7eaef;
+              text-align: center;
+              font-size: 18px;
+              font-weight: bold;
+            }
+            .position-content{
+              padding: 0 20px;
+              .one-people{
+                width: 100%;
+                height: 80px;
+                border-bottom: 1px solid #ccc;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                .left{
+                  flex: 1 0 0;
+                  .name{
+                    font-weight: bold;
+                  }
+                  .row2{}
+                  .row3{}
+                }
+                .right{
+                  width: 100px;
+                  height: 100%;
+                }
+              }
+              .recruit-btn{
+                width: 100%;
+                height: 40px;
+                line-height: 40px;
+                border-radius: 10px;
+                margin: 10px 0;
+                background-color: #67C23A;
+                color: white;
+                font-weight: bold;
+                text-align: center;
+              }
+            }
+          }
         }
       }
       .main-bottom{
@@ -321,7 +404,6 @@
         height: 70px;
         padding: 10px 20px 0;
         background-color: $headerFooterGray;
-        border-bottom: 1px solid #aaa;
         .title-row{
           font-size: 16px;
           margin-bottom: 4px;
@@ -347,7 +429,7 @@
         .tips{
           width: 100%;
           padding: 10px 20px;
-          background-color: $headerFooterGray;
+          background-color: #eaeaef;
           font-size: 12px;
         }
       }
@@ -436,11 +518,11 @@
         return e;
       },
       environmentHtml(){
-        if(this.environment < 25) return `<span style="color: #cc1900">恶心</span>`
-        if(this.environment < 50) return `<span style="color: #cc9000">难受</span>`
-        if(this.environment < 75) return `<span style="color: #7f7f7f">一般</span>`
-        if(this.environment < 100) return `<span style="color: #008bd7">舒适</span>`
-        return `<span style="color: #00c21a">宜居</span>`
+        if(this.environment < 25) return `<span class="__text-red">恶心</span>`
+        if(this.environment < 50) return `<span class="__text-orange">难受</span>`
+        if(this.environment < 75) return `<span class="__text-gray">一般</span>`
+        if(this.environment < 100) return `<span class="__text-blue">舒适</span>`
+        return `<span class="__text-green">宜居</span>`
       },
       profit(){
         return {
