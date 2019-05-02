@@ -277,54 +277,6 @@
         }
         &.employee{
           padding-top: 10px;
-          .position-block{
-            margin: 0 10px 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 6px rgba(0,0,0,.1);
-            .position-name{
-              height: 40px;
-              line-height: 40px;
-              background-color: #e7eaef;
-              text-align: center;
-              font-size: 18px;
-              font-weight: bold;
-            }
-            .position-content{
-              padding: 0 20px;
-              .one-people{
-                width: 100%;
-                height: 80px;
-                border-bottom: 1px solid #ccc;
-                display: flex;
-                flex-flow: row nowrap;
-                align-items: center;
-                .left{
-                  flex: 1 0 0;
-                  .name{
-                    font-weight: bold;
-                  }
-                  .row2{}
-                  .row3{}
-                }
-                .right{
-                  width: 100px;
-                  height: 100%;
-                }
-              }
-              .recruit-btn{
-                width: 100%;
-                height: 40px;
-                line-height: 40px;
-                border-radius: 10px;
-                margin: 10px 0;
-                background-color: #67C23A;
-                color: white;
-                font-weight: bold;
-                text-align: center;
-              }
-            }
-          }
         }
       }
       .main-bottom{
@@ -454,11 +406,12 @@
   //db mixins
   import buildings from "./db/buildings"
   import decorations from "./db/decorations"
+  import positions from "./db/positions"
   import servers from "./db/servers"
 
   export default {
     name: "gangCompany",
-    mixins: [buildings, decorations, servers],
+    mixins: [buildings, decorations, positions, servers],
     components: {oneBuilding, oneDecoration, oneServer},
     data(){
       return{
@@ -501,7 +454,7 @@
           server: [],
           serversSize: 0,
         },
-        employee: {}
+        employee: []
       }
     },
     computed: {
@@ -606,7 +559,13 @@
           serversSize: 3500,
         };
         this.initDecoration();
-        this.employee = {};
+        this.employee = new Array(this.allPositions.length);
+        for(let i = 0; i < this.employee.length; i++){
+          this.employee[i] = [];
+        }
+        this.employee[0].push({
+          name: "杠三杠",
+        });
 
         this.tutorialAnimationTimer = setInterval(() => {
           let length = this.tutorialText.length;
