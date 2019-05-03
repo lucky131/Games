@@ -1,24 +1,16 @@
 <template>
   <div class="one-position">
-    <div class="position-name">BOSS</div>
+    <div class="position-name">{{name}}（{{employeeArray.length}}人）</div>
     <div class="position-content">
-      <div class="one-people">
+      <div v-for="(e, index) in employeeArray" :key="index" class="one-people">
         <div class="left">
-          <div class="name">杠三杠</div>
+          <div class="name">{{e.name}}</div>
           <div class="row2">心情：好</div>
           <div class="row3">日薪：100</div>
         </div>
         <div class="right"></div>
       </div>
-      <div class="one-people">
-        <div class="left">
-          <div class="name">杠三杠</div>
-          <div class="row2">心情：好</div>
-          <div class="row3">日薪：100</div>
-        </div>
-        <div class="right"></div>
-      </div>
-      <div class="recruit-btn"><i class="el-icon-s-custom"></i> 招聘新员工</div>
+      <div v-if="canRecruited" class="recruit-btn" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
     </div>
   </div>
 </template>
@@ -43,6 +35,7 @@
         width: 100%;
         height: 80px;
         border-bottom: 1px solid #ccc;
+        &:last-child{border-bottom: none}
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -65,7 +58,7 @@
         line-height: 40px;
         border-radius: 10px;
         margin: 10px 0;
-        background-color: #67C23A;
+        background-color: #31c21f;
         color: white;
         font-weight: bold;
         text-align: center;
@@ -80,6 +73,8 @@
     props: {
       name: String,
       canRecruited: Boolean,
+      employeeArray: Array,
+      condition: String,
     },
     data(){
       return{
@@ -90,7 +85,9 @@
 
     },
     methods: {
-
+      toRecruit(){
+        this.$emit("toRecruit");
+      }
     }
   }
 </script>

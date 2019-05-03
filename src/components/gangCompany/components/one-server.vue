@@ -38,11 +38,11 @@
       .size-price{
         font-size: 14px;
         .size{
-          color: #ff6f00;
+          color: #ed8a1a;
           margin-right: 20px;
         }
         .price{
-          color: green;
+          color: #31c21f;
         }
       }
     }
@@ -93,11 +93,11 @@
     },
     data(){
       return{
-        
+
       }
     },
     mounted(){
-      
+
     },
     methods: {
       minus(){

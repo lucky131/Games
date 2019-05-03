@@ -23,9 +23,11 @@
       width: 80px;
       height: 40px;
       line-height: 40px;
+      border-radius: 10px;
       text-align: center;
       &.able{
-        background-color: lightgreen;
+        color: white;
+        background-color: #31c21f;
       }
       &.disabled{
         background-color: #ccc;
@@ -48,11 +50,11 @@
     },
     data(){
       return{
-        
+
       }
     },
     mounted(){
-      
+
     },
     methods: {
       buy(){
