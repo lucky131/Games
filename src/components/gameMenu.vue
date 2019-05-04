@@ -6,7 +6,7 @@
          :key="index"
          :style="{backgroundColor: item.color}">
       <div class="innerBlock" @click="goto(index)">
-        <div class="name">{{(index+1) + '. ' + item.name}}</div>
+        <div class="name"><span>{{item.name}}</span></div>
         <div v-if="!isMobile" class="desc">{{item.desc}}</div>
       </div>
       <div v-if="item.loading" class="loading">
@@ -54,9 +54,10 @@
           transition: color 500ms;
           font-size: 20px;
           font-weight: bold;
+          text-align: center;
         }
         .desc{
-          margin-top: 10px;
+          margin-top: 20px;
           color: rgba(255,255,255,.25);
           transition: color 500ms;
           font-size: 12px;
@@ -95,7 +96,6 @@ export default {
   name: 'gameMenu',
   data () {
     return {
-      width: 0,
       isMobile: false,
       loading: false,
       gameList: [
@@ -225,15 +225,7 @@ export default {
     };
   },
   mounted(){
-    this.width = window.innerWidth;
-    this.isMobile = this.width < 450;
-    if(this.isMobile){
-      this.$message("移动端支持功能较少，使用pc端查看完整功能");
-    }
-    window.addEventListener("resize", event => {
-      this.width = window.innerWidth;
-      this.isMobile = this.width < 450;
-    });
+    this.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
   },
   methods: {
     goto(index){
