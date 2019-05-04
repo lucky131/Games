@@ -20,7 +20,7 @@
             <span :class="{'__text-green': totalEarn>0, '__text-gray': totalEarn===0, '__text-red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
           </div>
         </div>
-        <div class="main-top-next">下班</div>
+        <div class="main-top-next" @click="next()">下班</div>
       </div>
       <!--个人-->
       <div v-if="mainType === 'personal'" class="main-center personal">
@@ -41,6 +41,7 @@
             <div class="info-label">公司名称</div><div class="info-value">杭州三杠科技有限公司</div>
             <div class="info-label">公司地址</div><div class="info-value">{{company.building.address}}</div>
             <div class="info-label">公司规模</div><div class="info-value">{{$u.formatIntegerNumber(numberOfEmployee, config.formatIntegerNumberMode)}}人 / {{$u.formatIntegerNumber(company.building.size, config.formatIntegerNumberMode)}}人</div>
+            <div class="info-label">公司知名度</div><div class="info-value">{{popularityText}}</div>
             <div class="info-label">办公环境</div><div class="info-value" v-html="environmentHtml"></div>
           </div>
         </div>
@@ -138,7 +139,25 @@
     <!--弹窗-->
     <!--offer-->
     <div v-if="dialogController !== ''" class="mask">
-      <div v-if="dialogController === 'offer'" class="dialog offer">
+      <div v-if="dialogController === 'break'" class="dialog break">
+        <div class="icon"><i class="el-icon-lightning"></i></div>
+        <div class="row">公司已破产:(</div>
+        <div class="row">总共持续了{{day}}天</div>
+        <div class="restart-btn" @click="initGame()">重新开始</div>
+      </div>
+      <div v-else-if="dialogController === 'next'" class="dialog next">
+        <div class="content">
+          <div class="title">昨日小报</div>
+          <div class="ticket-row"><span>原有资产</span><span>{{history[day-1].money}}</span></div>
+          <div class="ticket-row"><span>总盈利</span><span>+ {{history[day-1].totalProfit}}</span></div>
+          <div class="ticket-row"><span>总开销</span><span>- {{history[day-1].totalCost}}</span></div>
+          <div class="ticket-row"><span></span><span>----------</span></div>
+          <div class="ticket-row"><span>今日资产</span><span>{{money}}</span></div>
+          <div class="title">新员工</div>
+        </div>
+        <div class="continue-btn" @click="dialogController=''">确定</div>
+      </div>
+      <div v-else-if="dialogController === 'offer'" class="dialog offer">
         <div class="paper">
           <div class="title">录用通知书</div>
           <div class="row">尊敬的{{employee[recruitIndex].seekers[seekerIndex].name}}{{employee[recruitIndex].seekers[seekerIndex].gender === 1 ? '先生' : '女士'}}：</div>
@@ -153,10 +172,12 @@
           <div class="signal">杭州三杠科技有限公司</div>
         </div>
         <div class="ope">
-          <div class="btn send" @click="sendOffer()">发 送</div>
+          <div v-if="employee[recruitIndex].seekers[seekerIndex].offerSalary === undefined" class="btn disabled">发 送</div>
+          <div v-else class="btn send" @click="sendOffer()">发 送</div>
           <div class="btn cancel" @click="dialogController=''">取 消</div>
         </div>
       </div>
+      <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
     </div>
 
   </div>
@@ -196,6 +217,8 @@
         width: 80%;
         margin-bottom: 60px;
         color: rgba(0,0,0,0);
+        font-size: 20px;
+        font-weight: bold;
         position: relative;
         .tutorial-text{
           position: absolute;
@@ -204,10 +227,11 @@
         }
       }
       .tutorial-btn{
-        width: 100px;
-        height: 50px;
-        line-height: 50px;
-        background-color: cornflowerblue;
+        width: 120px;
+        height: 60px;
+        line-height: 60px;
+        border-radius: 10px;
+        background-color: $textBlue;
         color: white;
         font-size: 36px;
         text-align: center;
@@ -236,7 +260,7 @@
           width: 60px;
           height: 60px;
           line-height: 60px;
-          background-color: #31c21f;
+          background-color: $textBlue;
           border-radius: 10px;
           margin: 10px;
           color: white;
@@ -466,10 +490,62 @@
         box-shadow: 6px 6px 10px rgba(0,0,0,.4);
         border-radius: 10px;
         overflow: hidden;
+        &.break{
+          width: 80%;
+          .icon{
+            padding-top: 30px;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-align: center;
+          }
+          .row{
+            text-align: center;
+          }
+          .restart-btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            margin-top: 20px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
+        &.next{
+          width: 80%;
+          .content{
+            padding: 0 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+            .title{
+              font-weight: bold;
+              margin: 20px 0 10px;
+            }
+            .ticket-row{
+              display: flex;
+              flex-flow: row nowrap;
+              justify-content: space-between;
+              color: #999;
+              font-size: 14px;
+            }
+          }
+          .continue-btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
         &.offer{
           width: 80%;
           .paper{
             padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
             .title{
               margin-bottom: 20px;
               font-size: 20px;
@@ -497,6 +573,7 @@
               font-weight: bold;
               &.send{background-color: $textBlue}
               &.cancel{background-color: #aaa}
+              &.disabled{background-color: #ccc}
             }
           }
         }
@@ -550,6 +627,7 @@
             value: "employee"
           }
         ],
+        history: [],
         money: 0,
         day: 0,
         personal: {},
@@ -587,6 +665,19 @@
         });
         return num;
       },
+      popularity(){
+        return 1;
+      },
+      popularityText(){
+        if(this.popularity < 10) return "野鸡公司";
+        if(this.popularity < 50) return "无人问津";
+        if(this.popularity < 100) return "略有耳闻";
+        if(this.popularity < 250) return "小有名声";
+        if(this.popularity < 500) return "家喻户晓";
+        if(this.popularity < 1000) return "业界龙头";
+        if(this.popularity < 5000) return "国内大厂";
+        return "国际知名";
+      },
       environment(){
         let e = 0;
         this.allDecorations.forEach((d, index) => {
@@ -605,8 +696,17 @@
       },
       profit(){
         return {
-          base: 1350,
+          base: 100,
         }
+      },
+      electricityCost(){
+        let e = 0;
+        this.allDecorations.forEach((d, index) => {
+          if(this.company.decoration[index]){
+            e += d.electricity;
+          }
+        });
+        return e * this.company.building.size;
       },
       cost(){
         let net = 0;
@@ -619,15 +719,6 @@
           net: net,
           ad: 200,
         }
-      },
-      electricityCost(){
-        let e = 0;
-        this.allDecorations.forEach((d, index) => {
-          if(this.company.decoration[index]){
-            e += d.electricity;
-          }
-        });
-        return e * this.company.building.size;
       },
       totalProfit(){
         let n = 0;
@@ -678,7 +769,8 @@
         this.isTutorialAnimating = true;
         this.tutorialAnimationTimer = null;
         this.mainType = "personal";
-        this.money = 1233884466;
+        this.history = [{}];
+        this.money = 1200;
         this.day = 1;
         this.personal = {};
         this.company = {
@@ -732,6 +824,21 @@
           this.isTutorialAnimating = false;
         }
       },
+      next(){
+        this.history.push({
+          money: this.money,
+          totalProfit: this.totalProfit,
+          totalCost: this.totalCost,
+          numberOfEmployee: this.numberOfEmployee,
+        });
+        this.money = this.money + this.totalProfit - this.totalCost;
+        if(this.money < 0){
+          this.dialogController = "break";
+        } else{
+          this.day++;
+          this.dialogController = "next";
+        }
+      },
       buyDecoration(index){
         this.money -= this.company.building.size * this.allDecorations[index].price;
         // this.company.decoration[index] = true; 这么写无法获取变化
@@ -775,6 +882,7 @@
         this.dialogController = "offer";
       },
       sendOffer(){
+        if(this.employee[this.recruitIndex].seekers[this.seekerIndex].offerSalary === undefined) return;
         this.employee[this.recruitIndex].seekers[this.seekerIndex].isOffer = true;
         this.dialogController = "";
       },
