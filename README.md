@@ -15,17 +15,16 @@ Jump            | 横版跳跃游戏，已搁浅 | [Click Me](https://lucky131.g
 Picross         | 填图游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/picross)
 Bulls and Cows  | 经典猜数字 | [Click Me](https://lucky131.github.io/GamesPage/#/digital)
 Wolf            | 狼人kill专用发牌器 | [Click Me](https://lucky131.github.io/GamesPage/#/wolf)
-Graduate        | 12班毕业去向统计，欢迎补充 | [Click Me](https://lucky131.github.io/GamesPage/#/graduate)
 Eco             | 地形生成器，已搁浅 | [Click Me](https://lucky131.github.io/GamesPage/#/eco)
 CssDraw         | 纯CSS绘制的一些图形 | [Click Me](https://lucky131.github.io/GamesPage/#/cssDraw)
 TripleDisaster  | 三灾，移动端文字冒险游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/tripleDisaster)
 MagicCube       | 3D魔方 | [Click Me](https://lucky131.github.io/GamesPage/#/magicCube)
 GangEditor      | 杠·地图编辑器 | [Click Me](https://lucky131.github.io/GamesPage/#/gangEditor)
- 
+
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
 ## Author
-Name: -3-（杠三杠）  
-QQ: 542723049  
-Email: QQMail  
+Name: -3-（杠三杠）
+QQ: 542723049
+Email: QQMail
 BLive: [咕咕咕](https://live.bilibili.com/38115)

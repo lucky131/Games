@@ -156,14 +156,14 @@ export default {
           loading: false,
           mobile: true,
         },
-        {
-          name: "12班去向图",
-          path: "/graduate",
-          desc: "110900010643",
-          color: "#ff7381",
-          loading: false,
-          mobile: true,
-        },
+        // {
+        //   name: "12班去向图",
+        //   path: "/graduate",
+        //   desc: "110900010643",
+        //   color: "#ff7381",
+        //   loading: false,
+        //   mobile: true,
+        // },
         {
           name: "地形生成器",
           path: "/eco",
