@@ -77,7 +77,7 @@ export function getRandomSeeker(gender = 0, averageSalary) {
   let expectSalary = Math.round(averageSalary *
     (ability/90+1.5-10/9) * //能力因素 10-100 0.5-1.5
     (age*0.7/19+1.5-0.7/19*37) * //年龄因素 18-37 0.8-1.5
-    (Math.random() * 0.2 + 0.9)); //随机因素 0.9-1.1
+    (Math.random() * 0.5 + 0.75)); //随机因素 0.75-1.25
 
   return {
     name: lastName + firstName,
