@@ -4,9 +4,17 @@
     <div class="position-content">
       <div v-for="(e, index) in employeeArray" :key="index" class="one-people">
         <div class="left">
-          <div class="name">{{e.name}}</div>
-          <div class="row2">心情：好</div>
-          <div class="row3">日薪：100</div>
+          <div class="name">
+            <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
+            <i v-else class="el-icon-s-custom female"></i>
+            {{e.name}}
+            {{e.age}}岁
+          </div>
+          <div v-if="e.ability || e.mood" class="info">
+            能力：<span v-html="abilityHtml(e.ability)" style="margin-right: 20px"></span>
+            心情：<span v-html="moodHtml(e.mood)"></span>
+          </div>
+          <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
         </div>
         <div class="right"></div>
       </div>
@@ -75,6 +83,7 @@
       canRecruited: Boolean,
       employeeArray: Array,
       condition: String,
+      config: Object,
     },
     data(){
       return{
@@ -85,9 +94,23 @@
 
     },
     methods: {
+      abilityHtml(ability){
+        if(ability < 20) return `<span class="__text-red">极差</span>`;
+        if(ability < 40) return `<span class="__text-orange">稍差</span>`;
+        if(ability < 60) return `<span class="__text-gray">中等</span>`;
+        if(ability < 80) return `<span class="__text-blue">优秀</span>`;
+        return `<span class="__text-green">顶尖</span>`;
+      },
+      moodHtml(mood){
+        if(mood < 20) return `<span class="__text-red">崩溃</span>`;
+        if(mood < 40) return `<span class="__text-orange">烦躁</span>`
+        if(mood < 60) return `<span class="__text-gray">一般</span>`
+        if(mood < 80) return `<span class="__text-blue">开心</span>`
+        return `<span class="__text-green">狂欢</span>`
+      },
       toRecruit(){
         this.$emit("toRecruit");
-      }
+      },
     }
   }
 </script>

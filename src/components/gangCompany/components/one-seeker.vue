@@ -5,9 +5,10 @@
         <i v-if="seeker.gender === 1" class="el-icon-s-custom male"></i>
         <i v-else class="el-icon-s-custom female"></i>
         {{seeker.name}}
-        {{seeker.age}}岁</div>
+        {{seeker.age}}岁
+      </div>
       <div class="row">能力：<span v-html="abilityHtml"></span></div>
-      <div class="row">期望日薪：{{seeker.expectSalary}}</div>
+      <div class="row">期望日薪：{{$u.formatIntegerNumber(seeker.expectSalary, config.formatIntegerNumberMode)}}</div>
     </div>
     <div v-if="seeker.isOffer" class="offer disabled">已发offer</div>
     <div v-else-if="canOffer" class="offer able" @click="sendOffer()">发offer</div>
@@ -28,8 +29,6 @@
       flex: 1 0 0;
       .info{
         font-weight: bold;
-        .male{color: #2e7bff}
-        .female{color: deeppink}
       }
     }
     .offer{
@@ -56,6 +55,7 @@
     props: {
       seeker: Object,
       canOffer: Boolean,
+      config: Object,
     },
     data(){
       return{
@@ -64,11 +64,11 @@
     },
     computed: {
       abilityHtml(){
-        if(this.seeker.ability < 20) return `<span class="__text-red">极差</span>`
-        if(this.seeker.ability < 40) return `<span class="__text-orange">稍差</span>`
-        if(this.seeker.ability < 60) return `<span class="__text-gray">中等</span>`
-        if(this.seeker.ability < 80) return `<span class="__text-blue">优秀</span>`
-        return `<span class="__text-green">顶尖</span>`
+        if(this.seeker.ability < 20) return `<span class="__text-red">极差</span>`;
+        if(this.seeker.ability < 40) return `<span class="__text-orange">稍差</span>`;
+        if(this.seeker.ability < 60) return `<span class="__text-gray">中等</span>`;
+        if(this.seeker.ability < 80) return `<span class="__text-blue">优秀</span>`;
+        return `<span class="__text-green">顶尖</span>`;
       },
     },
     mounted(){

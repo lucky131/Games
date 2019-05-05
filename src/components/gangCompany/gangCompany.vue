@@ -46,6 +46,15 @@
           </div>
         </div>
         <div class="card">
+          <div class="card-title">网站概况</div>
+          <div class="card-content">
+            <div class="info-label">用户数量</div><div class="info-value">{{websiteCal.user}}</div>
+            <div class="info-label">用户体验UE</div><div class="info-value">{{websiteCal.ue}}</div>
+            <div class="info-label">用户界面UI</div><div class="info-value">{{websiteCal.ui}}</div>
+            <div class="info-label">响应速度</div><div class="info-value">{{websiteCal.speed}}</div>
+          </div>
+        </div>
+        <div class="card">
           <div class="card-title">每日盈利</div>
           <div class="card-content">
             <div class="info-label">基本盈利</div><div class="info-value">{{$u.formatIntegerNumber(profit.base, config.formatIntegerNumberMode)}}</div>
@@ -54,6 +63,7 @@
         <div class="card">
           <div class="card-title">每日开销</div>
           <div class="card-content">
+            <div class="info-label">工资</div><div class="info-value">{{$u.formatIntegerNumber(cost.salary, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">房租</div><div class="info-value">{{$u.formatIntegerNumber(cost.rent, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">电费</div><div class="info-value">{{$u.formatIntegerNumber(cost.electricity, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">网费</div><div class="info-value">{{$u.formatIntegerNumber(cost.net, config.formatIntegerNumberMode)}}</div>
@@ -64,7 +74,7 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="p.canRecruited" :employee-array="p.list"
+                      :name="p.name" :can-recruited="p.canRecruited" :employee-array="p.list" :config="config"
                       @toRecruit="toRecruit(index)"></one-position>
       </div>
       <div class="main-bottom">
@@ -128,7 +138,7 @@
       <div class="recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
       <div class="recruit-content">
         <one-seeker v-for="(s, index) in employee[recruitIndex].seekers" :key="index"
-                    :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size"
+                    :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config"
                     @sendOffer="showOffer(index)"></one-seeker>
       </div>
       <div class="recruit-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -154,6 +164,16 @@
           <div class="ticket-row"><span></span><span>----------</span></div>
           <div class="ticket-row"><span>今日资产</span><span>{{money}}</span></div>
           <div class="title">新员工</div>
+          <div v-if="newEmployee.length === 0" class="row">无</div>
+          <div v-else>
+            <div v-for="(e, index) in newEmployee" :key="index" class="row">
+              {{e.position}}
+              <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
+              <i v-else class="el-icon-s-custom female"></i>
+              {{e.name}}
+              {{e.age}}岁
+            </div>
+          </div>
         </div>
         <div class="continue-btn" @click="dialogController=''">确定</div>
       </div>
@@ -200,6 +220,8 @@
     .__text-gray{color: $textGray}
     .__text-blue{color: $textBlue}
     .__text-green{color: $textGreen}
+    .male{color: #2e7bff}
+    .female{color: deeppink}
   }
 
   .gang-company{
@@ -515,7 +537,7 @@
         &.next{
           width: 80%;
           .content{
-            padding: 0 30px;
+            padding: 0 30px 20px;
             max-height: 70vh;
             overflow-y: auto;
             .title{
@@ -529,6 +551,7 @@
               color: #999;
               font-size: 14px;
             }
+            .row{}
           }
           .continue-btn{
             width: 100%;
@@ -642,7 +665,11 @@
           server: [],
           serversSize: 0,
         },
+        website: {
+          user: 0,
+        },
         employee: [],
+        newEmployee: [],
         recruitIndex: 0,
         seekerIndex: 0,
       }
@@ -666,7 +693,11 @@
         return num;
       },
       popularity(){
-        return 1;
+        return Math.sqrt(this.websiteCal.user) + 0;
+      },
+      basicAcceptOfferRate(){
+        //x
+        return 0.7 - 200 / (this.popularity + 500);
       },
       popularityText(){
         if(this.popularity < 10) return "野鸡公司";
@@ -694,10 +725,29 @@
         if(this.environment < 100) return `<span class="__text-blue">舒适</span>`
         return `<span class="__text-green">宜居</span>`
       },
+      websiteCal(){
+        return {
+          user: this.website.user,
+          ue: 0,
+          ui: 0,
+          speed: 0,
+        };
+      },
       profit(){
         return {
           base: 100,
         }
+      },
+      salaryCost(){
+        let s = 0;
+        this.employee.forEach(p => {
+          p.list.forEach(e => {
+            if(e.salary){
+              s += e.salary;
+            }
+          });
+        });
+        return s;
       },
       electricityCost(){
         let e = 0;
@@ -708,16 +758,23 @@
         });
         return e * this.company.building.size;
       },
-      cost(){
-        let net = 0;
+      netCost(){
+        let n = 0;
         this.allServers.forEach((s, index) => {
-          net += s.price * this.company.server[index];
+          n += s.price * this.company.server[index];
         });
+        return n;
+      },
+      adCost(){
+        return 0;
+      },
+      cost(){
         return {
+          salary: this.salaryCost,
           rent: this.company.building.rent,
           electricity: this.electricityCost,
-          net: net,
-          ad: 200,
+          net: this.netCost,
+          ad: this.adCost,
         }
       },
       totalProfit(){
@@ -770,23 +827,32 @@
         this.tutorialAnimationTimer = null;
         this.mainType = "personal";
         this.history = [{}];
-        this.money = 1200;
+        this.money = 500000;
         this.day = 1;
         this.personal = {};
         this.company = {
           building: this.allBuildings[0],
           decoration: [],
           server: [0,0,0,0,0,0,0,0],
-          serversSize: 3500,
+          serversSize: 0,
         };
         this.initDecoration();
+        this.website = {
+          user: 0,
+        };
         this.employee = [
-          {name: "老板", canRecruited: false, unlock: true, list: [{name: "杠三杠"}], seekers: [], gender: 0, averageSalary: 0},
+          {name: "老板", canRecruited: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
           {name: "开发", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
           {name: "产品", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 450},
           {name: "UI", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 400},
           {name: "运维", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
         ];
+        this.employee[0].list.push({
+          name: "杠三杠",
+          gender: 1,
+          age: 34,
+        });
+        this.newEmployee = [];
         this.recruitIndex = 1;
         this.seekerIndex = 0;
 
@@ -835,6 +901,36 @@
         if(this.money < 0){
           this.dialogController = "break";
         } else{
+          //处理offer
+          this.newEmployee = [];
+          this.employee.forEach(p => {
+            p.seekers.forEach(s => {
+              if(s.isOffer){
+                let acceptOfferRate = this.basicAcceptOfferRate * s.offerSalary / s.expectSalary;
+                if(Math.random() < acceptOfferRate){
+                  //接受offer
+                  p.list.push({
+                    name: s.name,
+                    gender: s.gender,
+                    age: s.age,
+                    ability: s.ability,
+                    mood: Math.min(Math.round(60 * s.offerSalary / s.expectSalary), 100),
+                    salary: s.offerSalary,
+                  });
+                  this.newEmployee.push({
+                    position: p.name,
+                    name: s.name,
+                    gender: s.gender,
+                    age: s.age,
+                  });
+                }
+              }
+            });
+          });
+
+          //刷新求职者
+          this.refreshSeekers();
+
           this.day++;
           this.dialogController = "next";
         }
