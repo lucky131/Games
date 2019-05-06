@@ -48,7 +48,12 @@
         <div class="card">
           <div class="card-title">网站概况</div>
           <div class="card-content">
-            <div class="info-label">用户数量</div><div class="info-value">{{websiteCal.user}}</div>
+            <div class="info-label">用户数量</div>
+            <div class="info-value">
+              <span></span>
+              <span v-if="company.serversSize + website.user > serversMaxSize" class="__text-red">{{website.user}}（+{{websiteCal.user}}：请扩容服务器）</span>
+              <span v-else>{{website.user}}（+{{websiteCal.user}}）</span>
+            </div>
             <div class="info-label">用户体验UE</div><div class="info-value">{{websiteCal.ue}}</div>
             <div class="info-label">用户界面UI</div><div class="info-value">{{websiteCal.ui}}</div>
             <div class="info-label">响应速度</div><div class="info-value">{{websiteCal.speed}}</div>
@@ -664,6 +669,7 @@
           decoration: [],
           server: [],
           serversSize: 0,
+          serverFullDay: 0,
         },
         website: {
           user: 0,
@@ -696,7 +702,7 @@
         return Math.sqrt(this.websiteCal.user) + 0;
       },
       basicAcceptOfferRate(){
-        //x
+        //x:[0,+∞)  y:[0.3,0.7)
         return 0.7 - 200 / (this.popularity + 500);
       },
       popularityText(){
@@ -718,24 +724,37 @@
         });
         return e;
       },
+      environmentLevel(){
+        if(this.environment < 25) return 1;
+        if(this.environment < 50) return 2;
+        if(this.environment < 75) return 3;
+        if(this.environment < 100) return 4;
+        return 5;
+      },
       environmentHtml(){
-        if(this.environment < 25) return `<span class="__text-red">恶心</span>`
-        if(this.environment < 50) return `<span class="__text-orange">难受</span>`
-        if(this.environment < 75) return `<span class="__text-gray">一般</span>`
-        if(this.environment < 100) return `<span class="__text-blue">舒适</span>`
-        return `<span class="__text-green">宜居</span>`
+        switch (this.environmentLevel) {
+          case 1: return `<span class="__text-red">恶心</span>`;
+          case 2: return `<span class="__text-orange">难受</span>`;
+          case 3: return `<span class="__text-gray">一般</span>`;
+          case 4: return `<span class="__text-blue">舒适</span>`;
+          case 5: return `<span class="__text-green">宜居</span>`;
+        }
+        return "";
       },
       websiteCal(){
+        function getSum(total, num){
+          return total + num;
+        }
         return {
-          user: this.website.user,
-          ue: 0,
-          ui: 0,
-          speed: 0,
+          user: Math.round(this.employeeEfficiency[1].reduce(getSum, 0) * Math.exp(-this.company.serverFullDay)),
+          ue: this.employeeEfficiency[2].reduce(getSum, 0),
+          ui: this.employeeEfficiency[3].reduce(getSum, 0),
+          speed: this.employeeEfficiency[4].reduce(getSum, 0),
         };
       },
       profit(){
         return {
-          base: 100,
+          base: this.website.user,
         }
       },
       salaryCost(){
@@ -807,9 +826,20 @@
         if(this.serversMaxSize === 0) return 0;
         return Math.round(this.company.serversSize/this.serversMaxSize*100*100)/100;
       },
+      employeeEfficiency(){
+        let e = [];
+        this.employee.forEach(p => {
+          e.push(p.list.map(e => {
+            if(e.ability && e.mood)
+              return e.ability * e.mood / 80;
+            return 0;
+          }));
+        });
+        return e;
+      },
       seekerNumber(){
-        return 5;
-      }
+        return 3;
+      },
     },
     mounted(){
       window.vue = this;
@@ -835,6 +865,7 @@
           decoration: [],
           server: [0,0,0,0,0,0,0,0],
           serversSize: 0,
+          serverFullDay: 0,
         };
         this.initDecoration();
         this.website = {
@@ -901,6 +932,28 @@
         if(this.money < 0){
           this.dialogController = "break";
         } else{
+          //服务器容量
+          this.company.serversSize += this.website.user;
+          if(this.company.serversSize > this.serversMaxSize){
+            //如果服务器容量超出最大
+            this.company.serversSize = this.serversMaxSize;
+            this.company.serverFullDay++;
+          } else {
+            this.company.serverFullDay = 0;
+          }
+          //新增用户
+          this.website.user += this.websiteCal.user;
+          //员工心情
+          // environmentLevel     1         2     3         4    5
+          //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
+          this.employee.forEach(p => {
+            p.list.forEach(e => {
+              if(e.mood){
+                e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
+                e.mood = Math.min(Math.max(e.mood, 0), 100);
+              }
+            });
+          });
           //处理offer
           this.newEmployee = [];
           this.employee.forEach(p => {
@@ -914,7 +967,7 @@
                     gender: s.gender,
                     age: s.age,
                     ability: s.ability,
-                    mood: Math.min(Math.round(60 * s.offerSalary / s.expectSalary), 100),
+                    mood: Math.min(60 * s.offerSalary / s.expectSalary, 100),
                     salary: s.offerSalary,
                   });
                   this.newEmployee.push({
@@ -950,8 +1003,9 @@
         this.$set(this.company.server, index, n);
         //解锁运维
         this.employee[4].unlock = true;
-        //如果减少服务器后硬盘不足，则清除多出的数据
+        //如果减少服务器后硬盘不足，则等比例减少用户量，清除多出的数据
         if(this.company.serversSize > this.serversMaxSize){
+          this.website.user = Math.round(this.website.user / this.company.serversSize * this.serversMaxSize);
           this.company.serversSize = this.serversMaxSize;
         }
       },
