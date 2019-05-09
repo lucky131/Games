@@ -24,7 +24,7 @@ GangEditor      | 杠·地图编辑器 | [Click Me](https://lucky131.github.io/G
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
 ## Author
-Name: -3-（杠三杠）
-QQ: 542723049
-Email: QQMail
-BLive: [咕咕咕](https://live.bilibili.com/38115)
+Name: -3-（杠三杠）  
+QQ: 542723049  
+Email: QQMail  
+BLive: [咕咕咕](https://live.bilibili.com/38115)  
