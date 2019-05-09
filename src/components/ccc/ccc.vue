@@ -88,16 +88,6 @@
         isCopyBtn2Show: false,
       }
     },
-    created(){
-      //打开右键菜单
-      document.oncontextmenu = function(){
-        event.returnValue = true;
-      };
-      //允许选择文本
-      document.onselectstart = function(){
-        event.returnValue = true;
-      };
-    },
     mounted(){
       //初始化剪切板工具
       let clipboard = new Clipboard('.copyBtn');

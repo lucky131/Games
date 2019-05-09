@@ -214,16 +214,6 @@ export default {
       ]
     }
   },
-  created(){
-    //禁止右键菜单
-    document.oncontextmenu = function(){
-      event.returnValue = false;
-    };
-    //禁止选择文本
-    document.onselectstart = function(){
-      event.returnValue = false;
-    };
-  },
   mounted(){
     this.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
   },

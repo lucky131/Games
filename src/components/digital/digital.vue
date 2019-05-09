@@ -71,12 +71,6 @@
         isWin: false,
       }
     },
-    created(){
-      //允许选择文本
-      document.onselectstart = function(){
-        event.returnValue = true;
-      };
-    },
     mounted(){
       let that = this;
 
