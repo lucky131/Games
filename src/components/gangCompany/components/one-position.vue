@@ -16,7 +16,9 @@
           </div>
           <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
         </div>
-        <div class="right"></div>
+        <div v-if="e.mood !== undefined" class="right">
+          <div v-if="day >= e.canFireDay" class="fireBtn" @click="fire(index)">开除</div>
+        </div>
       </div>
       <div v-if="canRecruited" class="recruit-btn" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
     </div>
@@ -41,7 +43,6 @@
       padding: 0 20px;
       .one-people{
         width: 100%;
-        height: 80px;
         border-bottom: 1px solid #ccc;
         &:last-child{border-bottom: none}
         display: flex;
@@ -49,6 +50,7 @@
         align-items: center;
         .left{
           flex: 1 0 0;
+          padding: 10px 0;
           .name{
             font-weight: bold;
           }
@@ -56,8 +58,20 @@
           .row3{}
         }
         .right{
-          width: 100px;
-          height: 100%;
+          width: 64px;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          .fireBtn{
+            width: 100%;
+            height: 28px;
+            line-height: 28px;
+            background-color: #f5524c;
+            border-radius: 10px;
+            font-size: 14px;
+            color: white;
+            text-align: center;
+          }
         }
       }
       .recruit-btn{
@@ -83,6 +97,7 @@
       canRecruited: Boolean,
       employeeArray: Array,
       condition: String,
+      day: Number,
       config: Object,
     },
     data(){
@@ -107,6 +122,9 @@
         if(mood < 60) return `<span class="__text-gray">一般</span>`
         if(mood < 80) return `<span class="__text-blue">开心</span>`
         return `<span class="__text-green">狂欢</span>`
+      },
+      fire(index){
+        this.$emit("fire", index);
       },
       toRecruit(){
         this.$emit("toRecruit");

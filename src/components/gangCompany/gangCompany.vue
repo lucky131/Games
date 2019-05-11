@@ -29,6 +29,7 @@
       <!--公司-->
       <div v-else-if="mainType === 'company'" class="main-center company">
         <div class="opes">
+          <div class="ope-btn" @click="UIController='manage'"><i class="el-icon-document"></i><span>管理</span></div>
           <div class="ope-btn" @click="UIController='decoration'"><i class="el-icon-brush"></i><span>装修</span></div>
           <div class="ope-btn" @click="UIController='relocation'"><i class="el-icon-office-building"></i><span>迁址</span></div>
           <div class="ope-btn" @click="UIController='server'"><i class="el-icon-cloudy"></i><span>服务器</span></div>
@@ -50,19 +51,20 @@
           <div class="card-content">
             <div class="info-label">用户数量</div>
             <div class="info-value">
-              <span></span>
               <span v-if="company.serversSize + website.user > serversMaxSize" class="__text-red">{{website.user}}（+{{websiteCal.user}}：请扩容服务器）</span>
               <span v-else>{{website.user}}（+{{websiteCal.user}}）</span>
             </div>
-            <div class="info-label">用户体验UE</div><div class="info-value">{{websiteCal.ue}}</div>
-            <div class="info-label">用户界面UI</div><div class="info-value">{{websiteCal.ui}}</div>
-            <div class="info-label">响应速度</div><div class="info-value">{{websiteCal.speed}}</div>
+            <div class="info-label">会员数量</div><div class="info-value">{{website.vip}}（{{website.user === 0 ? 0 : Math.round(website.vip / website.user * 100 * 100) / 100}}%）</div>
+            <div class="info-label">用户体验UE</div><div class="info-value">{{Math.round(websiteCal.ue * 100) / 100}}</div>
+            <div class="info-label">用户界面UI</div><div class="info-value">{{Math.round(websiteCal.ui * 100) / 100}}</div>
+            <div class="info-label">响应速度</div><div class="info-value">{{Math.round(websiteCal.speed * 100) / 100}}</div>
           </div>
         </div>
         <div class="card">
           <div class="card-title">每日盈利</div>
           <div class="card-content">
             <div class="info-label">基本盈利</div><div class="info-value">{{$u.formatIntegerNumber(profit.base, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">会员氪金</div><div class="info-value">{{$u.formatIntegerNumber(profit.vip, config.formatIntegerNumberMode)}}</div>
           </div>
         </div>
         <div class="card">
@@ -79,14 +81,38 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="p.canRecruited" :employee-array="p.list" :config="config"
-                      @toRecruit="toRecruit(index)"></one-position>
+                      :name="p.name" :can-recruited="p.canRecruited" :employee-array="p.list" :day="day" :config="config"
+                      @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <div class="main-bottom">
         <div v-for="type in mainTypes" :key="type.value"
              class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === type.value}"
              @click="mainType=type.value">{{type.label}}</div>
       </div>
+    </div>
+
+    <!--管理-->
+    <div v-else-if="UIController === 'manage'" class="page manage">
+      <div class="manage-content">
+        <div class="manage-title">每天工作时长</div>
+        <div class="manage-row">
+          <el-input-number v-model="company.manage.workHours" :min="1" :max="24" :step="1" step-strictly size="small"></el-input-number> 小时
+          <div class="manage-tips">《中华人民共和国劳动法》第四章第三十六条：国家实行劳动者每日工作时间不超过八小时、平均每周工作时间不超过四十四小时的工时制度。</div>
+        </div>
+        <div class="manage-title">工作日</div>
+        <div class="manage-row">
+          <el-checkbox v-model="company.manage.workDays[0]">周一</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[1]">周二</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[2]">周三</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[3]">周四</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[4]">周五</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[5]">周六</el-checkbox>
+          <el-checkbox v-model="company.manage.workDays[6]">周日</el-checkbox>
+          <div class="manage-tips">《中华人民共和国宪法》第二章第四十三条： 中华人民共和国劳动者有休息的权利。 国家发展劳动者休息和休养的设施，规定职工的工作时间和休假制度。</div>
+          <div class="manage-tips">《中华人民共和国劳动法》第一章第三条： 劳动者享有平等就业和选择职业的权利、取得劳动报酬的权利、休息休假的权利、获得劳动安全卫生保护的权利、接受职业技能培训的权利、享受社会保险和福利的权利、提请劳动争议处理的权利以及法律规定的其他劳动权利。</div>
+        </div>
+      </div>
+      <div class="manage-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--装修-->
@@ -179,8 +205,30 @@
               {{e.age}}岁
             </div>
           </div>
+          <div class="title">辞职员工</div>
+          <div v-if="quitEmployee.length === 0" class="row">无</div>
+          <div v-else>
+            <div v-for="(e, index) in quitEmployee" :key="index" class="row">
+              {{e.position}}
+              <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
+              <i v-else class="el-icon-s-custom female"></i>
+              {{e.name}}
+              {{e.age}}岁
+            </div>
+          </div>
+          <div class="title">开除员工</div>
+          <div v-if="fireEmployee.length === 0" class="row">无</div>
+          <div v-else>
+            <div v-for="(e, index) in fireEmployee" :key="index" class="row">
+              {{e.position}}
+              <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
+              <i v-else class="el-icon-s-custom female"></i>
+              {{e.name}}
+              {{e.age}}岁
+            </div>
+          </div>
         </div>
-        <div class="continue-btn" @click="dialogController=''">确定</div>
+        <div class="continue-btn" @click="newDay()">确定</div>
       </div>
       <div v-else-if="dialogController === 'offer'" class="dialog offer">
         <div class="paper">
@@ -191,7 +239,7 @@
           <br>
           <div class="row">职位：{{employee[recruitIndex].name}}</div>
           <div class="row">报道地址：{{company.building.address}}</div>
-          <div class="row">日薪：<el-input-number v-model="employee[recruitIndex].seekers[seekerIndex].offerSalary" :min="1" size="small"></el-input-number></div>
+          <div class="row">日薪：<el-input-number v-model="employee[recruitIndex].seekers[seekerIndex].offerSalary" :min="1" :step="1" step-strictly size="small"></el-input-number></div>
           <br>
           <div class="row">期待您的加入！</div>
           <div class="signal">杭州三杠科技有限公司</div>
@@ -218,6 +266,7 @@
 
   *{
     box-sizing: border-box;
+    font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
   }
   /deep/ {
     .__text-red{color: $textRed}
@@ -274,6 +323,7 @@
         background-color: $headerFooterGray;
         display: flex;
         flex-flow: row nowrap;
+        z-index: 1;
         .main-top-left{
           flex: 1 0 0;
           height: 100%;
@@ -299,6 +349,7 @@
         width: 100%;
         flex: 1 0 0;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         &.personal{
           .info-label{
             text-align: center;
@@ -391,6 +442,43 @@
         }
       }
     }
+    .manage{
+      .manage-content{
+        width: 100%;
+        flex: 1 0 0;
+        padding: 0 20px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        .manage-title{
+          margin: 20px 0;
+          font-size: 18px;
+          font-weight: bold;
+        }
+        .manage-row{
+          padding-bottom: 10px;
+          border-bottom: 1px solid #ccc;
+          .el-checkbox{
+            margin-right: 10px;
+            .el-checkbox__label{
+              padding-left: 5px;
+            }
+          }
+          .manage-tips{
+            margin-top: 10px;
+            font-size: 10px;
+            color: #ccc;
+          }
+        }
+      }
+      .manage-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
     .decoration{
       .decoration-header{
         width: 100%;
@@ -403,6 +491,7 @@
         width: 100%;
         flex: 1 0 0;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
       .decoration-back{
         width: 100%;
@@ -418,6 +507,7 @@
         width: 100%;
         flex: 1 0 0;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         .tips{
           width: 100%;
           padding: 10px 20px;
@@ -462,6 +552,7 @@
         width: 100%;
         flex: 1 0 0;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         .tips{
           width: 100%;
           padding: 10px 20px;
@@ -490,6 +581,7 @@
         width: 100%;
         flex: 1 0 0;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
       .recruit-back{
         width: 100%;
@@ -545,6 +637,7 @@
             padding: 0 30px 20px;
             max-height: 70vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             .title{
               font-weight: bold;
               margin: 20px 0 10px;
@@ -574,6 +667,7 @@
             padding: 30px;
             max-height: 70vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             .title{
               margin-bottom: 20px;
               font-size: 20px;
@@ -660,6 +754,10 @@
         day: 0,
         personal: {},
         company: {
+          manage: {
+            workHours: 8,
+            workDays: [],
+          },
           building: {
             id: "",
             address: "",
@@ -673,9 +771,12 @@
         },
         website: {
           user: 0,
+          vip: 0,
         },
         employee: [],
         newEmployee: [],
+        quitEmployee: [],
+        fireEmployee: [],
         recruitIndex: 0,
         seekerIndex: 0,
       }
@@ -683,6 +784,9 @@
     computed: {
       weekday(){
         return ["星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][this.day % 7];
+      },
+      isTodayWorkDay(){
+        return this.company.manage.workDays[(this.day + 6) % 7];
       },
       numberOfEmployee(){
         let num = 0;
@@ -699,21 +803,34 @@
         return num;
       },
       popularity(){
-        return Math.sqrt(this.websiteCal.user) + 0;
+        return Math.sqrt(this.website.user) + 0;
       },
-      basicAcceptOfferRate(){
-        //x:[0,+∞)  y:[0.3,0.7)
-        return 0.7 - 200 / (this.popularity + 500);
+      popularityLevel(){
+        if(this.popularity < 10) return 1;
+        if(this.popularity < 32) return 2;
+        if(this.popularity < 100) return 3;
+        if(this.popularity < 250) return 4;
+        if(this.popularity < 750) return 5;
+        if(this.popularity < 2000) return 6;
+        if(this.popularity < 5000) return 7;
+        return 8;
       },
       popularityText(){
-        if(this.popularity < 10) return "野鸡公司";
-        if(this.popularity < 50) return "无人问津";
-        if(this.popularity < 100) return "略有耳闻";
-        if(this.popularity < 250) return "小有名声";
-        if(this.popularity < 500) return "家喻户晓";
-        if(this.popularity < 1000) return "业界龙头";
-        if(this.popularity < 5000) return "国内大厂";
-        return "国际知名";
+        switch (this.popularityLevel) {
+          case 1: return "野鸡公司";
+          case 2: return "无人问津";
+          case 3: return "略有耳闻";
+          case 4: return "小有名声";
+          case 5: return "家喻户晓";
+          case 6: return "业界龙头";
+          case 7: return "国内大厂";
+          case 8: return "国际知名";
+        }
+        return "";
+      },
+      basicAcceptOfferRate(){
+        //x:[0,500,+∞)  y:[0.3,0.5,0.7)
+        return 0.7 - 200 / (this.popularity + 500);
       },
       environment(){
         let e = 0;
@@ -746,18 +863,24 @@
           return total + num;
         }
         return {
-          user: Math.round(this.employeeEfficiency[1].reduce(getSum, 0) * Math.exp(-this.company.serverFullDay)),
-          ue: this.employeeEfficiency[2].reduce(getSum, 0),
-          ui: this.employeeEfficiency[3].reduce(getSum, 0),
-          speed: this.employeeEfficiency[4].reduce(getSum, 0),
+          user: this.isTodayWorkDay ? Math.round(this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours * Math.exp(-this.company.serverFullDay)) : 0,
+          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours,
+          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours,
+          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed,
         };
+      },
+      vipRate(){
+        let sum = this.websiteCal.ue + this.websiteCal.ui + this.websiteCal.speed
+        return 1 - Math.exp(-sum / 10000);
       },
       profit(){
         return {
           base: this.website.user,
+          vip: this.website.vip,
         }
       },
       salaryCost(){
+        if(!this.isTodayWorkDay) return 0;
         let s = 0;
         this.employee.forEach(p => {
           p.list.forEach(e => {
@@ -826,6 +949,14 @@
         if(this.serversMaxSize === 0) return 0;
         return Math.round(this.company.serversSize/this.serversMaxSize*100*100)/100;
       },
+      serverAverageSpeed(){
+        if(this.serversMaxSize === 0) return 0;
+        let totalSpeed = 0
+        this.allServers.forEach((s, index) => {
+          totalSpeed += s.size * this.company.server[index] * s.speed;
+        });
+        return totalSpeed / this.serversMaxSize;
+      },
       employeeEfficiency(){
         let e = [];
         this.employee.forEach(p => {
@@ -838,12 +969,30 @@
         return e;
       },
       seekerNumber(){
-        return 3;
+        return 3 + this.popularityLevel - 1;
       },
     },
     mounted(){
       window.vue = this;
       this.height = window.innerHeight;
+
+      // iOS Safari 无法通过meta来禁止缩放，只能监听
+      (function forbidden() {
+        document.addEventListener('touchstart', (event) => {
+          if (event.touches.length > 1) {
+            event.preventDefault()
+          }
+        }, { passive: false })
+
+        let lastTouchEnd = 0
+        document.addEventListener('touchend', (event) => {
+          const now = (new Date()).getTime()
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault()
+          }
+          lastTouchEnd = now
+        }, false)
+      })();
 
       this.initGame();
     },
@@ -861,6 +1010,10 @@
         this.day = 1;
         this.personal = {};
         this.company = {
+          manage: {
+            workHours: 8,
+            workDays: [true, true, true, true, true, false, false],
+          },
           building: this.allBuildings[0],
           decoration: [],
           server: [0,0,0,0,0,0,0,0],
@@ -870,13 +1023,14 @@
         this.initDecoration();
         this.website = {
           user: 0,
+          vip: 0,
         };
         this.employee = [
           {name: "老板", canRecruited: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          {name: "开发", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          {name: "产品", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 450},
-          {name: "UI", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "运维", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "程序员", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
+          {name: "产品经理", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 450},
+          {name: "美工", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "网络运维", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -884,6 +1038,8 @@
           age: 34,
         });
         this.newEmployee = [];
+        this.quitEmployee = [];
+        this.fireEmployee = [];
         this.recruitIndex = 1;
         this.seekerIndex = 0;
 
@@ -922,6 +1078,7 @@
         }
       },
       next(){
+        //历史
         this.history.push({
           money: this.money,
           totalProfit: this.totalProfit,
@@ -943,19 +1100,48 @@
           }
           //新增用户
           this.website.user += this.websiteCal.user;
+          this.website.vip = Math.round(this.website.user * this.vipRate);
           //员工心情
-          // environmentLevel     1         2     3         4    5
-          //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
           this.employee.forEach(p => {
             p.list.forEach(e => {
-              if(e.mood){
-                e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
+              if(e.mood !== undefined){
+                if(this.isTodayWorkDay){
+                  //工作时长因素 多工作一小时 心情-1 线性
+                  e.mood += 8 - this.company.manage.workHours;
+                  //环境因素
+                  // environmentLevel     1         2     3         4    5
+                  //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
+                  e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
+                  if(this.day % 7 === 6 || this.day % 7 === 0){
+                    //工作日因素 周末上班-20
+                    e.mood += -20;
+                  }
+                }
+                //校准
                 e.mood = Math.min(Math.max(e.mood, 0), 100);
               }
             });
           });
+          //员工辞职
+          this.employee.forEach(p => {
+            p.list.forEach((e, index) => {
+              // mood  [0,10,100]
+              // rate  [1, 0,  0] 二段线性
+              if(e.mood !== undefined && e.mood < 10){
+                if(Math.random() < 1 - e.mood / 10){
+                  this.quitEmployee.push({
+                    position: p.name,
+                    name: e.name,
+                    gender: e.gender,
+                    age: e.age,
+                  });
+                  p.list[index] = undefined;
+                }
+              }
+            });
+            p.list = p.list.filter(e => e); //过滤undefined
+          });
           //处理offer
-          this.newEmployee = [];
           this.employee.forEach(p => {
             p.seekers.forEach(s => {
               if(s.isOffer){
@@ -969,6 +1155,7 @@
                     ability: s.ability,
                     mood: Math.min(60 * s.offerSalary / s.expectSalary, 100),
                     salary: s.offerSalary,
+                    canFireDay: this.day + 1 + 1,
                   });
                   this.newEmployee.push({
                     position: p.name,
@@ -987,6 +1174,12 @@
           this.day++;
           this.dialogController = "next";
         }
+      },
+      newDay(){
+        this.newEmployee = [];
+        this.quitEmployee = [];
+        this.fireEmployee = [];
+        this.dialogController = "";
       },
       buyDecoration(index){
         this.money -= this.company.building.size * this.allDecorations[index].price;
@@ -1008,6 +1201,15 @@
           this.website.user = Math.round(this.website.user / this.company.serversSize * this.serversMaxSize);
           this.company.serversSize = this.serversMaxSize;
         }
+      },
+      fire(eIndex, pIndex){
+        this.fireEmployee.push({
+          position: this.employee[pIndex].name,
+          name: this.employee[pIndex].list[eIndex].name,
+          gender: this.employee[pIndex].list[eIndex].gender,
+          age: this.employee[pIndex].list[eIndex].age,
+        });
+        this.employee[pIndex].list.splice(eIndex, 1);
       },
       toRecruit(index){
         this.recruitIndex = index;
