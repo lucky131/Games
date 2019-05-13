@@ -33,7 +33,7 @@
           <div class="ope-btn" @click="UIController='decoration'"><i class="el-icon-brush"></i><span>装修</span></div>
           <div class="ope-btn" @click="UIController='relocation'"><i class="el-icon-office-building"></i><span>迁址</span></div>
           <div class="ope-btn" @click="UIController='server'"><i class="el-icon-cloudy"></i><span>服务器</span></div>
-          <div class="ope-btn"><i class="el-icon-bank-card"></i><span>贷款</span></div>
+          <div class="ope-btn" @click="UIController='loan'"><i class="el-icon-bank-card"></i><span>贷款</span></div>
           <div class="ope-btn"><i class="el-icon-news"></i><span>广告</span></div>
         </div>
         <div class="card">
@@ -74,6 +74,7 @@
             <div class="info-label">房租</div><div class="info-value">{{$u.formatIntegerNumber(cost.rent, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">电费</div><div class="info-value">{{$u.formatIntegerNumber(cost.electricity, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">网费</div><div class="info-value">{{$u.formatIntegerNumber(cost.net, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">还款</div><div class="info-value">{{$u.formatIntegerNumber(cost.loan, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">广告费</div><div class="info-value">{{$u.formatIntegerNumber(cost.ad, config.formatIntegerNumberMode)}}</div>
           </div>
         </div>
@@ -159,7 +160,14 @@
     </div>
 
     <!--贷款-->
-    <div v-else-if="UIController === 'loan'" class="page loan"></div>
+    <div v-else-if="UIController === 'loan'" class="page loan">
+      <div class="loan-content">
+        <one-loan v-for="(item, index) in allLoans" :key="index"
+                  :item="item" :config="config" :remain-day="company.loan[index]"
+                  @loan="loan(index)"></one-loan>
+      </div>
+      <div class="loan-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
 
     <!--广告-->
     <div v-else-if="UIController === 'ad'" class="page ad"></div>
@@ -569,6 +577,22 @@
         text-align: center;
       }
     }
+    .loan{
+      .loan-content{
+        width: 100%;
+        flex: 1 0 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .loan-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
     .recruit{
       .recruit-header{
         width: 100%;
@@ -708,19 +732,21 @@
   //components
   import oneBuilding from "./components/one-building"
   import oneDecoration from "./components/one-decoration"
-  import onePosition from "./components/one-position";
+  import oneLoan from "./components/one-loan"
+  import onePosition from "./components/one-position"
   import oneSeeker from "./components/one-seeker"
   import oneServer from "./components/one-server"
 
   //db mixins
   import buildings from "./db/buildings"
   import decorations from "./db/decorations"
+  import loans from "./db/loans"
   import servers from "./db/servers"
 
   export default {
     name: "gangCompany",
-    mixins: [buildings, decorations, servers],
-    components: {oneBuilding, oneDecoration, onePosition, oneSeeker, oneServer},
+    mixins: [buildings, decorations, loans, servers],
+    components: {oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer},
     data(){
       return{
         height: 0,
@@ -768,6 +794,7 @@
           server: [],
           serversSize: 0,
           serverFullDay: 0,
+          loan: [],
         },
         website: {
           user: 0,
@@ -907,6 +934,15 @@
         });
         return n;
       },
+      loanCost(){
+        let l = 0;
+        this.allLoans.forEach((b, index) => {
+          if(this.company.loan[index] > 0){
+            l += b.step;
+          }
+        });
+        return l;
+      },
       adCost(){
         return 0;
       },
@@ -916,6 +952,7 @@
           rent: this.company.building.rent,
           electricity: this.electricityCost,
           net: this.netCost,
+          loan: this.loanCost,
           ad: this.adCost,
         }
       },
@@ -1019,6 +1056,7 @@
           server: [0,0,0,0,0,0,0,0],
           serversSize: 0,
           serverFullDay: 0,
+          loan: [0,0,0,0,0],
         };
         this.initDecoration();
         this.website = {
@@ -1086,6 +1124,12 @@
           numberOfEmployee: this.numberOfEmployee,
         });
         this.money = this.money + this.totalProfit - this.totalCost;
+        //贷款剩余天数-1
+        this.company.loan.forEach((n, index) => {
+          if(n > 0){
+            this.$set(this.company.loan, index, n-1);
+          }
+        });
         if(this.money < 0){
           this.dialogController = "break";
         } else{
@@ -1155,7 +1199,7 @@
                     ability: s.ability,
                     mood: Math.min(60 * s.offerSalary / s.expectSalary, 100),
                     salary: s.offerSalary,
-                    canFireDay: this.day + 1 + 1,
+                    canFireDay: this.day + 1 + 30,
                   });
                   this.newEmployee.push({
                     position: p.name,
@@ -1201,6 +1245,10 @@
           this.website.user = Math.round(this.website.user / this.company.serversSize * this.serversMaxSize);
           this.company.serversSize = this.serversMaxSize;
         }
+      },
+      loan(index){
+        this.money += this.allLoans[index].amount;
+        this.$set(this.company.loan, index, this.allLoans[index].period);
       },
       fire(eIndex, pIndex){
         this.fireEmployee.push({
