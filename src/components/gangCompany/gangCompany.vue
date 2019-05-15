@@ -34,7 +34,7 @@
           <div class="ope-btn" @click="UIController='relocation'"><i class="el-icon-office-building"></i><span>迁址</span></div>
           <div class="ope-btn" @click="UIController='server'"><i class="el-icon-cloudy"></i><span>服务器</span></div>
           <div class="ope-btn" @click="UIController='loan'"><i class="el-icon-bank-card"></i><span>贷款</span></div>
-          <div class="ope-btn"><i class="el-icon-news"></i><span>广告</span></div>
+          <div class="ope-btn" @click="UIController='ad'"><i class="el-icon-news"></i><span>广告</span></div>
         </div>
         <div class="card">
           <div class="card-title">公司概况</div>
@@ -170,7 +170,14 @@
     </div>
 
     <!--广告-->
-    <div v-else-if="UIController === 'ad'" class="page ad"></div>
+    <div v-else-if="UIController === 'ad'" class="page ad">
+      <div class="ad-content">
+        <one-ad v-for="(item, index) in allAds" :key="index"
+                :item="item" :config="config" :is-buy="company.ad[index]"
+                @change="changeAd(index)"></one-ad>
+      </div>
+      <div class="ad-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
 
     <!--招聘-->
     <div v-else-if="UIController === 'recruit'" class="page recruit">
@@ -593,6 +600,22 @@
         text-align: center;
       }
     }
+    .ad{
+      .ad-content{
+        width: 100%;
+        flex: 1 0 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .ad-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
     .recruit{
       .recruit-header{
         width: 100%;
@@ -730,6 +753,7 @@
 
 <script>
   //components
+  import oneAd from "./components/one-ad"
   import oneBuilding from "./components/one-building"
   import oneDecoration from "./components/one-decoration"
   import oneLoan from "./components/one-loan"
@@ -738,6 +762,7 @@
   import oneServer from "./components/one-server"
 
   //db mixins
+  import ads from "./db/ads"
   import buildings from "./db/buildings"
   import decorations from "./db/decorations"
   import loans from "./db/loans"
@@ -745,8 +770,8 @@
 
   export default {
     name: "gangCompany",
-    mixins: [buildings, decorations, loans, servers],
-    components: {oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer},
+    mixins: [ads, buildings, decorations, loans, servers],
+    components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer},
     data(){
       return{
         height: 0,
@@ -795,6 +820,7 @@
           serversSize: 0,
           serverFullDay: 0,
           loan: [],
+          ad: [],
         },
         website: {
           user: 0,
@@ -830,7 +856,14 @@
         return num;
       },
       popularity(){
-        return Math.sqrt(this.website.user) + 0;
+        let userBase = Math.sqrt(this.website.user);
+        let adBonus = 0;
+        this.allAds.forEach((n, index) => {
+          if(this.company.ad[index]){
+            adBonus += n.bonus;
+          }
+        });
+        return userBase + adBonus;
       },
       popularityLevel(){
         if(this.popularity < 10) return 1;
@@ -944,7 +977,13 @@
         return l;
       },
       adCost(){
-        return 0;
+        let a = 0;
+        this.allAds.forEach((n, index) => {
+          if(this.company.ad[index]){
+            a += n.price;
+          }
+        });
+        return a;
       },
       cost(){
         return {
@@ -1057,6 +1096,7 @@
           serversSize: 0,
           serverFullDay: 0,
           loan: [0,0,0,0,0],
+          ad: [false, false, false, false, false, false, false],
         };
         this.initDecoration();
         this.website = {
@@ -1249,6 +1289,9 @@
       loan(index){
         this.money += this.allLoans[index].amount;
         this.$set(this.company.loan, index, this.allLoans[index].period);
+      },
+      changeAd(index){
+        this.$set(this.company.ad, index, !this.company.ad[index]);
       },
       fire(eIndex, pIndex){
         this.fireEmployee.push({
