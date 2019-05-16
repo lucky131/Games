@@ -58,6 +58,7 @@
             <div class="info-label">用户体验UE</div><div class="info-value">{{Math.round(websiteCal.ue * 100) / 100}}</div>
             <div class="info-label">用户界面UI</div><div class="info-value">{{Math.round(websiteCal.ui * 100) / 100}}</div>
             <div class="info-label">响应速度</div><div class="info-value">{{Math.round(websiteCal.speed * 100) / 100}}</div>
+            <div class="info-label">bug概率</div><div class="info-value">{{Math.round(websiteCal.bugRate * 100 * 100) / 100}}%</div>
           </div>
         </div>
         <div class="card">
@@ -205,7 +206,10 @@
         <div class="content">
           <div class="title">昨日小报</div>
           <div class="ticket-row"><span>原有资产</span><span>{{history[day-1].money}}</span></div>
-          <div class="ticket-row"><span>总盈利</span><span>+ {{history[day-1].totalProfit}}</span></div>
+          <div class="ticket-row"><span>总盈利</span>
+            <span v-if="website.isBug" class="__text-red">网站出bug，无收益</span>
+            <span v-else>+ {{history[day-1].totalProfit}}</span>
+          </div>
           <div class="ticket-row"><span>总开销</span><span>- {{history[day-1].totalCost}}</span></div>
           <div class="ticket-row"><span></span><span>----------</span></div>
           <div class="ticket-row"><span>今日资产</span><span>{{money}}</span></div>
@@ -825,6 +829,7 @@
         website: {
           user: 0,
           vip: 0,
+          isBug: false,
         },
         employee: [],
         newEmployee: [],
@@ -927,6 +932,7 @@
           ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours,
           ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours,
           speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed,
+          bugRate: Math.max(this.website.user / 10000 - this.employeeEfficiency[5].reduce(getSum, 0) / 8 * this.company.manage.workHours / 100, 0),
         };
       },
       vipRate(){
@@ -1102,6 +1108,7 @@
         this.website = {
           user: 0,
           vip: 0,
+          isBug: false,
         };
         this.employee = [
           {name: "老板", canRecruited: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
@@ -1109,6 +1116,7 @@
           {name: "产品经理", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 450},
           {name: "美工", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 400},
           {name: "网络运维", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "测试", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1163,13 +1171,15 @@
           totalCost: this.totalCost,
           numberOfEmployee: this.numberOfEmployee,
         });
-        this.money = this.money + this.totalProfit - this.totalCost;
-        //贷款剩余天数-1
-        this.company.loan.forEach((n, index) => {
-          if(n > 0){
-            this.$set(this.company.loan, index, n-1);
-          }
-        });
+        //结算钱
+        this.money -= this.totalCost;
+        this.website.isBug = Math.random() < this.websiteCal.bugRate
+        if(this.website.isBug){
+          //解锁测试
+          this.employee[5].unlock = true;
+        } else {
+          this.money += this.totalProfit;
+        }
         if(this.money < 0){
           this.dialogController = "break";
         } else{
@@ -1182,6 +1192,12 @@
           } else {
             this.company.serverFullDay = 0;
           }
+          //贷款剩余天数-1
+          this.company.loan.forEach((n, index) => {
+            if(n > 0){
+              this.$set(this.company.loan, index, n-1);
+            }
+          });
           //新增用户
           this.website.user += this.websiteCal.user;
           this.website.vip = Math.round(this.website.user * this.vipRate);
