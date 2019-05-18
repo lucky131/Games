@@ -24,7 +24,23 @@
       </div>
       <!--个人-->
       <div v-if="mainType === 'personal'" class="main-center personal">
-        <div class="info-label">总资产</div><div class="info-value">{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+        <div class="card">
+          <div class="card-title">技能</div>
+          <div class="card-content">
+            <one-skill v-for="index in personal.skill" :key="index"
+                       :item="allSkills[index]"></one-skill>
+            <div v-if="personal.skill.length < allSkills.length">
+              <div v-if="newSkillPrice <= money" class="learn-btn able" @click="newSkill()"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+              <div v-else class="learn-btn disabled"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">组合技</div>
+          <div class="card-content">
+
+          </div>
+        </div>
       </div>
       <!--公司-->
       <div v-else-if="mainType === 'company'" class="main-center company">
@@ -370,14 +386,39 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         &.personal{
-          .info-label{
-            text-align: center;
-            font-size: 20px;
-            margin-top: 20px;
-          }
-          .info-value{
-            text-align: center;
-            color: #888;
+          padding-top: 10px;
+          .card{
+            margin: 0 10px 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 6px rgba(0,0,0,.1);
+            .card-title{
+              height: 40px;
+              line-height: 40px;
+              background-color: #e7eaef;
+              text-align: center;
+              font-size: 18px;
+              font-weight: bold;
+            }
+            .card-content{
+              padding: 10px 20px 0;
+              .learn-btn{
+                width: 100%;
+                height: 40px;
+                line-height: 40px;
+                border-radius: 10px;
+                margin: 10px 0;
+                color: white;
+                font-weight: bold;
+                text-align: center;
+                &.able{
+                  background-color: #31c21f;
+                }
+                &.disabled{
+                  background-color: #ccc;
+                }
+              }
+            }
           }
         }
         &.company{
@@ -764,6 +805,7 @@
   import onePosition from "./components/one-position"
   import oneSeeker from "./components/one-seeker"
   import oneServer from "./components/one-server"
+  import oneSkill from "./components/one-skill"
 
   //db mixins
   import ads from "./db/ads"
@@ -771,11 +813,12 @@
   import decorations from "./db/decorations"
   import loans from "./db/loans"
   import servers from "./db/servers"
+  import skills from "./db/skills"
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, decorations, loans, servers],
-    components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer},
+    mixins: [ads, buildings, decorations, loans, servers, skills],
+    components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
     data(){
       return{
         height: 0,
@@ -807,7 +850,9 @@
         history: [],
         money: 0,
         day: 0,
-        personal: {},
+        personal: {
+          skill: [],
+        },
         company: {
           manage: {
             workHours: 8,
@@ -845,6 +890,9 @@
       },
       isTodayWorkDay(){
         return this.company.manage.workDays[(this.day + 6) % 7];
+      },
+      newSkillPrice(){
+        return 500 * Math.pow(2, this.personal.skill.length);
       },
       numberOfEmployee(){
         let num = 0;
@@ -1090,7 +1138,9 @@
         this.history = [{}];
         this.money = 500000;
         this.day = 1;
-        this.personal = {};
+        this.personal = {
+          skill: [],
+        };
         this.company = {
           manage: {
             workHours: 8,
@@ -1289,6 +1339,12 @@
         this.quitEmployee = [];
         this.fireEmployee = [];
         this.dialogController = "";
+      },
+      newSkill(){
+        let arr = this.allSkills.map((n, i) => i).filter(i => this.personal.skill.indexOf(i) === -1);
+        let newIndex = arr[Math.floor(Math.random() * arr.length)];
+        this.personal.skill.push(newIndex);
+        this.money -= this.newSkillPrice;
       },
       buyDecoration(index){
         this.money -= this.company.building.size * this.allDecorations[index].price;
