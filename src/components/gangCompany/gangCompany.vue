@@ -82,8 +82,8 @@
       </div>
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
-        <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="p.canRecruited" :employee-array="p.list" :day="day" :config="config"
+        <one-position v-for="(p, index) in employee" :key="index"
+                      :name="p.name" :can-recruited="index !== 0" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
                       @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <div class="main-bottom">
@@ -1111,12 +1111,12 @@
           isBug: false,
         };
         this.employee = [
-          {name: "老板", canRecruited: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          {name: "程序员", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          {name: "产品经理", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 450},
-          {name: "美工", canRecruited: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "网络运维", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "测试", canRecruited: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "老板", unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
+          {name: "程序员", unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
+          {name: "产品经理", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
+          {name: "美工", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "网络运维", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "测试", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1185,6 +1185,10 @@
         } else{
           //服务器容量
           this.company.serversSize += this.website.user;
+          if(this.company.serversSize >= 1024){
+            //解锁运维
+            this.employee[4].unlock = true;
+          }
           if(this.company.serversSize > this.serversMaxSize){
             //如果服务器容量超出最大
             this.company.serversSize = this.serversMaxSize;
@@ -1201,6 +1205,11 @@
           //新增用户
           this.website.user += this.websiteCal.user;
           this.website.vip = Math.round(this.website.user * this.vipRate);
+          if(this.website.user > 1000){
+            //解锁产品和UI
+            this.employee[2].unlock = true;
+            this.employee[3].unlock = true;
+          }
           //员工心情
           this.employee.forEach(p => {
             p.list.forEach(e => {
@@ -1294,8 +1303,6 @@
       changeServer(num, index){
         let n = this.company.server[index] + num;
         this.$set(this.company.server, index, n);
-        //解锁运维
-        this.employee[4].unlock = true;
         //如果减少服务器后硬盘不足，则等比例减少用户量，清除多出的数据
         if(this.company.serversSize > this.serversMaxSize){
           this.website.user = Math.round(this.website.user / this.company.serversSize * this.serversMaxSize);
@@ -1323,8 +1330,8 @@
         this.UIController = "recruit";
       },
       refreshSeekers(){
-        this.employee.forEach(p => {
-          if(p.canRecruited){
+        this.employee.forEach((p, index) => {
+          if(index !== 0){
             p.seekers = [];
             for(let i = 0; i < this.seekerNumber; i++){
               let s = {...this.$u.getRandomSeeker(p.gender, p.averageSalary)};

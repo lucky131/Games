@@ -20,7 +20,8 @@
           <div v-if="day >= e.canFireDay" class="fireBtn" @click="fire(index)">开除</div>
         </div>
       </div>
-      <div v-if="canRecruited" class="recruit-btn" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
+      <div v-if="canRecruited && unlock" class="recruit-btn able" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
+      <div v-else-if="canRecruited" class="recruit-btn disabled"><i class="el-icon-lock"></i> 未解锁{{name}}</div>
     </div>
   </div>
 </template>
@@ -80,10 +81,15 @@
         line-height: 40px;
         border-radius: 10px;
         margin: 10px 0;
-        background-color: #31c21f;
         color: white;
         font-weight: bold;
         text-align: center;
+        &.able{
+          background-color: #31c21f;
+        }
+        &.disabled{
+          background-color: #ccc;
+        }
       }
     }
   }
@@ -95,6 +101,7 @@
     props: {
       name: String,
       canRecruited: Boolean,
+      unlock: Boolean,
       employeeArray: Array,
       condition: String,
       day: Number,
