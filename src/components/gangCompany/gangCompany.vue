@@ -22,28 +22,9 @@
         </div>
         <div class="main-top-next" @click="next()">下班</div>
       </div>
-      <!--个人-->
-      <div v-if="mainType === 'personal'" class="main-center personal">
-        <div class="card">
-          <div class="card-title">技能</div>
-          <div class="card-content">
-            <one-skill v-for="index in personal.skill" :key="index"
-                       :item="allSkills[index]"></one-skill>
-            <div v-if="personal.skill.length < allSkills.length">
-              <div v-if="newSkillPrice <= money" class="learn-btn able" @click="newSkill()"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
-              <div v-else class="learn-btn disabled"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">组合技</div>
-          <div class="card-content">
 
-          </div>
-        </div>
-      </div>
       <!--公司-->
-      <div v-else-if="mainType === 'company'" class="main-center company">
+      <div v-if="mainType === 'company'" class="main-center company">
         <div class="opes">
           <div class="ope-btn" @click="UIController='manage'"><i class="el-icon-document"></i><span>管理</span></div>
           <div class="ope-btn" @click="UIController='decoration'"><i class="el-icon-brush"></i><span>装修</span></div>
@@ -101,6 +82,26 @@
         <one-position v-for="(p, index) in employee" :key="index"
                       :name="p.name" :can-recruited="index !== 0" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
                       @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
+      </div>
+      <!--个人-->
+      <div v-else-if="mainType === 'personal'" class="main-center personal">
+        <div class="card">
+          <div class="card-title">技能</div>
+          <div class="card-content">
+            <one-skill v-for="index in personal.skill" :key="index"
+                       :item="allSkills[index]"></one-skill>
+            <div v-if="personal.skill.length < allSkills.length">
+              <div v-if="newSkillPrice <= money" class="learn-btn able" @click="newSkill()"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+              <div v-else class="learn-btn disabled"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">组合技</div>
+          <div class="card-content">
+
+          </div>
+        </div>
       </div>
       <div class="main-bottom">
         <div v-for="type in mainTypes" :key="type.value"
@@ -385,42 +386,6 @@
         flex: 1 0 0;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        &.personal{
-          padding-top: 10px;
-          .card{
-            margin: 0 10px 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 6px rgba(0,0,0,.1);
-            .card-title{
-              height: 40px;
-              line-height: 40px;
-              background-color: #e7eaef;
-              text-align: center;
-              font-size: 18px;
-              font-weight: bold;
-            }
-            .card-content{
-              padding: 10px 20px 0;
-              .learn-btn{
-                width: 100%;
-                height: 40px;
-                line-height: 40px;
-                border-radius: 10px;
-                margin: 10px 0;
-                color: white;
-                font-weight: bold;
-                text-align: center;
-                &.able{
-                  background-color: #31c21f;
-                }
-                &.disabled{
-                  background-color: #ccc;
-                }
-              }
-            }
-          }
-        }
         &.company{
           .opes{
             width: 100%;
@@ -472,6 +437,42 @@
         }
         &.employee{
           padding-top: 10px;
+        }
+        &.personal{
+          padding-top: 10px;
+          .card{
+            margin: 0 10px 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 6px rgba(0,0,0,.1);
+            .card-title{
+              height: 40px;
+              line-height: 40px;
+              background-color: #e7eaef;
+              text-align: center;
+              font-size: 18px;
+              font-weight: bold;
+            }
+            .card-content{
+              padding: 10px 20px 0;
+              .learn-btn{
+                width: 100%;
+                height: 40px;
+                line-height: 40px;
+                border-radius: 10px;
+                margin: 10px 0;
+                color: white;
+                font-weight: bold;
+                text-align: center;
+                &.able{
+                  background-color: #31c21f;
+                }
+                &.disabled{
+                  background-color: #ccc;
+                }
+              }
+            }
+          }
         }
       }
       .main-bottom{
@@ -835,17 +836,17 @@
         mainType: "personal",
         mainTypes: [
           {
-            label: "个人",
-            value: "personal"
-          },
-          {
             label: "公司",
             value: "company"
           },
           {
             label: "员工",
             value: "employee"
-          }
+          },
+          {
+            label: "个人",
+            value: "personal"
+          },
         ],
         history: [],
         money: 0,
@@ -1134,7 +1135,7 @@
         this.tutorialText = "";
         this.isTutorialAnimating = true;
         this.tutorialAnimationTimer = null;
-        this.mainType = "personal";
+        this.mainType = "company";
         this.history = [{}];
         this.money = 500000;
         this.day = 1;
