@@ -4,24 +4,28 @@ export default {
       allSkills: [
         {
           img: require("../img/default.png"),
-          name: "技能1",
-          desc: "这是技能描述233"
+          name: "人格魅力",
+          desc: "提升offer被接受的概率",
+          effect: {
+            basicAcceptOfferRate: 0.05
+          }
         },
         {
           img: require("../img/default.png"),
-          name: "技能2",
-          desc: "这是技能描述233"
+          name: "电子元件",
+          desc: "提升网站的基本盈利",
+          effect: {
+            baseProfitBonus: 0.1
+          }
         },
         {
           img: require("../img/default.png"),
-          name: "技能3",
-          desc: "这是技能描述233"
-        },
-        {
-          img: require("../img/default.png"),
-          name: "技能4",
-          desc: "这是技能描述233"
-        },
+          name: "土豪入驻",
+          desc: "增加vip用户的收入",
+          effect: {
+            vipProfitBonus: 0.1
+          }
+        }
       ]
     }
   }

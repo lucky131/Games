@@ -944,7 +944,9 @@
       },
       basicAcceptOfferRate(){
         //x:[0,500,+∞)  y:[0.3,0.5,0.7)
-        return 0.7 - 200 / (this.popularity + 500);
+        let base = 0.7 - 200 / (this.popularity + 500);
+        let skillBonus = this.getSkillBonus("basicAcceptOfferRate", 0, "+");
+        return base + skillBonus;
       },
       environment(){
         let e = 0;
@@ -989,9 +991,11 @@
         return 1 - Math.exp(-sum / 10000);
       },
       profit(){
+        let bpb = this.getSkillBonus("baseProfitBonus", 1, "+");
+        let vpb = this.getSkillBonus("vipProfitBonus", 1, "+");
         return {
-          base: this.website.user,
-          vip: this.website.vip,
+          base: this.website.user * bpb,
+          vip: this.website.vip * vpb,
         }
       },
       salaryCost(){
@@ -1100,7 +1104,7 @@
         return e;
       },
       seekerNumber(){
-        return 3 + this.popularityLevel - 1;
+        return this.popularityLevel;
       },
     },
     mounted(){
@@ -1340,6 +1344,23 @@
         this.quitEmployee = [];
         this.fireEmployee = [];
         this.dialogController = "";
+      },
+      getSkillBonus(effectName, initValue = 0, method = "+"){
+        let v = initValue;
+        this.personal.skill.forEach(i => {
+          let skill = this.allSkills[i];
+          if(skill.effect && skill.effect[effectName]){
+            switch (method) {
+              case "+":
+                v += skill.effect[effectName];
+                break;
+              case "*":
+                v *= skill.effect[effectName];
+                break;
+            }
+          }
+        });
+        return v;
       },
       newSkill(){
         let arr = this.allSkills.map((n, i) => i).filter(i => this.personal.skill.indexOf(i) === -1);
