@@ -86,13 +86,13 @@
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
         <div class="card">
-          <div class="card-title">技能</div>
+          <div class="card-title">能力</div>
           <div class="card-content">
             <one-skill v-for="index in personal.skill" :key="index"
                        :item="allSkills[index]"></one-skill>
             <div v-if="personal.skill.length < allSkills.length">
-              <div v-if="newSkillPrice <= money" class="learn-btn able" @click="newSkill()"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
-              <div v-else class="learn-btn disabled"><i class="el-icon-magic-stick"></i> 获取随机技能（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+              <div v-if="newSkillPrice <= money" class="learn-btn able" @click="newSkill()"><i class="el-icon-magic-stick"></i> 获取随机能力（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
+              <div v-else class="learn-btn disabled"><i class="el-icon-magic-stick"></i> 获取随机能力（{{$u.formatIntegerNumber(newSkillPrice, config.formatIntegerNumberMode)}}）</div>
             </div>
           </div>
         </div>
@@ -893,7 +893,7 @@
         return this.company.manage.workDays[(this.day + 6) % 7];
       },
       newSkillPrice(){
-        return 500 * Math.pow(2, this.personal.skill.length);
+        return 500 * Math.pow(2, this.personal.skill.length) * this.getSkillBonus("skillPrice", 1, "+");
       },
       numberOfEmployee(){
         let num = 0;
@@ -917,7 +917,8 @@
             adBonus += n.bonus;
           }
         });
-        return userBase + adBonus;
+        let skillBonus = this.getSkillBonus("popularity", 1, "+");
+        return (userBase + adBonus) * skillBonus;
       },
       popularityLevel(){
         if(this.popularity < 10) return 1;
@@ -955,7 +956,7 @@
             e += d.environmentWeight;
           }
         });
-        return e;
+        return e + this.getSkillBonus("environment", 0, "+");
       },
       environmentLevel(){
         if(this.environment < 25) return 1;
@@ -991,12 +992,14 @@
         return 1 - Math.exp(-sum / 10000);
       },
       profit(){
-        let bpb = this.getSkillBonus("baseProfitBonus", 1, "+");
-        let vpb = this.getSkillBonus("vipProfitBonus", 1, "+");
-        return {
-          base: this.website.user * bpb,
-          vip: this.website.vip * vpb,
+        let p = {
+          base: this.website.user * this.getSkillBonus("baseProfit", 1, "+"),
+          vip: this.website.vip * this.getSkillBonus("vipProfit", 1, "+"),
+        };
+        for(let key in p){
+          p[key] = Math.round(p[key]);
         }
+        return p;
       },
       salaryCost(){
         if(!this.isTodayWorkDay) return 0;
@@ -1017,14 +1020,14 @@
             e += d.electricity;
           }
         });
-        return e * this.company.building.size;
+        return e * this.company.building.size * this.getSkillBonus("electricityCost", 1, "+");
       },
       netCost(){
         let n = 0;
         this.allServers.forEach((s, index) => {
           n += s.price * this.company.server[index];
         });
-        return n;
+        return n * this.getSkillBonus("netCost", 1, "+");
       },
       loanCost(){
         let l = 0;
@@ -1045,14 +1048,18 @@
         return a;
       },
       cost(){
-        return {
+        let c = {
           salary: this.salaryCost,
-          rent: this.company.building.rent,
+          rent: this.company.building.rent * this.getSkillBonus("rentCost", 1, "+"),
           electricity: this.electricityCost,
           net: this.netCost,
           loan: this.loanCost,
           ad: this.adCost,
+        };
+        for(let key in c){
+          c[key] = Math.round(c[key]);
         }
+        return c;
       },
       totalProfit(){
         let n = 0;
@@ -1104,7 +1111,8 @@
         return e;
       },
       seekerNumber(){
-        return this.popularityLevel;
+        let seekerNumberBonus = this.getSkillBonus("seekerNumber", 0, "+");
+        return Math.max(this.popularityLevel + seekerNumberBonus, 1); //最少1人
       },
     },
     mounted(){
@@ -1239,7 +1247,7 @@
           this.dialogController = "break";
         } else{
           //服务器容量
-          this.company.serversSize += this.website.user;
+          this.company.serversSize += this.website.user * this.getSkillBonus("serversSizePerUser", 1, "+");
           if(this.company.serversSize >= 1024){
             //解锁运维
             this.employee[4].unlock = true;
@@ -1266,19 +1274,21 @@
             this.employee[3].unlock = true;
           }
           //员工心情
+          let workHoursBonus = this.getSkillBonus("workHoursToMood", 0, "+");
+          let weekendWorkBonus = this.getSkillBonus("weekendWorkToMood", 0, "+");
           this.employee.forEach(p => {
             p.list.forEach(e => {
               if(e.mood !== undefined){
                 if(this.isTodayWorkDay){
                   //工作时长因素 多工作一小时 心情-1 线性
-                  e.mood += 8 - this.company.manage.workHours;
+                  e.mood += 8 - this.company.manage.workHours + workHoursBonus;
                   //环境因素
                   // environmentLevel     1         2     3         4    5
                   //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
                   e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
                   if(this.day % 7 === 6 || this.day % 7 === 0){
                     //工作日因素 周末上班-20
-                    e.mood += -20;
+                    e.mood += -20 + weekendWorkBonus;
                   }
                 }
                 //校准
@@ -1306,6 +1316,7 @@
             p.list = p.list.filter(e => e); //过滤undefined
           });
           //处理offer
+          let fireDayBonus = this.getSkillBonus("fireDay", 0, "+");
           this.employee.forEach(p => {
             p.seekers.forEach(s => {
               if(s.isOffer){
@@ -1319,7 +1330,7 @@
                     ability: s.ability,
                     mood: Math.min(60 * s.offerSalary / s.expectSalary, 100),
                     salary: s.offerSalary,
-                    canFireDay: this.day + 1 + 30,
+                    canFireDay: this.day + 1 + 30 + fireDayBonus,
                   });
                   this.newEmployee.push({
                     position: p.name,
@@ -1365,8 +1376,8 @@
       newSkill(){
         let arr = this.allSkills.map((n, i) => i).filter(i => this.personal.skill.indexOf(i) === -1);
         let newIndex = arr[Math.floor(Math.random() * arr.length)];
-        this.personal.skill.push(newIndex);
         this.money -= this.newSkillPrice;
+        this.personal.skill.push(newIndex);
       },
       buyDecoration(index){
         this.money -= this.company.building.size * this.allDecorations[index].price;
@@ -1408,11 +1419,12 @@
         this.UIController = "recruit";
       },
       refreshSeekers(){
+        let expectSalaryBonus = this.getSkillBonus("expectSalary", 0, "+");
         this.employee.forEach((p, index) => {
           if(index !== 0){
             p.seekers = [];
             for(let i = 0; i < this.seekerNumber; i++){
-              let s = {...this.$u.getRandomSeeker(p.gender, p.averageSalary)};
+              let s = {...this.$u.getRandomSeeker(p.gender, p.averageSalary + expectSalaryBonus)};
               s.isOffer = false;
               s.offerSalary = s.expectSalary;
               p.seekers.push(s);
