@@ -36,7 +36,7 @@ export default {
         },
         { //4
           img: require("../img/default.png"),
-          name: "艾登的手套",
+          name: "艾登的口罩",
           desc: "降低电费",
           effect: {
             electricityCost: -0.25
@@ -101,9 +101,9 @@ export default {
         { //12
           img: require("../img/default.png"),
           name: "价值观不合警告",
-          desc: "可立即开除新员工",
+          desc: "缩短新员工可开除的最短天数",
           effect: {
-            fireDay: -30
+            fireDay: -10
           }
         },
         { //13
@@ -196,6 +196,22 @@ export default {
           desc: "提高国民的智力水平",
           effect: {
             minAbility: 10
+          }
+        },
+        { //24
+          img: require("../img/default.png"),
+          name: "艾登的手机",
+          desc: "降低网站的bug率",
+          effect: {
+            bugRate: -0.2
+          }
+        },
+        { //25
+          img: require("../img/default.png"),
+          name: "艾登的甩棍",
+          desc: "缩短新员工可开除的最短天数",
+          effect: {
+            fireDay: -10
           }
         },
       ]
