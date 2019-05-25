@@ -6,8 +6,17 @@
       <div class="tutorial-complete-text">{{tutorialCompleteText}}
         <div class="tutorial-text">{{tutorialText}}</div>
       </div>
-      <div v-if="isTutorialAnimating" class="tutorial-btn tutorial-btn__transparent"></div>
-      <div v-else class="tutorial-btn" @click.stop="UIController='main'"><i class="el-icon-arrow-right"></i></div>
+      <div v-if="isTutorialAnimating" class="mask"></div>
+      <div class="tutorial-bottom">
+        <div class="difficulty">
+          <div class="difficulty-ope">
+            难度：<el-input-number v-model="difficulty" :min="0" :max="difficulties.length-1" :step="1" step-strictly size="small"></el-input-number>
+          </div>
+          <div class="difficulty-desc">启动资金：{{$u.formatIntegerNumber(difficulties[difficulty].initMoney, config.formatIntegerNumberMode)}}</div>
+          <div class="difficulty-desc">开局随机获得{{difficulties[difficulty].curse}}个诅咒</div>
+          </div>
+        <div class="tutorial-btn" @click.stop="startGame()"><i class="el-icon-arrow-right"></i></div>
+      </div>
     </div>
 
     <!--主界面-->
@@ -102,6 +111,13 @@
             <one-skill v-for="index in combinedSkill" :key="index"
                        :item="allCombinedSkills[index]"
                        :all-skills="allSkills"></one-skill>
+          </div>
+        </div>
+        <div v-if="personal.curse.length > 0" class="card">
+          <div class="card-title">诅咒</div>
+          <div class="card-content">
+            <one-skill v-for="index in personal.curse" :key="index"
+                       :item="allCurses[index]"></one-skill>
           </div>
         </div>
       </div>
@@ -327,6 +343,7 @@
       align-items: center;
     }
     .tutorial{
+      position: relative;
       .tutorial-complete-text{
         width: 80%;
         margin-bottom: 60px;
@@ -334,23 +351,46 @@
         font-size: 20px;
         font-weight: bold;
         position: relative;
+        z-index: 3;
         .tutorial-text{
           position: absolute;
           top: 0;
           color: black;
         }
       }
-      .tutorial-btn{
-        width: 120px;
-        height: 60px;
-        line-height: 60px;
-        border-radius: 10px;
-        background-color: $textBlue;
-        color: white;
-        font-size: 36px;
-        text-align: center;
-        &.tutorial-btn__transparent{
-          opacity: 0;
+      .mask{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: white;
+        z-index: 2;
+      }
+      .tutorial-bottom{
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        .difficulty{
+          margin-bottom: 40px;
+          text-align: center;
+          .difficulty-ope{
+            margin-bottom: 10px;
+          }
+          .difficulty-desc{
+            font-size: 14px;
+            color: #999;
+          }
+        }
+        .tutorial-btn{
+          width: 120px;
+          height: 60px;
+          line-height: 60px;
+          border-radius: 10px;
+          background-color: $textBlue;
+          color: white;
+          font-size: 36px;
+          text-align: center;
         }
       }
     }
@@ -813,7 +853,8 @@
   //db mixins
   import ads from "./db/ads"
   import buildings from "./db/buildings"
-  import combinedSkills from "./db/cSkills"
+  import cSkills from "./db/cSkills"
+  import curses from "./db/curses"
   import decorations from "./db/decorations"
   import loans from "./db/loans"
   import servers from "./db/servers"
@@ -821,11 +862,30 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, combinedSkills, decorations, loans, servers, skills],
+    mixins: [ads, buildings, cSkills, curses, decorations, loans, servers, skills],
     components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
     data(){
       return{
         height: 0,
+        difficulty: 0,
+        difficulties: [
+          {
+            initMoney: 200000,
+            curse: 0
+          },
+          {
+            initMoney: 150000,
+            curse: 0
+          },
+          {
+            initMoney: 150000,
+            curse: 1
+          },
+          {
+            initMoney: 150000,
+            curse: 2
+          }
+        ],
         config: {
           formatIntegerNumberMode: 1,
         },
@@ -856,6 +916,7 @@
         day: 0,
         personal: {
           skill: [],
+          curse: [],
         },
         company: {
           manage: {
@@ -896,7 +957,7 @@
         return this.company.manage.workDays[(this.day + 6) % 7];
       },
       newSkillPrice(){
-        return 500 * Math.pow(2, this.personal.skill.length) * this.getSkillBonus("skillPrice", 1, "+");
+        return 500 * Math.pow(2, this.personal.skill.length) * this.getEffectBonus("skillPrice", 1, "+");
       },
       combinedSkill(){
         let cs = [];
@@ -929,7 +990,7 @@
             adBonus += n.bonus;
           }
         });
-        let skillBonus = this.getSkillBonus("popularity", 1, "+");
+        let skillBonus = this.getEffectBonus("popularity", 1, "+");
         return (userBase + adBonus) * skillBonus;
       },
       popularityLevel(){
@@ -958,7 +1019,7 @@
       basicAcceptOfferRate(){
         //x:[0,500,+∞)  y:[0.3,0.5,0.7)
         let base = 0.7 - 200 / (this.popularity + 500);
-        let skillBonus = this.getSkillBonus("basicAcceptOfferRate", 0, "+");
+        let skillBonus = this.getEffectBonus("basicAcceptOfferRate", 0, "+");
         return base + skillBonus;
       },
       environment(){
@@ -968,7 +1029,7 @@
             e += d.environmentWeight;
           }
         });
-        return e + this.getSkillBonus("environment", 0, "+");
+        return e + this.getEffectBonus("environment", 0, "+");
       },
       environmentLevel(){
         if(this.environment < 25) return 1;
@@ -991,16 +1052,17 @@
         function getSum(total, num){
           return total + num;
         }
-        let userBonus = this.getSkillBonus("user", 1, "+");
-        let ueBonus = this.getSkillBonus("ue", 1, "+");
-        let uiBonus = this.getSkillBonus("ui", 1, "+");
-        let speedBonus = this.getSkillBonus("speed", 1, "+");
+        let userBonus = this.getEffectBonus("user", 1, "+");
+        let ueBonus = this.getEffectBonus("ue", 1, "+");
+        let uiBonus = this.getEffectBonus("ui", 1, "+");
+        let speedBonus = this.getEffectBonus("speed", 1, "+");
+        let bugRateBonus = this.getEffectBonus("bugRate", 0, "+");
         return {
           user: this.isTodayWorkDay ? Math.round(this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours * userBonus * Math.exp(-this.company.serverFullDay)) : 0,
           ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus,
           ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus,
           speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus,
-          bugRate: Math.max(this.website.user / 10000 - this.employeeEfficiency[5].reduce(getSum, 0) / 8 * this.company.manage.workHours / 100, 0),
+          bugRate: Math.max(this.website.user / 10000 - this.employeeEfficiency[5].reduce(getSum, 0) / 800 * this.company.manage.workHours + bugRateBonus, 0),
         };
       },
       vipRate(){
@@ -1009,8 +1071,8 @@
       },
       profit(){
         let p = {
-          base: this.website.user * this.getSkillBonus("baseProfit", 1, "+"),
-          vip: this.website.vip * this.getSkillBonus("vipProfit", 1, "+"),
+          base: this.website.user * this.getEffectBonus("baseProfit", 1, "+"),
+          vip: this.website.vip * this.getEffectBonus("vipProfit", 1, "+"),
         };
         for(let key in p){
           p[key] = Math.round(p[key]);
@@ -1036,14 +1098,14 @@
             e += d.electricity;
           }
         });
-        return e * this.company.building.size * this.getSkillBonus("electricityCost", 1, "+");
+        return e * this.company.building.size * this.getEffectBonus("electricityCost", 1, "+");
       },
       netCost(){
         let n = 0;
         this.allServers.forEach((s, index) => {
           n += s.price * this.company.server[index];
         });
-        return n * this.getSkillBonus("netCost", 1, "+");
+        return n * this.getEffectBonus("netCost", 1, "+");
       },
       loanCost(){
         let l = 0;
@@ -1066,7 +1128,7 @@
       cost(){
         let c = {
           salary: this.salaryCost,
-          rent: this.company.building.rent * this.getSkillBonus("rentCost", 1, "+"),
+          rent: this.company.building.rent * this.getEffectBonus("rentCost", 1, "+"),
           electricity: this.electricityCost,
           net: this.netCost,
           loan: this.loanCost,
@@ -1127,7 +1189,7 @@
         return e;
       },
       seekerNumber(){
-        let seekerNumberBonus = this.getSkillBonus("seekerNumber", 0, "+");
+        let seekerNumberBonus = this.getEffectBonus("seekerNumber", 0, "+");
         return Math.max(this.popularityLevel + seekerNumberBonus, 1); //最少1人
       },
     },
@@ -1143,14 +1205,14 @@
           }
         }, { passive: false })
 
-        let lastTouchEnd = 0
-        document.addEventListener('touchend', (event) => {
-          const now = (new Date()).getTime()
-          if (now - lastTouchEnd <= 300) {
-            event.preventDefault()
-          }
-          lastTouchEnd = now
-        }, false)
+        // let lastTouchEnd = 0
+        // document.addEventListener('touchend', (event) => {
+        //   const now = (new Date()).getTime()
+        //   if (now - lastTouchEnd <= 300) {
+        //     event.preventDefault()
+        //   }
+        //   lastTouchEnd = now
+        // }, false)
       })();
 
       this.initGame();
@@ -1165,10 +1227,11 @@
         this.tutorialAnimationTimer = null;
         this.mainType = "company";
         this.history = [{}];
-        this.money = 500000;
+        this.money = 0;
         this.day = 1;
         this.personal = {
           skill: [],
+          curse: [],
         };
         this.company = {
           manage: {
@@ -1217,8 +1280,6 @@
             this.tutorialText += this.tutorialCompleteText.substring(length, length + 1);
           }
         }, 100);
-
-        this.refreshSeekers();
       },
       initDecoration(){
         this.company.decoration = [
@@ -1234,6 +1295,20 @@
           false, //  9 coffee
           false, // 10 snack
         ];
+      },
+      startGame(){
+        //启动资金
+        this.money = this.difficulties[this.difficulty].initMoney;
+        //获得诅咒
+        let curseNumber = this.difficulties[this.difficulty].curse;
+        for(let i = 0; i < curseNumber; i++){
+          let arr = this.allCurses.map((n, i) => i).filter(i => this.personal.curse.indexOf(i) === -1);
+          let newIndex = arr[Math.floor(Math.random() * arr.length)];
+          this.personal.curse.push(newIndex);
+        }
+        //刷新求职者
+        this.refreshSeekers();
+        this.UIController = "main";
       },
       skipTutorialAnimating(){
         if(this.isTutorialAnimating){
@@ -1253,6 +1328,7 @@
         //结算钱
         this.money -= this.totalCost;
         this.website.isBug = Math.random() < this.websiteCal.bugRate
+        //触发bug
         if(this.website.isBug){
           //解锁测试
           this.employee[5].unlock = true;
@@ -1263,7 +1339,7 @@
           this.dialogController = "break";
         } else{
           //服务器容量
-          this.company.serversSize += this.website.user * this.getSkillBonus("serversSizePerUser", 1, "+");
+          this.company.serversSize += this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
           if(this.company.serversSize >= 1024){
             //解锁运维
             this.employee[4].unlock = true;
@@ -1290,8 +1366,8 @@
             this.employee[3].unlock = true;
           }
           //员工心情
-          let workHoursBonus = this.getSkillBonus("workHoursToMood", 0, "+");
-          let weekendWorkBonus = this.getSkillBonus("weekendWorkToMood", 0, "+");
+          let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
+          let weekendWorkBonus = this.getEffectBonus("weekendWorkToMood", 0, "+");
           this.employee.forEach(p => {
             p.list.forEach(e => {
               if(e.mood !== undefined){
@@ -1299,9 +1375,9 @@
                   //工作时长因素 多工作一小时 心情-1 线性
                   e.mood += 8 - this.company.manage.workHours + workHoursBonus;
                   //环境因素
-                  // environmentLevel     1         2     3         4    5
-                  //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
-                  // e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
+                  // environmentLevel      1      2     3     4    5
+                  //  moodChangeRange  -4~-2  -3~-1  -2~0  -1~1  0~2
+                  e.mood += Math.random() * 2 + this.environmentLevel - 5;
                   if(this.day % 7 === 6 || this.day % 7 === 0){
                     //工作日因素 周末上班-20
                     e.mood += -20 + weekendWorkBonus;
@@ -1332,7 +1408,7 @@
             p.list = p.list.filter(e => e); //过滤undefined
           });
           //处理offer
-          let fireDayBonus = this.getSkillBonus("fireDay", 0, "+");
+          let fireDayBonus = this.getEffectBonus("fireDay", 0, "+");
           this.employee.forEach(p => {
             p.seekers.forEach(s => {
               if(s.isOffer){
@@ -1372,8 +1448,9 @@
         this.fireEmployee = [];
         this.dialogController = "";
       },
-      getSkillBonus(effectName, initValue = 0, method = "+"){
+      getEffectBonus(effectName, initValue = 0, method = "+"){
         let v = initValue;
+        //能力
         this.personal.skill.forEach(i => {
           let skill = this.allSkills[i];
           if(skill.effect && skill.effect[effectName]){
@@ -1387,6 +1464,7 @@
             }
           }
         });
+        //组合技
         this.combinedSkill.forEach(i => {
           let cskill = this.allCombinedSkills[i];
           if(cskill.effect && cskill.effect[effectName]){
@@ -1396,6 +1474,20 @@
                 break;
               case "*":
                 v *= cskill.effect[effectName];
+                break;
+            }
+          }
+        });
+        //诅咒
+        this.personal.curse.forEach(i => {
+          let curse = this.allCurses[i];
+          if(curse.effect && curse.effect[effectName]){
+            switch (method) {
+              case "+":
+                v += curse.effect[effectName];
+                break;
+              case "*":
+                v *= curse.effect[effectName];
                 break;
             }
           }
@@ -1448,8 +1540,8 @@
         this.UIController = "recruit";
       },
       refreshSeekers(){
-        let minAbilityBonus = this.getSkillBonus("minAbility", 0, "+");
-        let expectSalaryBonus = this.getSkillBonus("expectSalary", 0, "+");
+        let minAbilityBonus = this.getEffectBonus("minAbility", 0, "+");
+        let expectSalaryBonus = this.getEffectBonus("expectSalary", 0, "+");
         this.employee.forEach((p, index) => {
           if(index !== 0){
             p.seekers = [];
