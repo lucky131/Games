@@ -42,7 +42,7 @@ export function formatIntegerNumber(number, mode = 0) {
   return "";
 }
 
-export function getRandomSeeker(gender = 0, averageSalary) {
+export function getRandomSeeker(gender = 0, minAbility = 10, averageSalary) {
   //性别
   if(gender === 0){
     gender = Math.ceil(Math.random() * 2); //1男 2女
@@ -71,7 +71,8 @@ export function getRandomSeeker(gender = 0, averageSalary) {
   let age = Math.floor(Math.random() * 20) + 18;  //18-37
 
   //能力
-  let ability = Math.floor(Math.random() * 91) + 10; //10-100
+  minAbility = Math.min(minAbility, 100);
+  let ability = Math.floor(Math.random() * (101 - minAbility)) + minAbility; //10-100
 
   //期望日薪
   let expectSalary = Math.round(averageSalary *

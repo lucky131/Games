@@ -96,10 +96,12 @@
             </div>
           </div>
         </div>
-        <div class="card">
+        <div v-if="combinedSkill.length > 0" class="card">
           <div class="card-title">组合技</div>
           <div class="card-content">
-
+            <one-skill v-for="index in combinedSkill" :key="index"
+                       :item="allCombinedSkills[index]"
+                       :all-skills="allSkills"></one-skill>
           </div>
         </div>
       </div>
@@ -811,6 +813,7 @@
   //db mixins
   import ads from "./db/ads"
   import buildings from "./db/buildings"
+  import combinedSkills from "./db/cSkills"
   import decorations from "./db/decorations"
   import loans from "./db/loans"
   import servers from "./db/servers"
@@ -818,7 +821,7 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, decorations, loans, servers, skills],
+    mixins: [ads, buildings, combinedSkills, decorations, loans, servers, skills],
     components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
     data(){
       return{
@@ -894,6 +897,15 @@
       },
       newSkillPrice(){
         return 500 * Math.pow(2, this.personal.skill.length) * this.getSkillBonus("skillPrice", 1, "+");
+      },
+      combinedSkill(){
+        let cs = [];
+        this.allCombinedSkills.forEach((c, index) => {
+          if(c.condition.every(i => this.personal.skill.indexOf(i) > -1)){
+            cs.push(index);
+          }
+        });
+        return cs;
       },
       numberOfEmployee(){
         let num = 0;
@@ -979,11 +991,15 @@
         function getSum(total, num){
           return total + num;
         }
+        let userBonus = this.getSkillBonus("user", 1, "+");
+        let ueBonus = this.getSkillBonus("ue", 1, "+");
+        let uiBonus = this.getSkillBonus("ui", 1, "+");
+        let speedBonus = this.getSkillBonus("speed", 1, "+");
         return {
-          user: this.isTodayWorkDay ? Math.round(this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours * Math.exp(-this.company.serverFullDay)) : 0,
-          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours,
-          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours,
-          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed,
+          user: this.isTodayWorkDay ? Math.round(this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours * userBonus * Math.exp(-this.company.serverFullDay)) : 0,
+          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus,
+          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus,
+          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus,
           bugRate: Math.max(this.website.user / 10000 - this.employeeEfficiency[5].reduce(getSum, 0) / 8 * this.company.manage.workHours / 100, 0),
         };
       },
@@ -1285,7 +1301,7 @@
                   //环境因素
                   // environmentLevel     1         2     3         4    5
                   //  moodChangeRange  -2~0  -1.5~0.5  -1~1  -0.5~1.5  0~2
-                  e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
+                  // e.mood += Math.random() * 2 + this.environmentLevel / 2 - 2.5;
                   if(this.day % 7 === 6 || this.day % 7 === 0){
                     //工作日因素 周末上班-20
                     e.mood += -20 + weekendWorkBonus;
@@ -1371,6 +1387,19 @@
             }
           }
         });
+        this.combinedSkill.forEach(i => {
+          let cskill = this.allCombinedSkills[i];
+          if(cskill.effect && cskill.effect[effectName]){
+            switch (method) {
+              case "+":
+                v += cskill.effect[effectName];
+                break;
+              case "*":
+                v *= cskill.effect[effectName];
+                break;
+            }
+          }
+        });
         return v;
       },
       newSkill(){
@@ -1419,12 +1448,13 @@
         this.UIController = "recruit";
       },
       refreshSeekers(){
+        let minAbilityBonus = this.getSkillBonus("minAbility", 0, "+");
         let expectSalaryBonus = this.getSkillBonus("expectSalary", 0, "+");
         this.employee.forEach((p, index) => {
           if(index !== 0){
             p.seekers = [];
             for(let i = 0; i < this.seekerNumber; i++){
-              let s = {...this.$u.getRandomSeeker(p.gender, p.averageSalary + expectSalaryBonus)};
+              let s = {...this.$u.getRandomSeeker(p.gender, 10 + minAbilityBonus, p.averageSalary + expectSalaryBonus)};
               s.isOffer = false;
               s.offerSalary = s.expectSalary;
               p.seekers.push(s);

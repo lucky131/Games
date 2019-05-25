@@ -1,6 +1,12 @@
 <template>
   <div class="one-skill">
-    <img :src="item.img">
+    <div v-if="item.condition" class="combine-img">
+      <img class="main" :src="item.img">
+      <div class="bottom">
+        <img v-for="i in item.condition" :key="i" class="bottom-img" :src="allSkills[i].img">
+      </div>
+    </div>
+    <img v-else class="single-img" :src="item.img">
     <div class="right">
       <div class="name">{{item.name}}</div>
       <div class="desc">{{item.desc}}</div>
@@ -14,13 +20,36 @@
     padding: 5px 0;
     display: flex;
     flex-flow: row nowrap;
-    img{
+    .combine-img{
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      .main{
+        width: 40px;
+        height: 40px;
+      }
+      .bottom{
+        display: flex;
+        flex-flow: row nowrap;
+        margin-top: 10px;
+        .bottom-img{
+          width: 20px;
+          height: 20px;
+          margin-left: 5px;
+          &:first-child{margin-left: 0}
+        }
+      }
+    }
+    .single-img{
       width: 40px;
       height: 40px;
-      margin-right: 10px;
     }
     .right{
       flex: 1 0 0;
+      margin-left: 10px;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
       .name{
         font-weight: bold;
       }
@@ -42,6 +71,7 @@
     },
     props: {
       item: Object,
+      allSkills: Array,
     },
     mounted(){
       
