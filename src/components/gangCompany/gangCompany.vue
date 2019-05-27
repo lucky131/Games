@@ -57,14 +57,15 @@
           <div class="card-content">
             <div class="info-label">用户数量</div>
             <div class="info-value">
-              <span v-if="company.serversSize + website.user > serversMaxSize" class="__text-red">{{website.user}}（+{{websiteCal.user}}：请扩容服务器）</span>
-              <span v-else>{{website.user}}（+{{websiteCal.user}}）</span>
+              <span v-if="company.serversSize + website.user > serversMaxSize" class="__text-red">{{website.user}}（-{{websiteCal.userLoss}}）（+{{websiteCal.userAdd}}：请扩容服务器）</span>
+              <span v-else>{{website.user}}（-{{websiteCal.userLoss}}）（+{{websiteCal.userAdd}}）</span>
             </div>
             <div class="info-label">会员数量</div><div class="info-value">{{website.vip}}（{{website.user === 0 ? 0 : Math.round(website.vip / website.user * 100 * 100) / 100}}%）</div>
             <div class="info-label">用户体验UE</div><div class="info-value">{{Math.round(websiteCal.ue * 100) / 100}}</div>
             <div class="info-label">用户界面UI</div><div class="info-value">{{Math.round(websiteCal.ui * 100) / 100}}</div>
             <div class="info-label">响应速度</div><div class="info-value">{{Math.round(websiteCal.speed * 100) / 100}}</div>
             <div class="info-label">bug概率</div><div class="info-value">{{Math.round(websiteCal.bugRate * 100 * 100) / 100}}%</div>
+            <div class="info-label">用户流失率</div><div class="info-value">{{Math.round(lossRate * 100 * 100) / 100}}%</div>
           </div>
         </div>
         <div class="card">
@@ -89,8 +90,8 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index"
-                      :name="p.name" :can-recruited="index !== 0" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
-                      @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
+                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
+                      @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
@@ -1048,26 +1049,39 @@
         }
         return "";
       },
+      maxUserAdd(){
+        return 500 * (1 + this.employee[7].list.length);
+      },
       websiteCal(){
         function getSum(total, num){
           return total + num;
         }
+        let adBonus = 0;
+        this.allAds.forEach((n, index) => {
+          if(this.company.ad[index]){
+            adBonus += n.bonus;
+          }
+        });
         let userBonus = this.getEffectBonus("user", 1, "+");
         let ueBonus = this.getEffectBonus("ue", 1, "+");
         let uiBonus = this.getEffectBonus("ui", 1, "+");
         let speedBonus = this.getEffectBonus("speed", 1, "+");
         let bugRateBonus = this.getEffectBonus("bugRate", 0, "+");
         return {
-          user: this.isTodayWorkDay ? Math.round(this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours * userBonus * Math.exp(-this.company.serverFullDay)) : 0,
+          userAdd: this.isTodayWorkDay ? Math.min(Math.round((this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours + adBonus) * userBonus * Math.exp(-this.company.serverFullDay)), this.maxUserAdd) : 0,
+          userLoss: Math.round(this.website.user * this.lossRate),
           ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus,
           ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus,
           speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus,
-          bugRate: Math.max(this.website.user / 10000 - this.employeeEfficiency[5].reduce(getSum, 0) / 800 * this.company.manage.workHours + bugRateBonus, 0),
+          bugRate: Math.max(Math.sqrt(this.website.user) / 100 - this.employeeEfficiency[5].reduce(getSum, 0) / 800 * this.company.manage.workHours + bugRateBonus, 0),
         };
       },
       vipRate(){
         let sum = this.websiteCal.ue + this.websiteCal.ui + this.websiteCal.speed
         return 1 - Math.exp(-sum / 10000);
+      },
+      lossRate(){
+        return Math.max(Math.min(0.2 + this.getEffectBonus("lossRate", 0, "+"), 1), 0);
       },
       profit(){
         let p = {
@@ -1215,6 +1229,35 @@
         // }, false)
       })();
 
+      //键盘事件
+      //全局空格事件
+      document.onkeydown = (event) => {
+        if(event.keyCode === 32 || event.keyCode === 13){
+          //组织空格滚动
+          event.preventDefault();
+          //空格或回车
+          if(this.UIController === "tutorial"){
+            //主菜单
+            if(this.isTutorialAnimating){
+              this.skipTutorialAnimating();
+            } else {
+              this.startGame();
+            }
+          } else if(this.UIController === "main"){
+            //主界面
+            if(this.dialogController === ""){
+              //下一天
+              this.next();
+            } else if(this.dialogController === "next") {
+              //确定
+              this.newDay();
+            }
+          } else {
+
+          }
+        }
+      };
+
       this.initGame();
     },
     methods: {
@@ -1253,12 +1296,14 @@
           isBug: false,
         };
         this.employee = [
-          {name: "老板", unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          {name: "程序员", unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          {name: "产品经理", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
-          {name: "美工", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "网络运维", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "测试", unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
+          {name: "程序员", showFull: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
+          {name: "产品经理", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
+          {name: "美工", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "网络运维", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "测试", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          {name: "全栈工程师", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
+          {name: "技术总监", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1357,13 +1402,18 @@
               this.$set(this.company.loan, index, n-1);
             }
           });
-          //新增用户
-          this.website.user += this.websiteCal.user;
+          //用户数量
+          this.website.user += this.websiteCal.userAdd - this.websiteCal.userLoss;
+          this.website.user = Math.max(this.website.user, 0);
           this.website.vip = Math.round(this.website.user * this.vipRate);
           if(this.website.user > 1000){
             //解锁产品和UI
             this.employee[2].unlock = true;
             this.employee[3].unlock = true;
+          }
+          if(this.websiteCal.userAdd === 500){
+            //解锁技术总监
+            this.employee[7].unlock = true;
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -1525,6 +1575,9 @@
       },
       changeAd(index){
         this.$set(this.company.ad, index, !this.company.ad[index]);
+      },
+      toggleShowFull(index){
+        this.employee[index].showFull = !this.employee[index].showFull;
       },
       fire(eIndex, pIndex){
         this.fireEmployee.push({

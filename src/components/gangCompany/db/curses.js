@@ -20,10 +20,10 @@ export default {
         },
         { //2
           img: require("../img/default.png"),
-          name: "北夷入侵",
-          desc: "每个岗位最多只能收到一封求职者的简历",
+          name: "北狄入侵",
+          desc: "大幅减少求职者人数",
           effect: {
-            seekerNumber: -99
+            seekerNumber: -3
           }
         },
         { //3

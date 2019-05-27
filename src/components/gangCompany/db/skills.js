@@ -214,6 +214,14 @@ export default {
             fireDay: -10
           }
         },
+        { //26
+          img: require("../img/default.png"),
+          name: "透明胶",
+          desc: "减少用户流失率",
+          effect: {
+            lossRate: -0.03
+          }
+        },
       ]
     }
   }

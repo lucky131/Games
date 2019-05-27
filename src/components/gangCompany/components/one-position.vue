@@ -1,6 +1,10 @@
 <template>
-  <div class="one-position">
-    <div class="position-name">{{name}}（{{employeeArray.length}}人）</div>
+  <div class="one-position" :style="showFullCal">
+    <div class="position-name" @click="toggleShowFull()">
+      {{name}}（{{employeeArray.length}}人）
+      <i v-if="showFull" class="arrow el-icon-arrow-down"></i>
+      <i v-else class="arrow el-icon-arrow-up"></i>
+    </div>
     <div class="position-content">
       <div v-for="(e, index) in employeeArray" :key="index" class="one-people">
         <div class="left">
@@ -39,6 +43,12 @@
       text-align: center;
       font-size: 18px;
       font-weight: bold;
+      position: relative;
+      .arrow{
+        position: absolute;
+        top: 11px;
+        right: 12px;
+      }
     }
     .position-content{
       padding: 0 20px;
@@ -102,6 +112,7 @@
       name: String,
       canRecruited: Boolean,
       unlock: Boolean,
+      showFull: Boolean,
       employeeArray: Array,
       condition: String,
       day: Number,
@@ -110,6 +121,13 @@
     data(){
       return{
 
+      }
+    },
+    computed: {
+      showFullCal(){
+        return this.showFull ? {} : {
+          'height': '40px'
+        }
       }
     },
     mounted(){
@@ -129,6 +147,9 @@
         if(mood < 60) return `<span class="__text-gray">一般</span>`
         if(mood < 80) return `<span class="__text-blue">开心</span>`
         return `<span class="__text-green">狂欢</span>`
+      },
+      toggleShowFull(){
+        this.$emit("toggleShowFull");
       },
       fire(index){
         this.$emit("fire", index);

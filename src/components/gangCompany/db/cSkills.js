@@ -33,7 +33,7 @@ export default {
           img: require("../img/default.png"),
           condition: [5,21],
           name: "网管的假发",
-          desc: "网管的手办、网管出生效果翻倍",
+          desc: "网管的手办、网管出身效果翻倍",
           effect: {
             netCost: -0.25,
             speed: 0.15,
