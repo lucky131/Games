@@ -23,7 +23,7 @@
     <div v-else-if="UIController === 'main'" class="page main">
       <div class="main-top">
         <div class="main-top-left">
-          <div class="row">第{{day}}天 {{weekday}}</div>
+          <div class="row">{{dayText}} {{weekday}}</div>
           <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
           <div class="row">今日预计收益：
             <span :class="{'__text-green': totalEarn>0, '__text-gray': totalEarn===0, '__text-red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
@@ -89,7 +89,7 @@
       </div>
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
-        <one-position v-for="(p, index) in employee" :key="index"
+        <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
                       :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
                       @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
@@ -861,6 +861,10 @@
   import servers from "./db/servers"
   import skills from "./db/skills"
 
+  function getSum(total, num){
+    return total + num;
+  }
+
   export default {
     name: "gangCompany",
     mixins: [ads, buildings, cSkills, curses, decorations, loans, servers, skills],
@@ -868,6 +872,7 @@
     data(){
       return{
         height: 0,
+        notifyPromise: Promise.resolve(),
         difficulty: 0,
         difficulties: [
           {
@@ -951,6 +956,11 @@
       }
     },
     computed: {
+      dayText(){
+        let year = Math.floor(this.day / 365);
+        let day = this.day - 365 * year;
+        return (year > 0 ? `${year}年` : '') + (day > 0 ? `${day}天` : '');
+      },
       weekday(){
         return ["星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][this.day % 7];
       },
@@ -1053,26 +1063,24 @@
         return 500 * (1 + this.employee[7].list.length);
       },
       websiteCal(){
-        function getSum(total, num){
-          return total + num;
-        }
         let adBonus = 0;
         this.allAds.forEach((n, index) => {
           if(this.company.ad[index]){
             adBonus += n.bonus;
           }
         });
-        let userBonus = this.getEffectBonus("user", 1, "+");
+        let userAddBonus = this.getEffectBonus("userAdd", 1, "+");
+        let architectBonus = Math.sqrt(this.employeeEfficiency[6].reduce(getSum, 0)) / 20 + 1;
         let ueBonus = this.getEffectBonus("ue", 1, "+");
         let uiBonus = this.getEffectBonus("ui", 1, "+");
         let speedBonus = this.getEffectBonus("speed", 1, "+");
         let bugRateBonus = this.getEffectBonus("bugRate", 0, "+");
         return {
-          userAdd: this.isTodayWorkDay ? Math.min(Math.round((this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours + adBonus) * userBonus * Math.exp(-this.company.serverFullDay)), this.maxUserAdd) : 0,
+          userAdd: this.isTodayWorkDay ? Math.min(Math.round((this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours + adBonus) * userAddBonus * architectBonus * Math.exp(-this.company.serverFullDay)), this.maxUserAdd) : 0,
           userLoss: Math.round(this.website.user * this.lossRate),
-          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus,
-          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus,
-          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus,
+          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus * architectBonus,
+          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus * architectBonus,
+          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus * architectBonus,
           bugRate: Math.max(Math.sqrt(this.website.user) / 100 - this.employeeEfficiency[5].reduce(getSum, 0) / 800 * this.company.manage.workHours + bugRateBonus, 0),
         };
       },
@@ -1081,7 +1089,10 @@
         return 1 - Math.exp(-sum / 10000);
       },
       lossRate(){
-        return Math.max(Math.min(0.2 + this.getEffectBonus("lossRate", 0, "+"), 1), 0);
+        let base = 0.1;
+        let effectBonus = this.getEffectBonus("lossRate", 0, "+");
+        let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 1000);
+        return Math.max(Math.min((base + effectBonus) * planBonus, 1), 0);
       },
       profit(){
         let p = {
@@ -1261,6 +1272,15 @@
       this.initGame();
     },
     methods: {
+      notify(msg) {
+        this.notifyPromise = this.notifyPromise.then(this.$nextTick).then(()=>{
+          this.$notify({
+            message: msg,
+            showClose: false,
+            duration: 2000,
+          });
+        });
+      },
       initGame(){
         //各项数据初始化
         this.UIController = "tutorial";
@@ -1296,14 +1316,16 @@
           isBug: false,
         };
         this.employee = [
-          {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          {name: "程序员", showFull: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          {name: "产品经理", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
-          {name: "美工", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "网络运维", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "测试", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          {name: "全栈工程师", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
-          {name: "技术总监", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
+          /* 0*/ {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
+          /* 1*/ {name: "程序员", showFull: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
+          /* 2*/ {name: "产品经理", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
+          /* 3*/ {name: "美工", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 4*/ {name: "网络运维", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 5*/ {name: "测试", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 6*/ {name: "架构师", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
+          /* 7*/ {name: "技术总监", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
+          /* 8*/ {name: "策划", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
+          /* 9*/ {name: "人力", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1362,6 +1384,12 @@
           this.isTutorialAnimating = false;
         }
       },
+      unlock(index){
+        if(!this.employee[index].unlock){
+          this.employee[index].unlock = true;
+          this.notify(`已解锁职位：${this.employee[index].name}`);
+        }
+      },
       next(){
         //历史
         this.history.push({
@@ -1376,7 +1404,7 @@
         //触发bug
         if(this.website.isBug){
           //解锁测试
-          this.employee[5].unlock = true;
+          this.unlock(5);
         } else {
           this.money += this.totalProfit;
         }
@@ -1387,7 +1415,7 @@
           this.company.serversSize += this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
           if(this.company.serversSize >= 1024){
             //解锁运维
-            this.employee[4].unlock = true;
+            this.unlock(4);
           }
           if(this.company.serversSize > this.serversMaxSize){
             //如果服务器容量超出最大
@@ -1406,14 +1434,19 @@
           this.website.user += this.websiteCal.userAdd - this.websiteCal.userLoss;
           this.website.user = Math.max(this.website.user, 0);
           this.website.vip = Math.round(this.website.user * this.vipRate);
-          if(this.website.user > 1000){
-            //解锁产品和UI
-            this.employee[2].unlock = true;
-            this.employee[3].unlock = true;
+          //解锁产品和UI
+          if(this.website.user > 500){
+            this.unlock(2);
+            this.unlock(3);
           }
+          //解锁策划
+          if(this.website.user > 1000){
+            this.unlock(8);
+          }
+          //解锁架构师和技术总监
           if(this.websiteCal.userAdd === 500){
-            //解锁技术总监
-            this.employee[7].unlock = true;
+            this.unlock(6);
+            this.unlock(7);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -1441,10 +1474,10 @@
           //员工辞职
           this.employee.forEach(p => {
             p.list.forEach((e, index) => {
-              // mood  [0,10,100]
+              // mood  [0,20,100]
               // rate  [1, 0,  0] 二段线性
-              if(e.mood !== undefined && e.mood < 10){
-                if(Math.random() < 1 - e.mood / 10){
+              if(e.mood !== undefined && e.mood < 20){
+                if(Math.random() < 1 - e.mood / 20){
                   this.quitEmployee.push({
                     position: p.name,
                     name: e.name,
@@ -1456,6 +1489,30 @@
               }
             });
             p.list = p.list.filter(e => e); //过滤undefined
+          });
+          //人力发offer
+          this.employee[9].list.forEach(hr => {
+            if(this.numberOfEmployee + this.numberOfOffer < this.company.building.size){
+              let seekerPool = [];
+              this.employee.forEach((p, pIndex) => {
+                p.seekers.forEach((s, sIndex) => {
+                  if(p.unlock && pIndex !== 9 && !s.isOffer){
+                    seekerPool.push({
+                      pIndex,
+                      sIndex,
+                      ability: s.ability,
+                      expectSalary: s.expectSalary,
+                      quality: s.ability / (s.expectSalary / p.averageSalary)
+                    });
+                  }
+                });
+              });
+              seekerPool.sort((a, b) => b.quality - a.quality);
+              seekerPool = seekerPool.filter(s => s.ability <= hr.ability * hr.mood / 80);
+              if(seekerPool.length > 0){
+                this.employee[seekerPool[0].pIndex].seekers[seekerPool[0].sIndex].isOffer = true;
+              }
+            }
           });
           //处理offer
           let fireDayBonus = this.getEffectBonus("fireDay", 0, "+");
@@ -1484,11 +1541,23 @@
               }
             });
           });
+          //解锁人力
+          if(this.numberOfEmployee >= 20){
+            this.unlock(9);
+          }
 
           //刷新求职者
           this.refreshSeekers();
 
           this.day++;
+          //过年
+          if(this.day % 365 === 0){
+            this.employee.forEach(p => {
+              p.list.forEach(e => {
+                e.age++;
+              });
+            });
+          }
           this.dialogController = "next";
         }
       },
@@ -1596,7 +1665,7 @@
         let minAbilityBonus = this.getEffectBonus("minAbility", 0, "+");
         let expectSalaryBonus = this.getEffectBonus("expectSalary", 0, "+");
         this.employee.forEach((p, index) => {
-          if(index !== 0){
+          if(p.unlock && index !== 0){
             p.seekers = [];
             for(let i = 0; i < this.seekerNumber; i++){
               let s = {...this.$u.getRandomSeeker(p.gender, 10 + minAbilityBonus, p.averageSalary + expectSalaryBonus)};

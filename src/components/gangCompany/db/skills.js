@@ -154,7 +154,7 @@ export default {
           name: "技术出身",
           desc: "增加工作日的用户增量",
           effect: {
-            user: 0.25
+            userAdd: 0.25
           }
         },
         { //19
@@ -219,7 +219,7 @@ export default {
           name: "透明胶",
           desc: "减少用户流失率",
           effect: {
-            lossRate: -0.03
+            lossRate: -0.02
           }
         },
       ]
