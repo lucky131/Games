@@ -97,6 +97,8 @@
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
         <div class="opes">
+          <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
+          <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
         </div>
         <div class="card">
@@ -217,6 +219,22 @@
                 :item="item" :config="config" :is-buy="company.ad[index]"
                 @change="changeAd(index)"></one-ad>
       </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--买车-->
+    <div v-else-if="UIController === 'car'" class="page car">
+      <div class="page-content car-content">
+        <one-car-house v-for="(c, index) in allCars" :key="index" v-if="!personal.car[index]"
+                       :item="c" :money="money" :config="config"
+                       @buy="buyCar(index)"></one-car-house>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--买房-->
+    <div v-else-if="UIController === 'house'" class="page house">
+      <div class="page-content house-content"></div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
@@ -732,6 +750,12 @@
       .ad-content{
       }
     }
+    .car{
+      .car-content{}
+    }
+    .house{
+      .house-content{}
+    }
     .lottery{
       .lottery-head{
         width: 100%;
@@ -945,6 +969,7 @@
   //components
   import oneAd from "./components/one-ad"
   import oneBuilding from "./components/one-building"
+  import oneCarHouse from "./components/one-car-house"
   import oneDecoration from "./components/one-decoration"
   import oneLoan from "./components/one-loan"
   import onePosition from "./components/one-position"
@@ -955,9 +980,11 @@
   //db mixins
   import ads from "./db/ads"
   import buildings from "./db/buildings"
+  import cars from "./db/cars"
   import cSkills from "./db/cSkills"
   import curses from "./db/curses"
   import decorations from "./db/decorations"
+  import houses from "./db/houses"
   import loans from "./db/loans"
   import servers from "./db/servers"
   import skills from "./db/skills"
@@ -987,8 +1014,8 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, cSkills, curses, decorations, loans, servers, skills],
-    components: {oneAd, oneBuilding, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
+    mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills],
+    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
     data(){
       return{
         height: 0,
@@ -1072,6 +1099,8 @@
         personal: {
           skill: [],
           curse: [],
+          car: [],
+          house: [],
           lottery: [],
           lotteryNumber: 1,
           lotteryRepeat: false,
@@ -1429,11 +1458,11 @@
           },
           building: this.allBuildings[0],
           decoration: [],
-          server: [0,0,0,0,0,0,0,0],
+          server: this.allServers.map(n => 0),
           serversSize: 0,
           serverFullDay: 0,
-          loan: [0,0,0,0,0],
-          ad: [false, false, false, false, false, false, false],
+          loan: this.allLoans.map(n => 0),
+          ad: this.allAds.map(n => false),
         };
         this.initDecoration();
         this.website = {
@@ -1467,6 +1496,8 @@
         this.personal = {
           skill: [],
           curse: [],
+          car: this.allCars.map(n => false),
+          house: this.allHouses.map(n => false),
           lottery: [],
           lotteryNumber: 1,
         };
@@ -1836,6 +1867,11 @@
         this.employee[this.recruitIndex].seekers[this.seekerIndex].isOffer = true;
         this.dialogController = "";
       },
+      buyCar(index){
+        this.money -= this.allCars[index].price;
+        this.personal.car[index] = true;
+      },
+      buyHouse(index){},
       generateLottery(){
         let db1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33];
         let db2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
