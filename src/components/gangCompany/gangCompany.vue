@@ -61,6 +61,7 @@
               <span v-else>{{website.user}}（-{{websiteCal.userLoss}}）（+{{websiteCal.userAdd}}）</span>
             </div>
             <div class="info-label">会员数量</div><div class="info-value">{{website.vip}}（{{website.user === 0 ? 0 : Math.round(website.vip / website.user * 100 * 100) / 100}}%）</div>
+            <div class="info-label">会员日价</div><div class="info-value">{{Math.round(vipPrice * 100) / 100}}</div>
             <div class="info-label">用户体验UE</div><div class="info-value">{{Math.round(websiteCal.ue * 100) / 100}}</div>
             <div class="info-label">用户界面UI</div><div class="info-value">{{Math.round(websiteCal.ui * 100) / 100}}</div>
             <div class="info-label">响应速度</div><div class="info-value">{{Math.round(websiteCal.speed * 100) / 100}}</div>
@@ -95,6 +96,9 @@
       </div>
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
+        <div class="opes">
+          <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
+        </div>
         <div class="card">
           <div class="card-title">能力</div>
           <div class="card-content">
@@ -131,7 +135,7 @@
 
     <!--管理-->
     <div v-else-if="UIController === 'manage'" class="page manage">
-      <div class="manage-content">
+      <div class="page-content manage-content">
         <div class="manage-title">每天工作时长</div>
         <div class="manage-row">
           <el-input-number v-model="company.manage.workHours" :min="1" :max="24" :step="1" step-strictly size="small"></el-input-number> 小时
@@ -150,7 +154,7 @@
           <div class="manage-tips">《中华人民共和国劳动法》第一章第三条： 劳动者享有平等就业和选择职业的权利、取得劳动报酬的权利、休息休假的权利、获得劳动安全卫生保护的权利、接受职业技能培训的权利、享受社会保险和福利的权利、提请劳动争议处理的权利以及法律规定的其他劳动权利。</div>
         </div>
       </div>
-      <div class="manage-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--装修-->
@@ -159,23 +163,23 @@
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
         <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
       </div>
-      <div class="decoration-content">
+      <div class="page-content decoration-content">
         <one-decoration v-for="(d, index) in allDecorations" :key="d.value"
                         :text="d.name" :size="company.building.size" :price="d.price" :money="money" :already-buy="company.decoration[index]" :config="config"
                         @buy="buyDecoration(index)"></one-decoration>
       </div>
-      <div class="decoration-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--迁址-->
     <div v-else-if="UIController === 'relocation'" class="page relocation">
-      <div class="relocation-content">
+      <div class="page-content relocation-content">
         <div class="tips">提示：迁址完毕后所有的装修都会重置，即使之前装修过的地址，再次迁回来，也不会有原有的装修记录，需要重新装修，请慎重考虑</div>
         <one-building v-for="(b, index) in allBuildings" :key="b.id"
                       :name="b.address" :size="b.size" :rent="b.rent" :is-now="company.building.id===b.id" :config="config"
                       @buy="buyBuilding(index)"></one-building>
       </div>
-      <div class="relocation-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--服务器-->
@@ -187,44 +191,99 @@
           <div class="info">{{$u.formatHardDiskSize(company.serversSize) + '/' + $u.formatHardDiskSize(serversMaxSize)}}</div>
         </div>
       </div>
-      <div class="server-content">
+      <div class="page-content server-content">
         <div class="tips">提示：减少服务器时，若已使用的容量大于了缩减后的总容量，则会丢失数据，请慎重</div>
         <one-server v-for="(s, index) in allServers" :key="index"
                     :name="s.name" :desc="s.desc" :size="s.size" :price="s.price" :number="company.server[index]" :config="config"
                     @change="changeServer($event, index)"></one-server>
       </div>
-      <div class="server-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--贷款-->
     <div v-else-if="UIController === 'loan'" class="page loan">
-      <div class="loan-content">
+      <div class="page-content loan-content">
         <one-loan v-for="(item, index) in allLoans" :key="index"
                   :item="item" :config="config" :remain-day="company.loan[index]"
                   @loan="loan(index)"></one-loan>
       </div>
-      <div class="loan-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--广告-->
     <div v-else-if="UIController === 'ad'" class="page ad">
-      <div class="ad-content">
+      <div class="page-content ad-content">
         <one-ad v-for="(item, index) in allAds" :key="index"
                 :item="item" :config="config" :is-buy="company.ad[index]"
                 @change="changeAd(index)"></one-ad>
       </div>
-      <div class="ad-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--彩票-->
+    <div v-else-if="UIController === 'lottery'" class="page lottery">
+      <div class="lottery-head">
+        <el-input-number v-model="personal.lotteryNumber" :min="1" :step="1" step-strictly size="small"></el-input-number><span>注</span>
+        <el-checkbox v-model="personal.lotteryRepeat">重复</el-checkbox>
+        <div v-if="money < personal.lotteryNumber * 2" class="btn disabled">无法购买</div>
+        <div v-else class="btn able" @click="buyLottery()">购买</div>
+      </div>
+      <div class="page-content lottery-content">
+        <div>今日已购（{{personal.lottery.length}}注）：</div>
+        <div class="lotteries">
+          <div v-for="(l, index) in personal.lottery" :key="index" class="one-lottery">
+            <div class="ball red">{{l[0]}}</div>
+            <div class="ball red">{{l[1]}}</div>
+            <div class="ball red">{{l[2]}}</div>
+            <div class="ball red">{{l[3]}}</div>
+            <div class="ball red">{{l[4]}}</div>
+            <div class="ball red">{{l[5]}}</div>
+            <div class="ball blue">{{l[6]}}</div>
+          </div>
+        </div>
+        <div class="help">
+          <table cellspacing="0">
+            <thead>
+            <tr>
+              <th>奖级</th><th>中奖条件</th><th>奖金</th><th>中奖概率</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td>一等奖</td><td>6+1</td><td>5000000</td><td>0.0000056%</td>
+            </tr>
+            <tr>
+              <td>二等奖</td><td>6+0</td><td>60000</td><td>0.0000846%</td>
+            </tr>
+            <tr>
+              <td>三等奖</td><td>5+1</td><td>3000</td><td>0.000914%</td>
+            </tr>
+            <tr>
+              <td>四等奖</td><td>5+0、4+1</td><td>200</td><td>0.0434%</td>
+            </tr>
+            <tr>
+              <td>五等奖</td><td>4+0、3+1</td><td>10</td><td>0.7758%</td>
+            </tr>
+            <tr>
+              <td>六等奖</td><td>(<3)+1</td><td>5</td><td>5.889%</td>
+            </tr>
+            </tbody>
+          </table>
+          <div class="tips">杠三杠提醒您：小搏怡情，大赌伤身，强赌灰飞烟灭</div>
+        </div>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--招聘-->
     <div v-else-if="UIController === 'recruit'" class="page recruit">
       <div class="recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
-      <div class="recruit-content">
+      <div class="page-content recruit-content">
         <one-seeker v-for="(s, index) in employee[recruitIndex].seekers" :key="index"
                     :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config"
                     @sendOffer="showOffer(index)"></one-seeker>
       </div>
-      <div class="recruit-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
     <div v-else-if="UIController === 'xxx'" class="page xxx"></div>
@@ -280,6 +339,15 @@
               <i v-else class="el-icon-s-custom female"></i>
               {{e.name}}
               {{e.age}}岁
+            </div>
+          </div>
+          <div class="title">昨日开奖</div>
+          <div class="row">{{yesterdayLottery.slice(0, 6).join(' ')}} + {{yesterdayLottery[6]}}</div>
+          <div class="title">中奖纪录</div>
+          <div v-if="winLottery.length === 0" class="row">无</div>
+          <div v-else>
+            <div v-for="(wl, index) in winLottery" :key="index" class="row">
+              {{wl.lottery.slice(0, 6).join(' ')}} + {{wl.lottery[6]}} {{wl.desc}} {{wl.price}}
             </div>
           </div>
         </div>
@@ -342,6 +410,20 @@
       flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
+      .page-content{
+        width: 100%;
+        flex: 1 0 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .page-back{
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background-color: $headerFooterGray;
+        font-size: 32px;
+        text-align: center;
+      }
     }
     .tutorial{
       position: relative;
@@ -482,7 +564,26 @@
           padding-top: 10px;
         }
         &.personal{
-          padding-top: 10px;
+          .opes{
+            width: 100%;
+            padding: 0 10px;
+            display: flex;
+            flex-flow: row nowrap;
+            .ope-btn{
+              flex: 1 0 0;
+              padding: 10px 0;
+              display: flex;
+              flex-flow: column nowrap;
+              align-items: center;
+              i{
+                font-size: 24px;
+                margin-bottom: 4px;
+              }
+              span{
+                font-size: 12px;
+              }
+            }
+          }
           .card{
             margin: 0 10px 10px;
             border-radius: 10px;
@@ -548,11 +649,7 @@
     }
     .manage{
       .manage-content{
-        width: 100%;
-        flex: 1 0 0;
         padding: 0 20px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         .manage-title{
           margin: 20px 0;
           font-size: 18px;
@@ -574,14 +671,6 @@
           }
         }
       }
-      .manage-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
-      }
     }
     .decoration{
       .decoration-header{
@@ -591,41 +680,16 @@
         padding: 8px 20px;
         .row{}
       }
-      .decoration-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .decoration-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
-      }
+      .decoration-content{}
     }
     .relocation{
       .relocation-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         .tips{
           width: 100%;
           padding: 10px 20px;
           background-color: $headerFooterGray;
           font-size: 12px;
         }
-      }
-      .relocation-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
       }
     }
     .server{
@@ -653,10 +717,6 @@
         }
       }
       .server-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         .tips{
           width: 100%;
           padding: 10px 20px;
@@ -664,45 +724,99 @@
           font-size: 12px;
         }
       }
-      .server-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
-      }
     }
     .loan{
-      .loan-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .loan-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
-      }
+      .loan-content{}
     }
     .ad{
       .ad-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
       }
-      .ad-back{
+    }
+    .lottery{
+      .lottery-head{
         width: 100%;
         height: 60px;
-        line-height: 60px;
         background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
+        padding: 0 20px;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        .el-input-number{
+          margin: 0 4px;
+        }
+        .el-checkbox{
+          margin-left: 10px;
+          /deep/ .el-checkbox__label{
+            padding-left: 4px;
+          }
+        }
+        .btn{
+          width: 80px;
+          height: 40px;
+          line-height: 40px;
+          border-radius: 10px;
+          text-align: center;
+          &.able{
+            color: white;
+            background-color: #31c21f;
+          }
+          &.disabled{
+            background-color: #ccc;
+            cursor: no-drop;
+          }
+        }
+      }
+      .lottery-content{
+        padding: 10px 20px;
+        .lotteries{
+          padding: 20px 0;
+          .one-lottery{
+            margin-top: 10px;
+            &:first-child{margin-top: 0}
+            display: flex;
+            flex-flow: row nowrap;
+            .ball{
+              width: 36px;
+              height: 36px;
+              line-height: 36px;
+              border-radius: 20px;
+              margin-right: 4px;
+              color: white;
+              font-size: 20px;
+              font-weight: bold;
+              text-align: center;
+              &:last-child{
+                margin-left: 10px;
+                margin-right: 0;
+              }
+              &.red{
+                background-color: #ff5030;
+              }
+              &.blue{
+                background-color: #5b64ff;
+              }
+            }
+          }
+        }
+        .help{
+          font-size: 12px;
+          color: $textGray;
+          border-top: 1px solid $textGray;
+          table{
+            width: 100%;
+            margin-top: 20px;
+            border-bottom: 1px solid $textGray;
+            border-right: 1px solid $textGray;
+            th, td{
+              padding: 5px;
+              border-top: 1px solid $textGray;
+              border-left: 1px solid $textGray;
+            }
+          }
+          .tips{
+            margin-top: 10px;
+          }
+        }
       }
     }
     .recruit{
@@ -713,20 +827,7 @@
         padding: 0 20px;
         background-color: $headerFooterGray;
       }
-      .recruit-content{
-        width: 100%;
-        flex: 1 0 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .recruit-back{
-        width: 100%;
-        height: 60px;
-        line-height: 60px;
-        background-color: $headerFooterGray;
-        font-size: 32px;
-        text-align: center;
-      }
+      .recruit-content{}
     }
     .mask{
       width: 100%;
@@ -865,6 +966,25 @@
     return total + num;
   }
 
+  function range(num, min = null, max = null) {
+    if(min !== null) num = Math.max(num, min);
+    if(max !== null) num = Math.min(num, max);
+    return num;
+  }
+
+  function shuffleArray(arr){
+    let length = arr.length,
+      randomIndex,
+      temp;
+    while (length) {
+      randomIndex = Math.floor(Math.random() * (length--));
+      temp = arr[randomIndex];
+      arr[randomIndex] = arr[length];
+      arr[length] = temp
+    }
+    return arr;
+  }
+
   export default {
     name: "gangCompany",
     mixins: [ads, buildings, cSkills, curses, decorations, loans, servers, skills],
@@ -920,10 +1040,6 @@
         history: [],
         money: 0,
         day: 0,
-        personal: {
-          skill: [],
-          curse: [],
-        },
         company: {
           manage: {
             workHours: 8,
@@ -953,6 +1069,15 @@
         fireEmployee: [],
         recruitIndex: 0,
         seekerIndex: 0,
+        personal: {
+          skill: [],
+          curse: [],
+          lottery: [],
+          lotteryNumber: 1,
+          lotteryRepeat: false,
+        },
+        yesterdayLottery: [],
+        winLottery: [],
       }
     },
     computed: {
@@ -1070,35 +1195,39 @@
           }
         });
         let userAddBonus = this.getEffectBonus("userAdd", 1, "+");
-        let architectBonus = Math.sqrt(this.employeeEfficiency[6].reduce(getSum, 0)) / 20 + 1;
+        let architectBonus = Math.sqrt(this.getTotalEmployeeEfficiency(6)) / 20 + 1;
         let ueBonus = this.getEffectBonus("ue", 1, "+");
         let uiBonus = this.getEffectBonus("ui", 1, "+");
         let speedBonus = this.getEffectBonus("speed", 1, "+");
         let bugRateBonus = this.getEffectBonus("bugRate", 0, "+");
         return {
-          userAdd: this.isTodayWorkDay ? Math.min(Math.round((this.employeeEfficiency[1].reduce(getSum, 0) / 8 * this.company.manage.workHours + adBonus) * userAddBonus * architectBonus * Math.exp(-this.company.serverFullDay)), this.maxUserAdd) : 0,
+          userAdd: this.isTodayWorkDay ? range(Math.round((this.getTotalEmployeeEfficiency(1) + adBonus) * userAddBonus * architectBonus * Math.exp(-this.company.serverFullDay)), null, this.maxUserAdd) : 0,
           userLoss: Math.round(this.website.user * this.lossRate),
-          ue: this.employeeEfficiency[2].reduce(getSum, 0) / 8 * this.company.manage.workHours * ueBonus * architectBonus,
-          ui: this.employeeEfficiency[3].reduce(getSum, 0) / 8 * this.company.manage.workHours * uiBonus * architectBonus,
-          speed: this.employeeEfficiency[4].reduce(getSum, 0) / 8 * this.company.manage.workHours * this.serverAverageSpeed * speedBonus * architectBonus,
-          bugRate: Math.max(Math.sqrt(this.website.user) / 100 - this.employeeEfficiency[5].reduce(getSum, 0) / 800 * this.company.manage.workHours + bugRateBonus, 0),
+          ue: this.getTotalEmployeeEfficiency(2) * ueBonus * architectBonus,
+          ui: this.getTotalEmployeeEfficiency(3) * uiBonus * architectBonus,
+          speed: this.getTotalEmployeeEfficiency(4) * this.serverAverageSpeed * speedBonus * architectBonus,
+          bugRate: range(Math.sqrt(this.website.user) / 100 - this.getTotalEmployeeEfficiency(5) / 100 + bugRateBonus, 0, null),
         };
       },
       vipRate(){
         let sum = this.websiteCal.ue + this.websiteCal.ui + this.websiteCal.speed
         return 1 - Math.exp(-sum / 10000);
       },
+      vipPrice(){
+        return 0.04 * Math.sqrt(this.getTotalEmployeeEfficiency(10)) + 1;
+      },
       lossRate(){
         let base = 0.1;
         let effectBonus = this.getEffectBonus("lossRate", 0, "+");
-        let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 1000);
-        return Math.max(Math.min((base + effectBonus) * planBonus, 1), 0);
+        let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 8 * this.company.manage.workHours / 1000);
+        return range((base + effectBonus) * planBonus, 0, 1);
       },
       profit(){
         let p = {
           base: this.website.user * this.getEffectBonus("baseProfit", 1, "+"),
-          vip: this.website.vip * this.getEffectBonus("vipProfit", 1, "+"),
+          vip: this.website.vip * this.vipPrice * this.getEffectBonus("vipProfit", 1, "+"),
         };
+        //全部取整
         for(let key in p){
           p[key] = Math.round(p[key]);
         }
@@ -1159,6 +1288,7 @@
           loan: this.loanCost,
           ad: this.adCost,
         };
+        //全部取整
         for(let key in c){
           c[key] = Math.round(c[key]);
         }
@@ -1215,7 +1345,7 @@
       },
       seekerNumber(){
         let seekerNumberBonus = this.getEffectBonus("seekerNumber", 0, "+");
-        return Math.max(this.popularityLevel + seekerNumberBonus, 1); //最少1人
+        return range(this.popularityLevel + seekerNumberBonus, 1, null); //最少1人
       },
     },
     mounted(){
@@ -1292,10 +1422,6 @@
         this.history = [{}];
         this.money = 0;
         this.day = 1;
-        this.personal = {
-          skill: [],
-          curse: [],
-        };
         this.company = {
           manage: {
             workHours: 8,
@@ -1326,6 +1452,7 @@
           /* 7*/ {name: "技术总监", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
           /* 8*/ {name: "策划", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
           /* 9*/ {name: "人力", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
+          /* 10*/ {name: "财务", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1337,6 +1464,14 @@
         this.fireEmployee = [];
         this.recruitIndex = 1;
         this.seekerIndex = 0;
+        this.personal = {
+          skill: [],
+          curse: [],
+          lottery: [],
+          lotteryNumber: 1,
+        };
+        this.yesterdayLottery = [];
+        this.winLottery = [];
 
         this.tutorialAnimationTimer = setInterval(() => {
           let length = this.tutorialText.length;
@@ -1408,6 +1543,13 @@
         } else {
           this.money += this.totalProfit;
         }
+        //彩票
+        this.yesterdayLottery = this.generateLottery();
+        this.personal.lottery.forEach(l => {
+          this.checkLottery(l);
+        });
+        this.personal.lottery = [];
+
         if(this.money < 0){
           this.dialogController = "break";
         } else{
@@ -1432,7 +1574,7 @@
           });
           //用户数量
           this.website.user += this.websiteCal.userAdd - this.websiteCal.userLoss;
-          this.website.user = Math.max(this.website.user, 0);
+          this.website.user = range(this.website.user, 0, null);
           this.website.vip = Math.round(this.website.user * this.vipRate);
           //解锁产品和UI
           if(this.website.user > 500){
@@ -1447,6 +1589,10 @@
           if(this.websiteCal.userAdd === 500){
             this.unlock(6);
             this.unlock(7);
+          }
+          //解锁财务
+          if(this.vipRate >= 0.1){
+            this.unlock(10);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -1467,7 +1613,7 @@
                   }
                 }
                 //校准
-                e.mood = Math.min(Math.max(e.mood, 0), 100);
+                e.mood = range(e.mood, 0, 100);
               }
             });
           });
@@ -1527,7 +1673,7 @@
                     gender: s.gender,
                     age: s.age,
                     ability: s.ability,
-                    mood: Math.min(60 * s.offerSalary / s.expectSalary, 100),
+                    mood: range(60 * s.offerSalary / s.expectSalary, null, 100),
                     salary: s.offerSalary,
                     canFireDay: this.day + 1 + 30 + fireDayBonus,
                   });
@@ -1565,7 +1711,11 @@
         this.newEmployee = [];
         this.quitEmployee = [];
         this.fireEmployee = [];
+        this.winLottery = [];
         this.dialogController = "";
+      },
+      getTotalEmployeeEfficiency(index){
+        return this.employeeEfficiency[index].reduce(getSum, 0) / 8 * this.company.manage.workHours
       },
       getEffectBonus(effectName, initValue = 0, method = "+"){
         let v = initValue;
@@ -1685,6 +1835,59 @@
         if(this.employee[this.recruitIndex].seekers[this.seekerIndex].offerSalary === undefined) return;
         this.employee[this.recruitIndex].seekers[this.seekerIndex].isOffer = true;
         this.dialogController = "";
+      },
+      generateLottery(){
+        let db1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33];
+        let db2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        return [...shuffleArray(db1).slice(0, 6).sort((a, b) => a - b), Math.floor(Math.random() * db2.length) + 1];
+      },
+      buyLottery(){
+        if(this.personal.lotteryRepeat){
+          let l = this.generateLottery();
+          for(let i = 0; i < this.personal.lotteryNumber; i++){
+            this.personal.lottery.push(l);
+          }
+        } else {
+          for(let i = 0; i < this.personal.lotteryNumber; i++){
+            this.personal.lottery.push(this.generateLottery());
+          }
+        }
+        this.money -= this.personal.lotteryNumber * 2;
+      },
+      checkLottery(l){
+        let n1 = 0, n2 = 0;
+        let s1 = this.yesterdayLottery.slice(0, 6), s2 = this.yesterdayLottery[6];
+        for(let i = 0; i < 6; i++){
+          if(s1.indexOf(l[i]) > -1) n1++;
+        }
+        if(s2 === l[6]) n2++;
+        let price = 0, desc = "";
+        if(n1 === 6 && n2 === 1){
+          desc = "一等奖";
+          price = 5000000;
+        } else if (n1 === 6 && n2 === 0){
+          desc = "二等奖";
+          price = 60000;
+        } else if (n1 === 5 && n2 === 1){
+          desc = "三等奖";
+          price = 3000;
+        } else if ((n1 === 5 && n2 === 0) || (n1 === 4 && n2 === 1)){
+          desc = "四等奖";
+          price = 200;
+        } else if ((n1 === 4 && n2 === 0) || (n1 === 3 && n2 === 1)){
+          desc = "五等奖";
+          price = 10;
+        } else if ((n1 === 2 && n2 === 1) || (n1 === 1 && n2 === 1) || (n1 === 0 && n2 === 1)){
+          desc = "六等奖";
+          price = 5;
+        }
+        if(price > 0){
+          this.winLottery.push({
+            lottery: l,
+            desc,
+            price
+          });
+        }
       },
     }
   }
