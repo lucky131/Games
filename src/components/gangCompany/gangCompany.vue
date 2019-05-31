@@ -234,7 +234,11 @@
 
     <!--买房-->
     <div v-else-if="UIController === 'house'" class="page house">
-      <div class="page-content house-content"></div>
+      <div class="page-content house-content">
+        <one-car-house v-for="(c, index) in allHouses" :key="index" v-if="!personal.house[index]"
+                       :item="c" :money="money" :config="config"
+                       @buy="buyHouse(index)"></one-car-house>
+      </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
@@ -283,7 +287,7 @@
               <td>五等奖</td><td>4+0、3+1</td><td>10</td><td>0.7758%</td>
             </tr>
             <tr>
-              <td>六等奖</td><td>(<3)+1</td><td>5</td><td>5.889%</td>
+              <td>六等奖</td><td>(&lt;3)+1</td><td>5</td><td>5.889%</td>
             </tr>
             </tbody>
           </table>
@@ -1871,7 +1875,10 @@
         this.money -= this.allCars[index].price;
         this.personal.car[index] = true;
       },
-      buyHouse(index){},
+      buyHouse(index){
+        this.money -= this.allHouses[index].price;
+        this.personal.house[index] = true; //
+      },
       generateLottery(){
         let db1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33];
         let db2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];

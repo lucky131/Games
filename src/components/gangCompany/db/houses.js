@@ -23,12 +23,12 @@ export default {
           reputation: 180
         },
         {
-          name: "",
+          name: "白云别墅",
           price: 10000000,
           reputation: 900
         },
         {
-          name: "",
+          name: "布吉岛",
           price: 50000000,
           reputation: 4900
         },
