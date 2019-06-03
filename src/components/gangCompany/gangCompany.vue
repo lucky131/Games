@@ -13,6 +13,7 @@
             难度：<el-input-number v-model="difficulty" :min="0" :max="difficulties.length-1" :step="1" step-strictly size="small"></el-input-number>
           </div>
           <div class="difficulty-desc">启动资金：{{$u.formatIntegerNumber(difficulties[difficulty].initMoney, config.formatIntegerNumberMode)}}</div>
+          <div class="difficulty-desc">初始用户流失率：{{Math.round(difficulties[difficulty].baseLossRate * 100 * 100) / 100}}%</div>
           <div class="difficulty-desc">开局随机获得{{difficulties[difficulty].curse}}个诅咒</div>
           </div>
         <div class="tutorial-btn" @click.stop="startGame()"><i class="el-icon-arrow-right"></i></div>
@@ -91,7 +92,7 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :unlock="p.unlock" :employee-array="p.list" :day="day" :config="config"
+                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config"
                       @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <!--个人-->
@@ -225,8 +226,8 @@
     <!--买车-->
     <div v-else-if="UIController === 'car'" class="page car">
       <div class="page-content car-content">
-        <one-car-house v-for="(c, index) in allCars" :key="index" v-if="!personal.car[index]"
-                       :item="c" :money="money" :config="config"
+        <one-car-house v-for="(c, index) in allCars" :key="index"
+                       :is-buy="personal.car[index]" :item="c" :money="money" :config="config"
                        @buy="buyCar(index)"></one-car-house>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -235,8 +236,8 @@
     <!--买房-->
     <div v-else-if="UIController === 'house'" class="page house">
       <div class="page-content house-content">
-        <one-car-house v-for="(c, index) in allHouses" :key="index" v-if="!personal.house[index]"
-                       :item="c" :money="money" :config="config"
+        <one-car-house v-for="(c, index) in allHouses" :key="index"
+                       :is-buy="personal.house[index]" :item="c" :money="money" :config="config"
                        @buy="buyHouse(index)"></one-car-house>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -1024,24 +1025,49 @@
       return{
         height: 0,
         notifyPromise: Promise.resolve(),
+        tutorialCompleteText: "我叫杠三杠，今年34岁，曾经是一名优秀的前端工程师，不久之前被公司裁员，现在家里催婚催得很紧，然而相亲市场竞争激烈，没有人看得上我，我拿着毕业以来积攒的全部积蓄，开了一家三杠科技有限公司...",
         difficulty: 0,
         difficulties: [
           {
-            initMoney: 200000,
+            initMoney: 300000,
+            baseLossRate: 0.05,
             curse: 0
           },
           {
-            initMoney: 150000,
+            initMoney: 250000,
+            baseLossRate: 0.05,
             curse: 0
           },
           {
-            initMoney: 150000,
+            initMoney: 250000,
+            baseLossRate: 0.07,
+            curse: 0
+          },
+          {
+            initMoney: 250000,
+            baseLossRate: 0.07,
             curse: 1
           },
           {
-            initMoney: 150000,
+            initMoney: 200000,
+            baseLossRate: 0.07,
+            curse: 1
+          },
+          {
+            initMoney: 200000,
+            baseLossRate: 0.1,
+            curse: 1
+          },
+          {
+            initMoney: 200000,
+            baseLossRate: 0.1,
             curse: 2
-          }
+          },
+          {
+            initMoney: 200000,
+            baseLossRate: 0.1,
+            curse: 3
+          },
         ],
         config: {
           formatIntegerNumberMode: 1,
@@ -1049,7 +1075,6 @@
 
         UIController: "",
         dialogController: "",
-        tutorialCompleteText: "我是杠三杠，最近刚创立了杭州三杠科技有限公司，目前公司只有我一个人，我得想办法扩张公司的规模...",
         tutorialText: "",
         isTutorialAnimating: true,
         tutorialAnimationTimer: null,
@@ -1239,7 +1264,7 @@
           ue: this.getTotalEmployeeEfficiency(2) * ueBonus * architectBonus,
           ui: this.getTotalEmployeeEfficiency(3) * uiBonus * architectBonus,
           speed: this.getTotalEmployeeEfficiency(4) * this.serverAverageSpeed * speedBonus * architectBonus,
-          bugRate: range(Math.sqrt(this.website.user) / 100 - this.getTotalEmployeeEfficiency(5) / 100 + bugRateBonus, 0, null),
+          bugRate: range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 100 + bugRateBonus, 0, null),
         };
       },
       vipRate(){
@@ -1250,7 +1275,7 @@
         return 0.04 * Math.sqrt(this.getTotalEmployeeEfficiency(10)) + 1;
       },
       lossRate(){
-        let base = 0.1;
+        let base = this.difficulties[this.difficulty].baseLossRate;
         let effectBonus = this.getEffectBonus("lossRate", 0, "+");
         let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 8 * this.company.manage.workHours / 1000);
         return range((base + effectBonus) * planBonus, 0, 1);
@@ -1380,6 +1405,16 @@
         let seekerNumberBonus = this.getEffectBonus("seekerNumber", 0, "+");
         return range(this.popularityLevel + seekerNumberBonus, 1, null); //最少1人
       },
+      reputation(){
+        let r = 0;
+        this.personal.car.forEach((b, index) => {
+          if(b) r += this.allCars[index].reputation;
+        });
+        this.personal.house.forEach((b, index) => {
+          if(b) r += this.allHouses[index].reputation;
+        });
+        return r;
+      },
     },
     mounted(){
       window.vue = this;
@@ -1433,6 +1468,9 @@
       };
 
       this.initGame();
+      if(localStorage.getItem("autoSave")){
+        Object.assign(this, JSON.parse(localStorage.getItem("autoSave")));
+      }
     },
     methods: {
       notify(msg) {
@@ -1443,6 +1481,25 @@
             duration: 2000,
           });
         });
+      },
+      autoSave(){
+        let data = {};
+        data.UIController = this.UIController;
+        data.dialogController = this.dialogController;
+        data.tutorialText = this.tutorialText;
+        data.isTutorialAnimating = this.isTutorialAnimating;
+        data.tutorialAnimationTimer = this.tutorialAnimationTimer;
+        data.mainType = this.mainType;
+        data.history = this.history;
+        data.money = this.money;
+        data.day = this.day;
+        data.company = this.company;
+        data.website = this.website;
+        data.employee = this.employee;
+        data.recruitIndex = this.recruitIndex;
+        data.seekerIndex = this.seekerIndex;
+        data.personal = this.personal;
+        localStorage.setItem("autoSave", JSON.stringify(data));
       },
       initGame(){
         //各项数据初始化
@@ -1476,16 +1533,16 @@
         };
         this.employee = [
           /* 0*/ {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          /* 1*/ {name: "程序员", showFull: true, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          /* 2*/ {name: "产品经理", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
-          /* 3*/ {name: "美工", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 4*/ {name: "网络运维", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 5*/ {name: "测试", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 6*/ {name: "架构师", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
-          /* 7*/ {name: "技术总监", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
-          /* 8*/ {name: "策划", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
-          /* 9*/ {name: "人力", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
-          /* 10*/ {name: "财务", showFull: true, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
+          /* 1*/ {name: "程序员", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
+          /* 2*/ {name: "产品经理", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
+          /* 3*/ {name: "美工", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 4*/ {name: "网络运维", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 5*/ {name: "测试", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
+          /* 6*/ {name: "架构师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
+          /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
+          /* 8*/ {name: "策划", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
+          /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
+          /*10*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1587,6 +1644,7 @@
 
         if(this.money < 0){
           this.dialogController = "break";
+          localStorage.removeItem("autoSave");
         } else{
           //服务器容量
           this.company.serversSize += this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
@@ -1739,6 +1797,10 @@
               });
             });
           }
+
+          //自动保存
+          this.autoSave();
+
           this.dialogController = "next";
         }
       },
@@ -1873,11 +1935,11 @@
       },
       buyCar(index){
         this.money -= this.allCars[index].price;
-        this.personal.car[index] = true;
+        this.$set(this.personal.car, index, true);
       },
       buyHouse(index){
         this.money -= this.allHouses[index].price;
-        this.personal.house[index] = true; //
+        this.$set(this.personal.house, index, true);
       },
       generateLottery(){
         let db1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33];

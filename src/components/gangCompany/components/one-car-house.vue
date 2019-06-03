@@ -4,7 +4,8 @@
       <div class="row">{{item.name}}</div>
       <div class="row">价格：{{$u.formatIntegerNumber(item.price, config.formatIntegerNumberMode)}}</div>
     </div>
-    <div v-if="money < item.price" class="buy-btn disabled">无法购买</div>
+    <div v-if="isBuy" class="buy-btn disabled"><i class="el-icon-check"></i></div>
+    <div v-else-if="money < item.price" class="buy-btn disabled">无法购买</div>
     <div v-else class="buy-btn able" @click="buy()">购买</div>
   </div>
 </template>
@@ -43,6 +44,7 @@
   export default {
     name: "one-car-house",
     props: {
+      isBuy: Boolean,
       item: Object,
       money: Number,
       config: Object,

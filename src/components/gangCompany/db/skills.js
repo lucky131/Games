@@ -219,7 +219,7 @@ export default {
           name: "透明胶",
           desc: "减少用户流失率",
           effect: {
-            lossRate: -0.02
+            lossRate: -0.01
           }
         },
       ]

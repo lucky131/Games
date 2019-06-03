@@ -5,8 +5,8 @@
       <div class="row">容量：{{$u.formatIntegerNumber(size, config.formatIntegerNumberMode)}}人</div>
       <div class="row">房租：{{$u.formatIntegerNumber(rent, config.formatIntegerNumberMode)}}/天</div>
     </div>
-    <div v-if="isNow" class="buy-btn disabled">当前位置</div>
-    <div v-else class="buy-btn able" @click="buy()">租</div>
+    <div v-if="isNow" class="buy-btn disabled"><i class="el-icon-check"></i></div>
+    <div v-else class="buy-btn able" @click="buy()">迁址</div>
   </div>
 </template>
 

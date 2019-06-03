@@ -1,9 +1,10 @@
 <template>
   <div class="one-position" :style="showFullCal">
     <div class="position-name" @click="toggleShowFull()">
-      {{name}}（{{employeeArray.length}}人）
       <i v-if="showFull" class="arrow el-icon-arrow-down"></i>
-      <i v-else class="arrow el-icon-arrow-up"></i>
+      <i v-else class="arrow el-icon-arrow-right"></i>
+      {{name}}（{{employeeArray.length}}人）
+      <i v-if="canRecruited" class="plus el-icon-plus" @click.stop="toRecruit()"></i>
     </div>
     <div class="position-content">
       <div v-for="(e, index) in employeeArray" :key="index" class="one-people">
@@ -24,8 +25,7 @@
           <div v-if="day >= e.canFireDay" class="fireBtn" @click="fire(index)">开除</div>
         </div>
       </div>
-      <div v-if="canRecruited && unlock" class="recruit-btn able" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
-      <div v-else-if="canRecruited" class="recruit-btn disabled"><i class="el-icon-lock"></i> 未解锁{{name}}</div>
+      <div v-if="canRecruited" class="recruit-btn able" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
     </div>
   </div>
 </template>
@@ -45,6 +45,11 @@
       font-weight: bold;
       position: relative;
       .arrow{
+        position: absolute;
+        top: 11px;
+        left: 12px;
+      }
+      .plus{
         position: absolute;
         top: 11px;
         right: 12px;
@@ -111,7 +116,6 @@
     props: {
       name: String,
       canRecruited: Boolean,
-      unlock: Boolean,
       showFull: Boolean,
       employeeArray: Array,
       condition: String,
