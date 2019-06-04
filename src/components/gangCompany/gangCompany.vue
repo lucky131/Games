@@ -20,11 +20,25 @@
       </div>
     </div>
 
+    <!--读取自动存档-->
+    <div v-else-if="UIController === 'loadAuto'" class="page load-auto">
+      <div class="text">检测到自动存档，是否读取？</div>
+      <div class="pre">
+        <div class="row">保存时间：{{autoSaveInfo.date}}</div>
+        <div class="row">游戏时间：{{formatDay(autoSaveInfo.day)}}</div>
+        <div class="row">资产：{{$u.formatIntegerNumber(autoSaveInfo.money, config.formatIntegerNumberMode)}}</div>
+      </div>
+      <div class="opes">
+        <div class="btn" @click="loadAutoSave()">读取存档</div>
+        <div class="btn" @click="UIController='tutorial'">新的开始</div>
+      </div>
+    </div>
+
     <!--主界面-->
     <div v-else-if="UIController === 'main'" class="page main">
       <div class="main-top">
         <div class="main-top-left">
-          <div class="row">{{dayText}} {{weekday}}</div>
+          <div class="row">{{formatDay(day)}} {{weekday}}</div>
           <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
           <div class="row">今日预计收益：
             <span :class="{'__text-green': totalEarn>0, '__text-gray': totalEarn===0, '__text-red': totalEarn<0}">{{$u.formatIntegerNumber(totalEarn, config.formatIntegerNumberMode)}}</span>
@@ -496,6 +510,35 @@
           background-color: $textBlue;
           color: white;
           font-size: 36px;
+          text-align: center;
+        }
+      }
+    }
+    .load-auto{
+      .text{
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+      .pre{
+        margin-bottom: 40px;
+        color: $textGray;
+        font-size: 14px;
+        text-align: center;
+        .row{}
+      }
+      .opes{
+        display: flex;
+        flex-flow: row nowrap;
+        .btn{
+          width: 120px;
+          height: 60px;
+          line-height: 60px;
+          margin-left: 20px;
+          &:first-child{margin-left: 0}
+          border-radius: 10px;
+          background-color: $textBlue;
+          color: white;
+          font-size: 24px;
           text-align: center;
         }
       }
@@ -1025,6 +1068,11 @@
       return{
         height: 0,
         notifyPromise: Promise.resolve(),
+        autoSaveInfo: {
+          date: "",
+          day: 0,
+          money: 0
+        },
         tutorialCompleteText: "我叫杠三杠，今年34岁，曾经是一名优秀的前端工程师，不久之前被公司裁员，现在家里催婚催得很紧，然而相亲市场竞争激烈，没有人看得上我，我拿着毕业以来积攒的全部积蓄，开了一家三杠科技有限公司...",
         difficulty: 0,
         difficulties: [
@@ -1096,6 +1144,7 @@
         history: [],
         money: 0,
         day: 0,
+        baseLossRate: 0,
         company: {
           manage: {
             workHours: 8,
@@ -1275,7 +1324,7 @@
         return 0.04 * Math.sqrt(this.getTotalEmployeeEfficiency(10)) + 1;
       },
       lossRate(){
-        let base = this.difficulties[this.difficulty].baseLossRate;
+        let base = this.baseLossRate;
         let effectBonus = this.getEffectBonus("lossRate", 0, "+");
         let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 8 * this.company.manage.workHours / 1000);
         return range((base + effectBonus) * planBonus, 0, 1);
@@ -1469,7 +1518,11 @@
 
       this.initGame();
       if(localStorage.getItem("autoSave")){
-        Object.assign(this, JSON.parse(localStorage.getItem("autoSave")));
+        let autoSave = JSON.parse(localStorage.getItem("autoSave"));
+        this.autoSaveInfo.date = autoSave._saveDate;
+        this.autoSaveInfo.day = autoSave.day;
+        this.autoSaveInfo.money = autoSave.money;
+        this.UIController = "loadAuto";
       }
     },
     methods: {
@@ -1484,6 +1537,7 @@
       },
       autoSave(){
         let data = {};
+        data._saveDate = new Date().format("yyyy-MM-dd hh:mm:ss");
         data.UIController = this.UIController;
         data.dialogController = this.dialogController;
         data.tutorialText = this.tutorialText;
@@ -1493,6 +1547,7 @@
         data.history = this.history;
         data.money = this.money;
         data.day = this.day;
+        data.baseLossRate = this.baseLossRate;
         data.company = this.company;
         data.website = this.website;
         data.employee = this.employee;
@@ -1500,6 +1555,9 @@
         data.seekerIndex = this.seekerIndex;
         data.personal = this.personal;
         localStorage.setItem("autoSave", JSON.stringify(data));
+      },
+      loadAutoSave(){
+        Object.assign(this, JSON.parse(localStorage.getItem("autoSave")));
       },
       initGame(){
         //各项数据初始化
@@ -1593,6 +1651,8 @@
       startGame(){
         //启动资金
         this.money = this.difficulties[this.difficulty].initMoney;
+        //基本流失率
+        this.baseLossRate = this.difficulties[this.difficulty].baseLossRate;
         //获得诅咒
         let curseNumber = this.difficulties[this.difficulty].curse;
         for(let i = 0; i < curseNumber; i++){
@@ -1610,6 +1670,11 @@
           this.tutorialText = this.tutorialCompleteText;
           this.isTutorialAnimating = false;
         }
+      },
+      formatDay(d){
+        let year = Math.floor(d / 365);
+        let day = d - 365 * year;
+        return (year > 0 ? `${year}年` : '') + (day > 0 ? `${day}天` : '');
       },
       unlock(index){
         if(!this.employee[index].unlock){
