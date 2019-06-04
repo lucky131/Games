@@ -7,7 +7,7 @@
         {{seeker.name}}
         {{seeker.age}}岁
       </div>
-      <div class="row">能力：<span v-html="abilityHtml"></span></div>
+      <div class="row">能力：<span v-html="abilityHtml"></span><span v-if="showAbility">({{Math.round(seeker.ability)}})</span></div>
       <div class="row">期望日薪：{{$u.formatIntegerNumber(seeker.expectSalary, config.formatIntegerNumberMode)}}</div>
     </div>
     <div v-if="seeker.isOffer" class="offer disabled">已发offer</div>
@@ -56,6 +56,7 @@
       seeker: Object,
       canOffer: Boolean,
       config: Object,
+      showAbility: Boolean,
     },
     data(){
       return{

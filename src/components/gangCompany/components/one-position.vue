@@ -16,8 +16,12 @@
             {{e.age}}岁
           </div>
           <div v-if="e.ability || e.mood" class="info">
-            能力：<span v-html="abilityHtml(e.ability)" style="margin-right: 20px"></span>
-            心情：<span v-html="moodHtml(e.mood)"></span>
+            <span>能力：</span>
+            <span v-html="abilityHtml(e.ability)"></span>
+            <span v-if="showAbility">({{Math.round(e.ability)}})</span>
+            <span style="margin-left: 10px">心情：</span>
+            <span v-html="moodHtml(e.mood)"></span>
+            <span v-if="showMood">({{Math.round(e.mood)}})</span>
           </div>
           <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
         </div>
@@ -70,8 +74,12 @@
           .name{
             font-weight: bold;
           }
-          .row2{}
-          .row3{}
+          .info{
+            font-size: 14px;
+          }
+          .salary{
+            font-size: 14px;
+          }
         }
         .right{
           width: 64px;
@@ -121,6 +129,8 @@
       condition: String,
       day: Number,
       config: Object,
+      showAbility: Boolean,
+      showMood: Boolean,
     },
     data(){
       return{

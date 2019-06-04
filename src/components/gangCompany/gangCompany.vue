@@ -30,7 +30,7 @@
       </div>
       <div class="opes">
         <div class="btn" @click="loadAutoSave()">读取存档</div>
-        <div class="btn" @click="UIController='tutorial'">新的开始</div>
+        <div class="btn" @click="initGame()">新的开始</div>
       </div>
     </div>
 
@@ -106,7 +106,7 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config"
+                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config" :show-ability="showAbility" :show-mood="showMood"
                       @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <!--个人-->
@@ -169,6 +169,13 @@
           <el-checkbox v-model="company.manage.workDays[6]">周日</el-checkbox>
           <div class="manage-tips">《中华人民共和国宪法》第二章第四十三条： 中华人民共和国劳动者有休息的权利。 国家发展劳动者休息和休养的设施，规定职工的工作时间和休假制度。</div>
           <div class="manage-tips">《中华人民共和国劳动法》第一章第三条： 劳动者享有平等就业和选择职业的权利、取得劳动报酬的权利、休息休假的权利、获得劳动安全卫生保护的权利、接受职业技能培训的权利、享受社会保险和福利的权利、提请劳动争议处理的权利以及法律规定的其他劳动权利。</div>
+        </div>
+        <div v-if="employee[9].list.length > 0" class="manage-title">人力招聘职位</div>
+        <div v-if="employee[9].list.length > 0" class="manage-row">
+          <el-checkbox-group v-model="company.manage.hr">
+            <el-checkbox v-for="(p, index) in employee" :key="index" v-if="index !== 0 && index !== 9 && p.unlock" :label="index">{{p.name}}</el-checkbox>
+          </el-checkbox-group>
+          <div class="manage-tips">每一名HR每天会从勾选的职位且能力不高于自己的所有求职者中筛选出一位性价比最高的员工发送offer，且不同的HR之间不会重复发送</div>
         </div>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -317,7 +324,7 @@
       <div class="recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
       <div class="page-content recruit-content">
         <one-seeker v-for="(s, index) in employee[recruitIndex].seekers" :key="index"
-                    :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config"
+                    :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config" :show-ability="showAbility"
                     @sendOffer="showOffer(index)"></one-seeker>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -331,7 +338,7 @@
       <div v-if="dialogController === 'break'" class="dialog break">
         <div class="icon"><i class="el-icon-lightning"></i></div>
         <div class="row">公司已破产:(</div>
-        <div class="row">总共持续了{{day}}天</div>
+        <div class="row">总共持续了{{formatDay(day)}}</div>
         <div class="restart-btn" @click="initGame()">重新开始</div>
       </div>
       <div v-else-if="dialogController === 'next'" class="dialog next">
@@ -378,13 +385,15 @@
               {{e.age}}岁
             </div>
           </div>
-          <div class="title">昨日开奖</div>
-          <div class="row">{{yesterdayLottery.slice(0, 6).join(' ')}} + {{yesterdayLottery[6]}}</div>
-          <div class="title">中奖纪录</div>
-          <div v-if="winLottery.length === 0" class="row">无</div>
-          <div v-else>
-            <div v-for="(wl, index) in winLottery" :key="index" class="row">
-              {{wl.lottery.slice(0, 6).join(' ')}} + {{wl.lottery[6]}} {{wl.desc}} {{wl.price}}
+          <div v-if="yesterdayLottery.length > 0">
+            <div class="title">昨日开奖</div>
+            <div class="row">{{yesterdayLottery.slice(0, 6).join(' ')}} + {{yesterdayLottery[6]}}</div>
+            <div class="title">中奖纪录</div>
+            <div v-if="winLottery.length === 0" class="row">无</div>
+            <div v-else>
+              <div v-for="(wl, index) in winLottery" :key="index" class="row">
+                {{wl.lottery.slice(0, 6).join(' ')}} + {{wl.lottery[6]}} {{wl.desc}} {{wl.price}}
+              </div>
             </div>
           </div>
         </div>
@@ -1078,42 +1087,42 @@
         difficulties: [
           {
             initMoney: 300000,
+            baseLossRate: 0.01,
+            curse: 0
+          },
+          {
+            initMoney: 250000,
+            baseLossRate: 0.01,
+            curse: 0
+          },
+          {
+            initMoney: 250000,
+            baseLossRate: 0.03,
+            curse: 0
+          },
+          {
+            initMoney: 250000,
+            baseLossRate: 0.03,
+            curse: 1
+          },
+          {
+            initMoney: 200000,
+            baseLossRate: 0.03,
+            curse: 1
+          },
+          {
+            initMoney: 200000,
             baseLossRate: 0.05,
-            curse: 0
+            curse: 1
           },
           {
-            initMoney: 250000,
+            initMoney: 200000,
             baseLossRate: 0.05,
-            curse: 0
-          },
-          {
-            initMoney: 250000,
-            baseLossRate: 0.07,
-            curse: 0
-          },
-          {
-            initMoney: 250000,
-            baseLossRate: 0.07,
-            curse: 1
-          },
-          {
-            initMoney: 200000,
-            baseLossRate: 0.07,
-            curse: 1
-          },
-          {
-            initMoney: 200000,
-            baseLossRate: 0.1,
-            curse: 1
-          },
-          {
-            initMoney: 200000,
-            baseLossRate: 0.1,
             curse: 2
           },
           {
             initMoney: 200000,
-            baseLossRate: 0.1,
+            baseLossRate: 0.05,
             curse: 3
           },
         ],
@@ -1149,6 +1158,7 @@
           manage: {
             workHours: 8,
             workDays: [],
+            hr: [],
           },
           building: {
             id: "",
@@ -1292,7 +1302,7 @@
         return "";
       },
       maxUserAdd(){
-        return 500 * (1 + this.employee[7].list.length);
+        return 500 * Math.pow(2, this.employee[7].list.length);
       },
       websiteCal(){
         let adBonus = 0;
@@ -1321,7 +1331,7 @@
         return 1 - Math.exp(-sum / 10000);
       },
       vipPrice(){
-        return 0.04 * Math.sqrt(this.getTotalEmployeeEfficiency(10)) + 1;
+        return Math.sqrt(this.getTotalEmployeeEfficiency(10)) / 25 + 1;
       },
       lossRate(){
         let base = this.baseLossRate;
@@ -1350,7 +1360,9 @@
             }
           });
         });
-        return s;
+        let b = this.getTotalEmployeeEfficiency(11);
+        let bonus = 1 / (b / 4000 + 1);
+        return s * bonus;
       },
       electricityCost(){
         let e = 0;
@@ -1439,6 +1451,14 @@
         });
         return totalSpeed / this.serversMaxSize;
       },
+      showAbility(){
+        let a = this.getEffectBonus("showAbility", 0, "+");
+        return a > 0;
+      },
+      showMood(){
+        let m = this.getEffectBonus("showMood", 0, "+");
+        return m > 0;
+      },
       employeeEfficiency(){
         let e = [];
         this.employee.forEach(p => {
@@ -1491,7 +1511,7 @@
       //全局空格事件
       document.onkeydown = (event) => {
         if(event.keyCode === 32 || event.keyCode === 13){
-          //组织空格滚动
+          //阻止空格滚动
           event.preventDefault();
           //空格或回车
           if(this.UIController === "tutorial"){
@@ -1516,13 +1536,14 @@
         }
       };
 
-      this.initGame();
       if(localStorage.getItem("autoSave")){
         let autoSave = JSON.parse(localStorage.getItem("autoSave"));
         this.autoSaveInfo.date = autoSave._saveDate;
         this.autoSaveInfo.day = autoSave.day;
         this.autoSaveInfo.money = autoSave.money;
         this.UIController = "loadAuto";
+      } else {
+        this.initGame();
       }
     },
     methods: {
@@ -1574,6 +1595,7 @@
           manage: {
             workHours: 8,
             workDays: [true, true, true, true, true, false, false],
+            hr: [],
           },
           building: this.allBuildings[0],
           decoration: [],
@@ -1600,13 +1622,15 @@
           /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
           /* 8*/ {name: "策划", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
           /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
-          /*10*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
+          /*10*/ {name: "销售", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
+          /*11*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
           gender: 1,
           age: 34,
         });
+        // this.company.manage.hr = this.employee.map(n => true);
         this.newEmployee = [];
         this.quitEmployee = [];
         this.fireEmployee = [];
@@ -1634,19 +1658,7 @@
         }, 100);
       },
       initDecoration(){
-        this.company.decoration = [
-          false, //  0 blanket
-          false, //  1 wall
-          false, //  2 windows
-          false, //  3 light
-          false, //  4 table
-          false, //  5 wc
-          false, //  6 plant
-          false, //  7 sofa
-          false, //  8 airCon
-          false, //  9 coffee
-          false, // 10 snack
-        ];
+        this.company.decoration = this.allDecorations.map(n => false);
       },
       startGame(){
         //启动资金
@@ -1701,11 +1713,15 @@
           this.money += this.totalProfit;
         }
         //彩票
-        this.yesterdayLottery = this.generateLottery();
-        this.personal.lottery.forEach(l => {
-          this.checkLottery(l);
-        });
-        this.personal.lottery = [];
+        if(this.personal.lottery.length > 0){
+          this.yesterdayLottery = this.generateLottery();
+          this.personal.lottery.forEach(l => {
+            this.checkLottery(l);
+          });
+          this.personal.lottery = [];
+        } else {
+          this.yesterdayLottery = [];
+        }
 
         if(this.money < 0){
           this.dialogController = "break";
@@ -1748,9 +1764,13 @@
             this.unlock(6);
             this.unlock(7);
           }
-          //解锁财务
+          //解锁销售
           if(this.vipRate >= 0.1){
             this.unlock(10);
+          }
+          //解锁财务
+          if(this.cost.salary > 10000){
+            this.unlock(11);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -1800,7 +1820,7 @@
               let seekerPool = [];
               this.employee.forEach((p, pIndex) => {
                 p.seekers.forEach((s, sIndex) => {
-                  if(p.unlock && pIndex !== 9 && !s.isOffer){
+                  if(this.company.manage.hr.indexOf(pIndex) > -1 && pIndex !== 9 && !s.isOffer){
                     seekerPool.push({
                       pIndex,
                       sIndex,

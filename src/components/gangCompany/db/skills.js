@@ -219,7 +219,23 @@ export default {
           name: "透明胶",
           desc: "减少用户流失率",
           effect: {
-            lossRate: -0.01
+            lossRate: -0.005
+          }
+        },
+        { //27
+          img: require("../img/default.png"),
+          name: "读心术",
+          desc: "显示员工的心情具体值（0~100）",
+          effect: {
+            showMood: 1
+          }
+        },
+        { //28
+          img: require("../img/default.png"),
+          name: "照妖镜",
+          desc: "显示求职者与员工的能力具体值（0~100）",
+          effect: {
+            showAbility: 1
           }
         },
       ]
