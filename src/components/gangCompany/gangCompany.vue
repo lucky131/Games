@@ -115,6 +115,7 @@
           <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
           <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
+          <div class="ope-btn" @click="UIController='stock'"><i class="el-icon-wallet"></i><span>股票</span></div>
         </div>
         <div class="card">
           <div class="card-title">能力</div>
@@ -141,6 +142,19 @@
             <one-skill v-for="index in personal.curse" :key="index"
                        :item="allCurses[index]"></one-skill>
           </div>
+        </div>
+      </div>
+      <!--个人-->
+      <div v-else-if="mainType === 'setting'" class="main-center setting">
+        <div class="setting-title">数字辅助显示</div>
+        <div class="setting-row">
+          <el-radio-group v-model="config.formatIntegerNumberMode">
+            <el-radio :label="0">关闭</el-radio>
+            <el-radio :label="1">模式一</el-radio>
+            <el-radio :label="2">模式二</el-radio>
+            <el-radio :label="3">模式三</el-radio>
+          </el-radio-group>
+          <div class="setting-tips">例如：-297914729<br>模式一：-297,914,729<br>模式二：负2亿9791万4729<br>模式三：-2.98亿</div>
         </div>
       </div>
       <div class="main-bottom">
@@ -319,6 +333,19 @@
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
+    <!--股票-->
+    <div v-else-if="UIController === 'stock'" class="page stock">
+      <div class="stock-header">
+        <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+      </div>
+      <div class="page-content stock-content">
+        <one-stock v-for="(s, index) in personal.stock" :key="index"
+                   :item="s" :money="money" :config="config"
+                   @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
     <!--招聘-->
     <div v-else-if="UIController === 'recruit'" class="page recruit">
       <div class="recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
@@ -330,7 +357,10 @@
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
 
-    <div v-else-if="UIController === 'xxx'" class="page xxx"></div>
+    <div v-else-if="UIController === 'xxx'" class="page xxx">
+      <div class="page-content xxx-content"></div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
 
     <!--弹窗-->
     <!--offer-->
@@ -693,6 +723,30 @@
             }
           }
         }
+        &.setting{
+          padding: 0 20px;
+          .setting-title{
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+          }
+          .setting-row{
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            .el-radio{
+              margin-right: 20px;
+              &:last-child{margin-right: 0}
+              /deep/ .el-radio__label{
+                padding-left: 5px;
+              }
+            }
+            .setting-tips{
+              margin-top: 10px;
+              font-size: 10px;
+              color: #ccc;
+            }
+          }
+        }
       }
       .main-bottom{
         width: 100%;
@@ -900,6 +954,16 @@
         }
       }
     }
+    .stock{
+      .stock-header{
+        width: 100%;
+        height: 40px;
+        background-color: $headerFooterGray;
+        padding: 8px 20px;
+        .row{}
+      }
+      .stock-content{}
+    }
     .recruit{
       .recruit-header{
         width: 100%;
@@ -1033,6 +1097,7 @@
   import oneSeeker from "./components/one-seeker"
   import oneServer from "./components/one-server"
   import oneSkill from "./components/one-skill"
+  import oneStock from "./components/one-stock"
 
   //db mixins
   import ads from "./db/ads"
@@ -1045,6 +1110,7 @@
   import loans from "./db/loans"
   import servers from "./db/servers"
   import skills from "./db/skills"
+  import stocks from "./db/stocks"
 
   function getSum(total, num){
     return total + num;
@@ -1071,8 +1137,8 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills],
-    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill},
+    mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
+    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
     data(){
       return{
         height: 0,
@@ -1149,6 +1215,10 @@
             label: "个人",
             value: "personal"
           },
+          {
+            label: "设置",
+            value: "setting"
+          }
         ],
         history: [],
         money: 0,
@@ -1192,6 +1262,7 @@
           lottery: [],
           lotteryNumber: 1,
           lotteryRepeat: false,
+          stock: [],
         },
         yesterdayLottery: [],
         winLottery: [],
@@ -1630,7 +1701,6 @@
           gender: 1,
           age: 34,
         });
-        // this.company.manage.hr = this.employee.map(n => true);
         this.newEmployee = [];
         this.quitEmployee = [];
         this.fireEmployee = [];
@@ -1643,6 +1713,16 @@
           house: this.allHouses.map(n => false),
           lottery: [],
           lotteryNumber: 1,
+          stock: this.allStocks.map(s => {
+            return {
+              name: s.name,
+              price: s.price,
+              yesterdayPrice: s.price,
+              number: 0,
+              v: (Math.random() * 2 - 1) * s.v,
+              a: s.a
+            }
+          }),
         };
         this.yesterdayLottery = [];
         this.winLottery = [];
@@ -1701,6 +1781,7 @@
           totalProfit: this.totalProfit,
           totalCost: this.totalCost,
           numberOfEmployee: this.numberOfEmployee,
+          stocks: this.personal.stock.map(s => s.price),
         });
         //结算钱
         this.money -= this.totalCost;
@@ -1722,6 +1803,14 @@
         } else {
           this.yesterdayLottery = [];
         }
+        //股票
+        this.personal.stock.forEach(s => {
+          s.yesterdayPrice = s.price;
+          s.a = (Math.random() * 2 - 1) * 0.1;
+          s.v += s.a;
+          s.price =  range(s.price + s.v, 0.01, null);
+        });
+        console.log(this.personal.stock.map(s => s.price).join(" "));
 
         if(this.money < 0){
           this.dialogController = "break";
@@ -2078,6 +2167,14 @@
             price
           });
         }
+      },
+      buyStock(number, index){
+        this.money -= Math.round(this.personal.stock[index].price * number);
+        this.personal.stock[index].number += number;
+      },
+      sellAllStock(index){
+        this.money += Math.round(this.personal.stock[index].price * this.personal.stock[index].number);
+        this.personal.stock[index].number = 0;
       },
     }
   }
