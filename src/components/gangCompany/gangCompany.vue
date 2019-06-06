@@ -341,7 +341,7 @@
       <div class="page-content stock-content">
         <one-stock v-for="(s, index) in personal.stock" :key="index"
                    :item="s" :money="money" :config="config"
-                   @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
+                   @showChart="showChart(index)" @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
@@ -363,14 +363,16 @@
     </div>
 
     <!--弹窗-->
-    <!--offer-->
     <div v-if="dialogController !== ''" class="mask">
+      <!--破产-->
       <div v-if="dialogController === 'break'" class="dialog break">
         <div class="icon"><i class="el-icon-lightning"></i></div>
         <div class="row">公司已破产:(</div>
         <div class="row">总共持续了{{formatDay(day)}}</div>
         <div class="restart-btn" @click="initGame()">重新开始</div>
       </div>
+
+      <!--下一天-->
       <div v-else-if="dialogController === 'next'" class="dialog next">
         <div class="content">
           <div class="title">昨日小报</div>
@@ -429,6 +431,8 @@
         </div>
         <div class="continue-btn" @click="newDay()">确定</div>
       </div>
+
+      <!--offer-->
       <div v-else-if="dialogController === 'offer'" class="dialog offer">
         <div class="paper">
           <div class="title">录用通知书</div>
@@ -449,6 +453,13 @@
           <div class="btn cancel" @click="dialogController=''">取 消</div>
         </div>
       </div>
+
+      <!--股票折线图-->
+      <div v-else-if="dialogController === 'stockChart'" class="dialog stockChart">
+        <div id="stockChart" class="chart"></div>
+        <div class="back-btn" @click="dialogController = ''">关闭</div>
+      </div>
+
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
     </div>
 
@@ -1081,6 +1092,23 @@
             }
           }
         }
+        &.stockChart{
+          width: 90%;
+          .chart{
+            width: 100%;
+            height: 300px;
+            padding: 0 20px;
+          }
+          .back-btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -1111,6 +1139,9 @@
   import servers from "./db/servers"
   import skills from "./db/skills"
   import stocks from "./db/stocks"
+
+  //echarts
+  let echarts = require('echarts')
 
   function getSum(total, num){
     return total + num;
@@ -1717,6 +1748,7 @@
             return {
               name: s.name,
               price: s.price,
+              originalPrice: s.price,
               yesterdayPrice: s.price,
               number: 0,
               v: (Math.random() * 2 - 1) * s.v,
@@ -1806,11 +1838,10 @@
         //股票
         this.personal.stock.forEach(s => {
           s.yesterdayPrice = s.price;
-          s.a = (Math.random() * 2 - 1) * 0.1;
+          s.a = (s.originalPrice - s.price) * Math.random() * 0.1;
           s.v += s.a;
-          s.price =  range(s.price + s.v, 0.01, null);
+          s.price =  range(Math.round((s.price + s.v) * 100) / 100, 0.01, null);
         });
-        console.log(this.personal.stock.map(s => s.price).join(" "));
 
         if(this.money < 0){
           this.dialogController = "break";
@@ -2167,6 +2198,40 @@
             price
           });
         }
+      },
+      showChart(index){
+        let yAxis = this.history.slice(1).map(n => n.stocks[index]);
+        yAxis.push(this.personal.stock[index].price);
+        let xAxis = yAxis.map((n, index) => index + 1);
+        this.dialogController = "stockChart";
+        this.$nextTick(() => {
+          echarts.init(document.getElementById('stockChart')).setOption({
+            color: ["#333"],
+            xAxis: {
+              name: "天数",
+              type: 'category',
+              boundaryGap: false,
+              data: xAxis.slice(-7)
+            },
+            yAxis: {
+              name: "价格",
+              type: 'value',
+              min: function(value) {
+                return value.min - 2;
+              },
+              max: function(value) {
+                return value.max + 2;
+              }
+            },
+            series: [{
+              data: yAxis.slice(-7),
+              type: 'line',
+              label: {
+                show: true
+              }
+            }]
+          });
+        });
       },
       buyStock(number, index){
         this.money -= Math.round(this.personal.stock[index].price * number);

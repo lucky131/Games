@@ -1,8 +1,16 @@
 <template>
   <div class="one-stock">
-    <div class="row">{{item.name}}</div>
-    <div class="row">价格：{{Math.round(item.price * 100) / 100}}<span v-html="diff"></span>/股</div>
-    <div class="row">当前拥有：{{item.number}}股</div>
+    <div class="info-row">
+      <div class="left">
+        <div class="row">{{item.name}}</div>
+        <div class="row">价格：{{item.price}}<span v-html="diff"></span>/股</div>
+        <div class="row">当前拥有：{{item.number}}股</div>
+      </div>
+      <div class="right" @click="showChart()">
+        <i class="chart-btn el-icon-s-data"></i>
+        <span>七日价格折线图</span>
+      </div>
+    </div>
     <div class="btn-row">
       <div v-if="money < item.price * 100" class="btn disabled">买入100股</div>
       <div v-else class="btn able" @click="buy(100)">买入100股</div>
@@ -21,6 +29,30 @@
     width: 100%;
     padding: 10px 20px;
     border-bottom: 1px solid #ccc;
+    .info-row{
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      .left{
+        flex: 1 0 0;
+        .row{
+          display: flex;
+          flex-flow: row nowrap;
+          align-items: center;
+        }
+      }
+      .right{
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        .chart-btn{
+          font-size: 32px;
+        }
+        span{
+          font-size: 12px;
+        }
+      }
+    }
     .btn-row{
       display: flex;
       flex-flow: row wrap;
@@ -62,15 +94,18 @@
     computed: {
       diff(){
         let diff = this.item.price - this.item.yesterdayPrice;
-        if(diff > 0) return `<span class="__text-red"> (+${Math.round(diff * 100) / 100}) </span>`;
-        if(diff < 0) return `<span class="__text-green"> (${Math.round(diff * 100) / 100}) </span>`;
-        return `<span class="__text-gray"> (-) </span>`;
+        if(diff > 0) return `<span class="__text-red">(+${Math.round(diff * 100) / 100})</span>`;
+        if(diff < 0) return `<span class="__text-green">(${Math.round(diff * 100) / 100})</span>`;
+        return `<span class="__text-gray">(-)</span>`;
       }
     },
     mounted(){
 
     },
     methods: {
+      showChart(){
+        this.$emit("showChart");
+      },
       buy(number){
         this.$emit("buy", number);
       },
