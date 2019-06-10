@@ -1840,7 +1840,7 @@
           s.yesterdayPrice = s.price;
           s.a = (s.originalPrice - s.price) * Math.random() * 0.1;
           s.v += s.a;
-          s.price =  range(Math.round((s.price + s.v) * 100) / 100, 0.01, null);
+          s.price = range(Math.round((s.price + s.v + (Math.random() * 2 - 1) * s.originalPrice / 3) * 100) / 100, 0.01, null);
         });
 
         if(this.money < 0){
