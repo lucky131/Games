@@ -187,7 +187,7 @@
         <div v-if="employee[9].list.length > 0" class="manage-title">人力招聘职位</div>
         <div v-if="employee[9].list.length > 0" class="manage-row">
           <el-checkbox-group v-model="company.manage.hr">
-            <el-checkbox v-for="(p, index) in employee" :key="index" v-if="index !== 0 && index !== 9 && p.unlock" :label="index">{{p.name}}</el-checkbox>
+            <el-checkbox v-for="(p, index) in employee" :key="index" v-if="index !== 0 && p.unlock" :label="index">{{p.name}}</el-checkbox>
           </el-checkbox-group>
           <div class="manage-tips">每一名HR每天会从勾选的职位且能力不高于自己的所有求职者中筛选出一位性价比最高的员工发送offer，且不同的HR之间不会重复发送</div>
         </div>
@@ -1940,7 +1940,7 @@
               let seekerPool = [];
               this.employee.forEach((p, pIndex) => {
                 p.seekers.forEach((s, sIndex) => {
-                  if(this.company.manage.hr.indexOf(pIndex) > -1 && pIndex !== 9 && !s.isOffer){
+                  if(this.company.manage.hr.indexOf(pIndex) > -1 && !s.isOffer){
                     seekerPool.push({
                       pIndex,
                       sIndex,
