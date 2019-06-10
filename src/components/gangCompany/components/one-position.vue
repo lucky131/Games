@@ -4,7 +4,15 @@
       <i v-if="showFull" class="arrow el-icon-arrow-down"></i>
       <i v-else class="arrow el-icon-arrow-right"></i>
       {{name}}（{{employeeArray.length}}人）
-      <i v-if="canRecruited" class="plus el-icon-plus" @click.stop="toRecruit()"></i>
+      <el-popover
+        v-if="canRecruited"
+        placement="bottom"
+        width="200"
+        trigger="click"
+        :content="info">
+        <span class="tips" slot="reference" @click.stop=""><i class="el-icon-info"></i></span>
+      </el-popover>
+      <i v-if="canRecruited" class="plus el-icon-circle-plus" @click.stop="toRecruit()"></i>
     </div>
     <div class="position-content">
       <div v-for="(e, index) in employeeArray" :key="index" class="one-people">
@@ -53,10 +61,16 @@
         top: 11px;
         left: 12px;
       }
+      .tips{
+        position: absolute;
+        right: 40px;
+        font-size: 24px;
+      }
       .plus{
         position: absolute;
-        top: 11px;
+        top: 7px;
         right: 12px;
+        font-size: 24px;
       }
     }
     .position-content{
@@ -123,10 +137,10 @@
     name: "one-position",
     props: {
       name: String,
+      info: String,
       canRecruited: Boolean,
       showFull: Boolean,
       employeeArray: Array,
-      condition: String,
       day: Number,
       config: Object,
       showAbility: Boolean,

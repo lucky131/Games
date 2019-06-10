@@ -106,7 +106,7 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config" :show-ability="showAbility" :show-mood="showMood"
+                      :name="p.name" :info="p.info" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config" :show-ability="showAbility" :show-mood="showMood"
                       @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <!--个人-->
@@ -1714,18 +1714,18 @@
           isBug: false,
         };
         this.employee = [
-          /* 0*/ {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0},
-          /* 1*/ {name: "程序员", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500},
-          /* 2*/ {name: "产品经理", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450},
-          /* 3*/ {name: "美工", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 4*/ {name: "网络运维", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 5*/ {name: "测试", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400},
-          /* 6*/ {name: "架构师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
-          /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500},
-          /* 8*/ {name: "策划", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888},
-          /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500},
-          /*10*/ {name: "销售", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800},
-          /*11*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000},
+          /* 0*/ {name: "老板", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 0, info: ""},
+          /* 1*/ {name: "开发", showFull: false, unlock: true, list: [], seekers: [], gender: 0, averageSalary: 500, info: "提高用户增量"},
+          /* 2*/ {name: "产品", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 450, info: "提高用户体验UE"},
+          /* 3*/ {name: "设计", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400, info: "提高用户界面UI"},
+          /* 4*/ {name: "运维", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400, info: "提高响应速度"},
+          /* 5*/ {name: "测试", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400, info: "降低bug概率"},
+          /* 6*/ {name: "架构师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000, info: "提高开发、产品、设计、运维的效率"},
+          /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500, info: "提高用户增量的上限值"},
+          /* 8*/ {name: "策划", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888, info: "降低用户流失率"},
+          /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500, info: "自动招聘新员工"},
+          /*10*/ {name: "销售", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800, info: "提高会员日价"},
+          /*11*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000, info: "在不影响员工心情的同时，降低工资"},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
