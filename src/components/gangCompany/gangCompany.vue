@@ -144,7 +144,7 @@
           </div>
         </div>
       </div>
-      <!--个人-->
+      <!--设置-->
       <div v-else-if="mainType === 'setting'" class="main-center setting">
         <div class="setting-title">数字辅助显示</div>
         <div class="setting-row">
@@ -189,7 +189,12 @@
           <el-checkbox-group v-model="company.manage.hr">
             <el-checkbox v-for="(p, index) in employee" :key="index" v-if="index !== 0 && p.unlock" :label="index">{{p.name}}</el-checkbox>
           </el-checkbox-group>
-          <div class="manage-tips">每一名HR每天会从勾选的职位且能力不高于自己的所有求职者中筛选出一位性价比最高的员工发送offer，且不同的HR之间不会重复发送</div>
+          <div class="manage-tips">每一名人力每天会从勾选的职位且能力不高于自己的所有求职者中筛选出一位性价比最高的员工发送offer，且不同的人力之间不会重复发送</div>
+        </div>
+        <div v-if="employee[12].list.length > 0" class="manage-title">末位淘汰制</div>
+        <div v-if="employee[12].list.length > 0" class="manage-row">
+          <el-checkbox v-model="company.manage.eliminate">启用</el-checkbox>
+          <div class="manage-tips">每一名规划师每天会从能力不高于自己的员工中开除一位性价比最低的，且不同的规划师之间不会重复开除，规划师不会开除规划师</div>
         </div>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -1260,6 +1265,7 @@
             workHours: 8,
             workDays: [],
             hr: [],
+            eliminate: false,
           },
           building: {
             id: "",
@@ -1698,6 +1704,7 @@
             workHours: 8,
             workDays: [true, true, true, true, true, false, false],
             hr: [],
+            eliminate: false,
           },
           building: this.allBuildings[0],
           decoration: [],
@@ -1726,6 +1733,7 @@
           /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500, info: "自动招聘新员工"},
           /*10*/ {name: "销售", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800, info: "提高会员日价"},
           /*11*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000, info: "在不影响员工心情的同时，降低工资"},
+          /*12*/ {name: "规划师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 600, info: "开除末位员工"},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -1958,6 +1966,30 @@
               }
             }
           });
+          //规划师开除员工
+          if(this.company.manage.eliminate){
+            this.employee[12].list.forEach(pl => {
+              let employeePool = [];
+              this.employee.forEach((p, pIndex) => {
+                p.list.forEach((s, sIndex) => {
+                  if(pIndex !== 0 && pIndex !== 12){
+                    employeePool.push({
+                      pIndex,
+                      sIndex,
+                      ability: s.ability,
+                      salary: s.salary,
+                      quality: s.ability / (s.salary / p.averageSalary)
+                    });
+                  }
+                });
+              });
+              employeePool.sort((a, b) => a.quality - b.quality);
+              employeePool = employeePool.filter(s => s.ability <= pl.ability * pl.mood / 80);
+              if(employeePool.length > 0){
+                this.fire(employeePool[0].sIndex, employeePool[0].pIndex);
+              }
+            });
+          }
           //处理offer
           let fireDayBonus = this.getEffectBonus("fireDay", 0, "+");
           this.employee.forEach(p => {
@@ -1988,6 +2020,10 @@
           //解锁人力
           if(this.numberOfEmployee >= 20){
             this.unlock(9);
+          }
+          //解锁规划师
+          if(this.numberOfEmployee > 200){
+            this.unlock(12);
           }
 
           //刷新求职者
