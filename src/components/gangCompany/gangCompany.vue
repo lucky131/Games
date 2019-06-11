@@ -368,7 +368,7 @@
     </div>
 
     <!--弹窗-->
-    <div v-if="dialogController !== ''" class="mask">
+    <div v-if="dialogController !== ''" class="mask" @click="clickMask($event)">
       <!--破产-->
       <div v-if="dialogController === 'break'" class="dialog break">
         <div class="icon"><i class="el-icon-lightning"></i></div>
@@ -1638,8 +1638,11 @@
               //确定
               this.newDay();
             }
-          } else {
-
+          } else if(this.UIController === "recruit") {
+            //招聘
+            if(this.dialogController === "offer"){
+              this.sendOffer();
+            }
           }
         }
       };
@@ -2051,6 +2054,18 @@
         this.fireEmployee = [];
         this.winLottery = [];
         this.dialogController = "";
+      },
+      clickMask(e){
+        //过滤mask的后代元素，这样事件不用写.stop
+        if(e.target.classList.contains("mask")){
+          if(this.dialogController === "next"){
+            this.newDay();
+          } else if(this.dialogController === "offer"){
+            this.dialogController = "";
+          } else if(this.dialogController === "stockChart"){
+            this.dialogController = "";
+          }
+        }
       },
       getTotalEmployeeEfficiency(index){
         return this.employeeEfficiency[index].reduce(getSum, 0) / 8 * this.company.manage.workHours
