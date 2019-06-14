@@ -112,6 +112,7 @@
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
         <div class="opes">
+          <div class="ope-btn" @click="UIController='shop'"><i class="el-icon-shopping-cart-2"></i><span>商店</span></div>
           <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
           <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
@@ -259,6 +260,23 @@
         <one-ad v-for="(item, index) in allAds" :key="index"
                 :item="item" :config="config" :is-buy="company.ad[index]"
                 @change="changeAd(index)"></one-ad>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--商店-->
+    <div v-else-if="UIController === 'shop'" class="page shop">
+      <div class="shop-header">
+        <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+      </div>
+      <div class="page-content shop-content">
+        <one-goods name="色欲" desc="永久增加魅力值" :price="10000000" :can-buy="money>=10000000" :config="config" @buy="buyGoods(0)"></one-goods>
+        <one-goods name="暴食" desc="减少一半服务器数据" :price="'10个开发'" :can-buy="employee[1].list>=10" :config="config" @buy="buyGoods(1)"></one-goods>
+        <one-goods name="贪婪" desc="获得一个随机能力" :price="'50个员工'" :can-buy="numberOfEmployee>=51" :config="config" @buy="buyGoods(2)"></one-goods>
+        <one-goods name="懒惰" desc="连续过30天" :price="10000" :can-buy="money>=10000" :config="config" @buy="buyGoods(3)"></one-goods>
+        <one-goods name="暴怒" desc="重置所有员工的心情" :price="(numberOfEmployee-1)*500" :can-buy="money>=(numberOfEmployee-1)*500" :config="config" @buy="buyGoods(4)"></one-goods>
+        <one-goods name="嫉妒" desc="重置技能与技能的价格" :price="100000000" :can-buy="money>=100000000" :config="config" @buy="buyGoods(5)"></one-goods>
+        <one-goods name="傲慢" desc="用户数翻倍" :price="'所有员工'" :can-buy="numberOfEmployee>=2" :config="config" @buy="buyGoods(6)"></one-goods>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
@@ -877,6 +895,16 @@
       .ad-content{
       }
     }
+    .shop{
+      .shop-header{
+        width: 100%;
+        height: 40px;
+        background-color: $headerFooterGray;
+        padding: 8px 20px;
+        .row{}
+      }
+      .shop-content{}
+    }
     .car{
       .car-content{}
     }
@@ -1125,6 +1153,7 @@
   import oneBuilding from "./components/one-building"
   import oneCarHouse from "./components/one-car-house"
   import oneDecoration from "./components/one-decoration"
+  import oneGoods from "./components/one-goods"
   import oneLoan from "./components/one-loan"
   import onePosition from "./components/one-position"
   import oneSeeker from "./components/one-seeker"
@@ -1174,7 +1203,7 @@
   export default {
     name: "gangCompany",
     mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
-    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
+    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
     data(){
       return{
         height: 0,
@@ -1294,6 +1323,7 @@
         personal: {
           skill: [],
           curse: [],
+          baseReputation: 0,
           car: [],
           house: [],
           lottery: [],
@@ -1444,7 +1474,7 @@
       lossRate(){
         let base = this.baseLossRate;
         let effectBonus = this.getEffectBonus("lossRate", 0, "+");
-        let planBonus = Math.exp(-this.employeeEfficiency[8].reduce(getSum, 0) / 8 * this.company.manage.workHours / 1000);
+        let planBonus = Math.exp(-this.getTotalEmployeeEfficiency(8) / 1000);
         return range((base + effectBonus) * planBonus, 0, 1);
       },
       profit(){
@@ -1583,7 +1613,7 @@
         return range(this.popularityLevel + seekerNumberBonus, 1, null); //最少1人
       },
       reputation(){
-        let r = 0;
+        let r = this.personal.baseReputation;
         this.personal.car.forEach((b, index) => {
           if(b) r += this.allCars[index].reputation;
         });
@@ -1751,6 +1781,7 @@
         this.personal = {
           skill: [],
           curse: [],
+          baseReputation: 0,
           car: this.allCars.map(n => false),
           house: this.allHouses.map(n => false),
           lottery: [],
@@ -2188,6 +2219,42 @@
         if(this.employee[this.recruitIndex].seekers[this.seekerIndex].offerSalary === undefined) return;
         this.employee[this.recruitIndex].seekers[this.seekerIndex].isOffer = true;
         this.dialogController = "";
+      },
+      buyGoods(index){
+        switch (index) {
+          case 0: //色欲 永久增加魅力值 10000000
+            this.money -= 10000000;
+            this.personal.baseReputation += 500;
+            break;
+          case 1: //暴食 减少一半服务器数据 10个开发
+            break;
+          case 2: //贪婪 获得一个随机能力 50个员工
+            break;
+          case 3: //懒惰 连续过30天 10000
+            break;
+          case 4: //暴怒 重置所有员工的心情 500/人
+            this.employee.forEach((p, pIndex) => {
+              if(pIndex !== 0){
+                p.list.forEach(e => {
+                  e.mood = 60;
+                });
+              }
+            });
+            this.money -= (this.numberOfEmployee - 1) * 500;
+            break;
+          case 5: //嫉妒 重置技能与技能的价格 100000000
+            this.personal.skill = [];
+            this.money -= 100000000;
+            break;
+          case 6: //傲慢 用户数翻倍 所有员工
+            this.website.user *= 2;
+            this.employee.forEach((p, pIndex) => {
+              if(pIndex !== 0){
+                p.list = [];
+              }
+            });
+            break;
+        }
       },
       buyCar(index){
         this.money -= this.allCars[index].price;

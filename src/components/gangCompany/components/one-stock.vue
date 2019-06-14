@@ -7,8 +7,8 @@
         <div class="row">当前拥有：{{item.number}}股</div>
       </div>
       <div class="right" @click="showChart()">
-        <i class="chart-btn el-icon-s-data"></i>
-        <span>七日价格折线图</span>
+        <i class="chart-btn el-icon-data-line"></i>
+        <span>上周走势</span>
       </div>
     </div>
     <div class="btn-row">
@@ -46,7 +46,8 @@
         flex-flow: column nowrap;
         align-items: center;
         .chart-btn{
-          font-size: 32px;
+          font-size: 24px;
+          margin-bottom: 5px;
         }
         span{
           font-size: 12px;
