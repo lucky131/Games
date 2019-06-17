@@ -33,6 +33,7 @@
       height: 40px;
       line-height: 40px;
       border-radius: 10px;
+      margin-left: 10px;
       text-align: center;
       &.able{
         color: white;

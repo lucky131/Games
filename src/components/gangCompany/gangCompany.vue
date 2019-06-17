@@ -271,12 +271,12 @@
       </div>
       <div class="page-content shop-content">
         <one-goods name="色欲" desc="永久增加魅力值" :price="10000000" :can-buy="money>=10000000" :config="config" @buy="buyGoods(0)"></one-goods>
-        <one-goods name="暴食" desc="减少一半服务器数据" :price="'10个开发'" :can-buy="employee[1].list>=10" :config="config" @buy="buyGoods(1)"></one-goods>
-        <one-goods name="贪婪" desc="获得一个随机能力" :price="'50个员工'" :can-buy="numberOfEmployee>=51" :config="config" @buy="buyGoods(2)"></one-goods>
-        <one-goods name="懒惰" desc="连续过30天" :price="10000" :can-buy="money>=10000" :config="config" @buy="buyGoods(3)"></one-goods>
-        <one-goods name="暴怒" desc="重置所有员工的心情" :price="(numberOfEmployee-1)*500" :can-buy="money>=(numberOfEmployee-1)*500" :config="config" @buy="buyGoods(4)"></one-goods>
-        <one-goods name="嫉妒" desc="重置技能与技能的价格" :price="100000000" :can-buy="money>=100000000" :config="config" @buy="buyGoods(5)"></one-goods>
-        <one-goods name="傲慢" desc="用户数翻倍" :price="'所有员工'" :can-buy="numberOfEmployee>=2" :config="config" @buy="buyGoods(6)"></one-goods>
+        <one-goods name="暴食" desc="减少一半服务器数据" :price="'随机10名开发'" :can-buy="employee[1].list.length>=10" :config="config" @buy="buyGoods(1)"></one-goods>
+        <one-goods name="贪婪" desc="获得一个随机能力" :price="'随机50名员工'" :can-buy="personal.skill.length<allSkills.length&&numberOfEmployee>=51" :config="config" @buy="buyGoods(2)"></one-goods>
+        <one-goods name="懒惰" desc="快速跳过30天" :price="10000" :can-buy="money>=10000" :config="config" @buy="buyGoods(3)"></one-goods>
+        <one-goods name="暴怒" desc="重置所有员工的心情" :price="(numberOfEmployee-1)*500" :can-buy="numberOfEmployee>1&&money>=(numberOfEmployee-1)*500" :config="config" @buy="buyGoods(4)"></one-goods>
+        <one-goods name="嫉妒" desc="重置能力与能力的价格" :price="100000000" :can-buy="money>=100000000" :config="config" @buy="buyGoods(5)"></one-goods>
+        <one-goods name="傲慢" desc="献祭所有员工，每个员工提升1%的网站用户数" :price="'所有员工'" :can-buy="numberOfEmployee>=2" :config="config" @buy="buyGoods(6)"></one-goods>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
@@ -1721,6 +1721,11 @@
       loadAutoSave(){
         Object.assign(this, JSON.parse(localStorage.getItem("autoSave")));
       },
+      filterNullEmployee(){
+        this.employee.forEach(p => {
+          p.list = p.list.filter(e => e);
+        });
+      },
       initGame(){
         //各项数据初始化
         this.UIController = "tutorial";
@@ -1848,7 +1853,7 @@
           this.notify(`已解锁职位：${this.employee[index].name}`);
         }
       },
-      next(){
+      next(showDialog = true){
         //历史
         this.history.push({
           money: this.money,
@@ -1974,8 +1979,8 @@
                 }
               }
             });
-            p.list = p.list.filter(e => e); //过滤undefined
           });
+          this.filterNullEmployee();
           //人力发offer
           this.employee[9].list.forEach(hr => {
             if(this.numberOfEmployee + this.numberOfOffer < this.company.building.size){
@@ -2076,7 +2081,9 @@
           //自动保存
           this.autoSave();
 
-          this.dialogController = "next";
+          if(showDialog){
+            this.dialogController = "next";
+          }
         }
       },
       newDay(){
@@ -2147,10 +2154,12 @@
         });
         return v;
       },
-      newSkill(){
+      newSkill(pay = true){
         let arr = this.allSkills.map((n, i) => i).filter(i => this.personal.skill.indexOf(i) === -1);
         let newIndex = arr[Math.floor(Math.random() * arr.length)];
-        this.money -= this.newSkillPrice;
+        if(pay){
+          this.money -= this.newSkillPrice;
+        }
         this.personal.skill.push(newIndex);
       },
       buyDecoration(index){
@@ -2225,12 +2234,44 @@
           case 0: //色欲 永久增加魅力值 10000000
             this.money -= 10000000;
             this.personal.baseReputation += 500;
+            this.notify("魅力值已增加");
             break;
           case 1: //暴食 减少一半服务器数据 10个开发
+            let arr1 = this.employee[1].list.map((e, eIndex) => ({
+              pIndex: 1,
+              eIndex
+            }));
+            shuffleArray(arr1).slice(0, 10).forEach(ps => {
+              this.employee[ps.pIndex].list[ps.eIndex] = undefined;
+            });
+            this.filterNullEmployee();
+            this.company.serversSize = Math.round(this.company.serversSize / 2);
+            this.notify("服务器数据已减少一半");
             break;
           case 2: //贪婪 获得一个随机能力 50个员工
+            let arr2 = [];
+            this.employee.forEach((p, pIndex) => {
+              if(pIndex !== 0){
+                p.list.forEach((e, eIndex) => {
+                  arr2.push({
+                    pIndex,
+                    eIndex
+                  });
+                });
+              }
+            });
+            shuffleArray(arr2).slice(0, 50).forEach(ps => {
+              this.employee[ps.pIndex].list[ps.eIndex] = undefined;
+            });
+            this.filterNullEmployee();
+            this.newSkill(false);
+            this.notify("已获得新能力：" + this.allSkills[this.personal.skill[this.personal.skill.length - 1]].name);
             break;
           case 3: //懒惰 连续过30天 10000
+            for(let i = 0; i < 30; i++){
+              this.next(false);
+            }
+            this.notify("时间已流逝了30天");
             break;
           case 4: //暴怒 重置所有员工的心情 500/人
             this.employee.forEach((p, pIndex) => {
@@ -2241,18 +2282,21 @@
               }
             });
             this.money -= (this.numberOfEmployee - 1) * 500;
+            this.notify("员工心情已重置");
             break;
-          case 5: //嫉妒 重置技能与技能的价格 100000000
+          case 5: //嫉妒 重置能力与能力的价格 100000000
             this.personal.skill = [];
             this.money -= 100000000;
+            this.notify("能力已重置");
             break;
           case 6: //傲慢 用户数翻倍 所有员工
-            this.website.user *= 2;
+            this.website.user += Math.round(this.website.user * (this.numberOfEmployee - 1) / 100);
             this.employee.forEach((p, pIndex) => {
               if(pIndex !== 0){
                 p.list = [];
               }
             });
+            this.notify("所有员工已被献祭");
             break;
         }
       },
