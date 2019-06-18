@@ -1104,12 +1104,17 @@
       }
       .chat-content{
         background-color: #f5f5f5;
-        padding: 10px 20px;
+        padding: 10px 30px;
         .one-chat{
           width: 100%;
           .line{
             width: 100%;
             margin-bottom: 20px;
+            .inner{
+              padding: 8px;
+              border-radius: 5px;
+              position: relative;
+            }
             &.s{
               color: #999;
               font-size: 12px;
@@ -1119,10 +1124,18 @@
               display: flex;
               justify-content: flex-start;
               .inner{
-                max-width: 80%;
+                max-width: 90%;
                 background-color: white;
-                padding: 8px;
-                border-radius: 5px;
+                &:before{
+                  content: "";
+                  border-top: 8px solid transparent;
+                  border-left: 0 solid transparent;
+                  border-right: 10px solid white;
+                  border-bottom: 8px solid transparent;
+                  position: absolute;
+                  top: 11px;
+                  left: -9px;
+                }
               }
             }
             &.y{
@@ -1131,8 +1144,16 @@
               .inner{
                 max-width: 90%;
                 background-color: #9eea6a;
-                padding: 8px;
-                border-radius: 5px;
+                &:before{
+                  content: "";
+                  border-top: 8px solid transparent;
+                  border-left: 10px solid #9eea6a;
+                  border-right: 0 solid transparent;
+                  border-bottom: 8px solid transparent;
+                  position: absolute;
+                  top: 11px;
+                  right: -9px;
+                }
               }
             }
           }
@@ -2706,14 +2727,9 @@
             {type: "s", text: `你已添加了${this.personal.girls[index].name}，现在可以开始聊天了。`},
             {type: "h", text: `在吗`},
             {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
-            {type: "h", text: `在吗`},
-            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
-            {type: "h", text: `在吗`},
-            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
-            {type: "h", text: `在吗`},
-            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
           ]
         });
+        this.toChat(0);
       },
       toChat(index){
         this.personal.chatIndex = index;
