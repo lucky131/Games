@@ -2723,20 +2723,21 @@
           },
           emotion: 0,
           unread: 0,
-          history: [
-            {type: "s", text: `你已添加了${this.personal.girls[index].name}，现在可以开始聊天了。`},
-            {type: "h", text: `在吗`},
-            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
-          ]
+          history: [{type: "s", text: `你已添加了${this.personal.girls[index].name}，现在可以开始聊天了。`}]
         });
         this.toChat(0);
       },
       toChat(index){
         this.personal.chatIndex = index;
         this.UIController = "chat";
+        this.toChatBottom();
+      },
+      toChatBottom(){
         this.$nextTick(() => {
-          let el = document.getElementsByClassName("chat-content")[0];
-          el.scrollTop = el.scrollHeight;
+          let el = document.getElementsByClassName("chat-content");
+          if(el.length > 0){
+            el.scrollTop = el.scrollHeight;
+          }
         });
       },
       showNickNameDialog(index){
