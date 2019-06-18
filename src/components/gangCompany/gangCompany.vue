@@ -113,10 +113,14 @@
       <div v-else-if="mainType === 'personal'" class="main-center personal">
         <div class="opes">
           <div class="ope-btn" @click="UIController='shop'"><i class="el-icon-shopping-cart-2"></i><span>商店</span></div>
-          <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
-          <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
           <div class="ope-btn" @click="UIController='stock'"><i class="el-icon-wallet"></i><span>股票</span></div>
+        </div>
+        <div class="opes">
+          <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
+          <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
+          <div class="ope-btn" @click="UIController='date'"><i class="el-icon-female"></i><span>相亲广场</span></div>
+          <div class="ope-btn" @click="UIController='contact'"><i class="el-icon-chat-line-round"></i><span>联系人</span></div>
         </div>
         <div class="card">
           <div class="card-title">能力</div>
@@ -270,7 +274,7 @@
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
       </div>
       <div class="page-content shop-content">
-        <one-goods name="色欲" desc="永久增加魅力值" :price="10000000" :can-buy="money>=10000000" :config="config" @buy="buyGoods(0)"></one-goods>
+        <one-goods name="色欲" desc="永久增加魅力值" :price="25000000" :can-buy="money>=25000000" :config="config" @buy="buyGoods(0)"></one-goods>
         <one-goods name="暴食" desc="减少一半服务器数据" :price="'随机10名开发'" :can-buy="employee[1].list.length>=10" :config="config" @buy="buyGoods(1)"></one-goods>
         <one-goods name="贪婪" desc="获得一个随机能力" :price="'随机50名员工'" :can-buy="personal.skill.length<allSkills.length&&numberOfEmployee>=51" :config="config" @buy="buyGoods(2)"></one-goods>
         <one-goods name="懒惰" desc="快速跳过30天" :price="10000" :can-buy="money>=10000" :config="config" @buy="buyGoods(3)"></one-goods>
@@ -367,6 +371,51 @@
                    @showChart="showChart(index)" @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--相亲广场-->
+    <div v-else-if="UIController === 'date'" class="page date">
+      <div class="date-header">
+        <!--<div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>-->
+        <div class="row">魅力等级：Lv{{reputationLevel}}</div>
+      </div>
+      <div class="page-content date-content">
+        <one-girl v-for="(g, index) in personal.girls" :key="index" v-if="g.show"
+                  :girl="g"
+                  @startChat="startChat(index)"></one-girl>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--联系人-->
+    <div v-else-if="UIController === 'contact'" class="page contact">
+      <div v-if="personal.contact.length === 0" class="empty">
+        <i class="el-icon-toilet-paper"></i>
+        <span>暂无联系人</span>
+      </div>
+      <div v-else class="page-content contact-content">
+        <one-contact v-for="(c, index) in personal.contact" :key="index"
+                     :contact="c"
+                     @toChat="toChat(index)" @showNickNameDialog="showNickNameDialog(index)"></one-contact>
+      </div>
+      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--聊天界面-->
+    <div v-else-if="UIController === 'chat'" class="page chat">
+      <div class="chat-header">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</div>
+      <div class="page-content chat-content">
+        <div v-for="(h, index) in personal.contact[personal.chatIndex].history" :key="index" class="one-chat">
+          <div :class="['line', h.type]">
+            <div class="inner">{{h.text}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="opes">
+        <div class="ope-btn"><i class="el-icon-food"></i><span>吃饭</span></div>
+        <div class="ope-btn"><i class="el-icon-video-camera"></i><span>看电影</span></div>
+      </div>
+      <div class="page-back" @click="UIController='contact'"><i class="el-icon-back"></i></div>
     </div>
 
     <!--招聘-->
@@ -481,6 +530,14 @@
       <div v-else-if="dialogController === 'stockChart'" class="dialog stockChart">
         <div id="stockChart" class="chart"></div>
         <div class="back-btn" @click="dialogController = ''">关闭</div>
+      </div>
+
+      <!--更换昵称-->
+      <div v-else-if="dialogController === 'changeNickName'" class="dialog changeNickName">
+        <div class="input-wrapper">
+          <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
+        </div>
+        <div class="btn" @click="changeNickName()">确定</div>
       </div>
 
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
@@ -1008,6 +1065,100 @@
       }
       .stock-content{}
     }
+    .date{
+      .date-header{
+        width: 100%;
+        background-color: $headerFooterGray;
+        padding: 10px 20px;
+        .row{}
+      }
+      .date-content{
+      }
+    }
+    .contact{
+      .empty{
+        width: 100%;
+        flex: 1 0 0;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        color: #999;
+        i{
+          font-size: 48px;
+          margin-bottom: 10px;
+        }
+        span{
+          font-weight: bold;
+        }
+      }
+      .contact-content{
+      }
+    }
+    .chat{
+      .chat-header{
+        width: 100%;
+        background-color: $headerFooterGray;
+        padding: 10px 20px;
+        text-align: center;
+      }
+      .chat-content{
+        background-color: #f5f5f5;
+        padding: 10px 20px;
+        .one-chat{
+          width: 100%;
+          .line{
+            width: 100%;
+            margin-bottom: 20px;
+            &.s{
+              color: #999;
+              font-size: 12px;
+              text-align: center;
+            }
+            &.h{
+              display: flex;
+              justify-content: flex-start;
+              .inner{
+                max-width: 80%;
+                background-color: white;
+                padding: 8px;
+                border-radius: 5px;
+              }
+            }
+            &.y{
+              display: flex;
+              justify-content: flex-end;
+              .inner{
+                max-width: 90%;
+                background-color: #9eea6a;
+                padding: 8px;
+                border-radius: 5px;
+              }
+            }
+          }
+        }
+      }
+      .opes{
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        .ope-btn{
+          width: 25%;
+          height: 80px;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          i{
+            font-size: 24px;
+            margin-bottom: 4px;
+          }
+          span{
+            font-size: 12px;
+          }
+        }
+      }
+    }
     .recruit{
       .recruit-header{
         width: 100%;
@@ -1142,6 +1293,22 @@
             font-weight: bold;
           }
         }
+        &.changeNickName{
+          width: 80%;
+          .input-wrapper{
+            width: 100%;
+            padding: 20px;
+          }
+          .btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -1152,7 +1319,9 @@
   import oneAd from "./components/one-ad"
   import oneBuilding from "./components/one-building"
   import oneCarHouse from "./components/one-car-house"
+  import oneContact from "./components/one-contact"
   import oneDecoration from "./components/one-decoration"
+  import oneGirl from "./components/one-girl"
   import oneGoods from "./components/one-goods"
   import oneLoan from "./components/one-loan"
   import onePosition from "./components/one-position"
@@ -1200,10 +1369,101 @@
     return arr;
   }
 
+  function getRandomName(gender) {
+    //1男 2女
+    let lastNames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴鬱胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍卻璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相查后荆红游竺权逯盖益桓公";
+    let boys = "伟刚勇毅俊峰强军平保东文辉力明永健世广志义兴良海山仁波宁贵福生龙元全国胜学祥才发武新利清飞彬富顺信子杰涛昌成康星光天达安岩中茂进林有坚和彪博诚先敬震振壮会思群豪心邦承乐绍功松善厚庆磊民友裕河哲江超浩亮政谦亨奇固之轮翰朗伯宏言若鸣朋斌梁栋维启克伦翔旭鹏泽晨辰士以建家致树炎德行时泰盛雄琛钧冠策腾楠榕风航弘宇";
+    let girls = "秀娟英华慧巧美娜静淑惠珠翠雅芝玉萍红娥玲芬芳燕彩春菊兰凤洁梅琳素云莲真环雪荣爱妹霞香月莺媛艳瑞凡佳嘉琼勤珍贞莉桂娣叶璧璐娅琦晶妍茜秋珊莎锦黛青倩婷姣婉娴瑾颖露瑶怡婵雁蓓纨仪荷丹蓉眉君琴蕊薇菁梦岚苑婕馨瑗琰韵融园艺咏卿聪澜纯毓悦昭冰爽琬茗羽希宁欣飘育滢馥筠柔竹霭凝晓欢霄枫芸菲寒伊亚宜可姬舒影荔枝思丽";
+
+    let lastName = lastNames.charAt(Math.floor(Math.random() * lastNames.length));
+    let firstName = "";
+    let length = Math.random() < 0.33 ? 1 : 2; //33%几率单名 剩下为双名
+    for(let i = 0; i < length; i++){
+      firstName += gender === 1 ?
+        boys.charAt(Math.floor(Math.random() * boys.length)) :
+        girls.charAt(Math.floor(Math.random() * girls.length));
+    }
+
+    //单名有10%几率变为ABB形式
+    if(length === 1 && Math.random() < 0.1){
+      firstName += firstName[0];
+    }
+
+    return lastName + firstName;
+  }
+
+  function getRandomSeeker(gender = 0, minAbility = 10, averageSalary) {
+    //性别
+    if(gender === 0){
+      gender = Math.ceil(Math.random() * 2); //1男 2女
+    }
+    //姓名
+    let name = getRandomName(gender);
+    //年龄
+    let age = Math.floor(Math.random() * 20) + 18;  //18-37
+    //能力
+    minAbility = Math.min(minAbility, 100);
+    let ability = Math.floor(Math.random() * (101 - minAbility)) + minAbility; //10-100
+    //期望日薪
+    let expectSalary = Math.round(averageSalary *
+      (ability/90+1.5-10/9) * //能力因素 10-100 0.5-1.5
+      (age*0.7/19+1.5-0.7/19*37) * //年龄因素 18-37 0.8-1.5
+      (Math.random() * 0.5 + 0.75)); //随机因素 0.75-1.25
+
+    return {
+      name,
+      gender,
+      age,
+      ability,
+      expectSalary
+    }
+  }
+
+  function getRandomGirl() {
+    let schoolDB = [
+      ["叶村小学", "解放军第八小学", "善各庄小学", "以撒修道院", "五道口小学", "中山小学", "城北小学"],
+      ["山东蓝翔", "新东方烹饪学院", "丽水学院", "北大青鸟", "九九汽修", "蓉蓉美容院", "琵琶贴膜厂", "城北毛巾厂"],
+      ["北京交通大学", "厦门大学", "重庆大学", "吉林大学", "同济大学", "南方科技大学", "北京科技大学", "北京化工大学", "武汉大学"],
+      ["北京大学", "清华大学", "浙江大学", "复旦大学", "上海交通大学", "华中科技大学", "哈尔滨工业大学"],
+      ["耶鲁大学", "哈佛大学", "斯坦福大学", "剑桥大学", "哥伦比亚大学", "麻省理工学院", "东京大学"]
+    ];
+    //姓名
+    let name = getRandomName(2);
+    //年龄
+    let age = Math.floor(Math.random() * 12) + 18;  //18-29
+    //学历
+    let education = Math.floor(Math.random() * 5); //0-4
+    //毕业学校
+    let school = schoolDB[education][Math.floor(Math.random() * schoolDB[education].length)];
+    //颜值
+    let appearance = Math.ceil(Math.random() * 10); //1-10
+    let appearanceByApp = range(appearance + Math.ceil(Math.random() * 9 - 3), 1, 10); //-2~6
+    //性格
+    let character = Math.ceil(Math.random() * 5); //1-5
+    let characterText = ["", "气吞山河", "离经叛道", "循规蹈矩", "活泼开朗", "温柔贤惠"][character];
+    //家庭条件
+    let family = Math.ceil(Math.random() * 5); //1-5
+    let familyText = ["", "艰苦", "普通", "温饱", "小康", "富裕"][family];
+
+    return {
+      name,
+      age,
+      education,
+      school,
+      appearance,
+      appearanceByApp,
+      character,
+      characterText,
+      family,
+      familyText,
+      show: true
+    }
+  }
+
   export default {
     name: "gangCompany",
     mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
-    components: {oneAd, oneBuilding, oneCarHouse, oneDecoration, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
+    components: {oneAd, oneBuilding, oneCarHouse, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
     data(){
       return{
         height: 0,
@@ -1330,6 +1590,10 @@
           lotteryNumber: 1,
           lotteryRepeat: false,
           stock: [],
+          girls: [],
+          contact: [],
+          chatIndex: 0,
+          changeNickNameIndex: 0,
         },
         yesterdayLottery: [],
         winLottery: [],
@@ -1622,6 +1886,17 @@
         });
         return r;
       },
+      reputationLevel(){
+        if(this.reputation < 0) return 0;
+        if(this.reputation < 10) return 1;
+        if(this.reputation < 40) return 2;
+        if(this.reputation < 100) return 3;
+        if(this.reputation < 250) return 4;
+        if(this.reputation < 1000) return 5;
+        if(this.reputation < 5000) return 6;
+        if(this.reputation < 23333) return 7;
+        return 8;
+      }
     },
     mounted(){
       window.vue = this;
@@ -1802,6 +2077,10 @@
               a: s.a
             }
           }),
+          girls: [],
+          contact: [],
+          chatIndex: 0,
+          changeNickName: 0,
         };
         this.yesterdayLottery = [];
         this.winLottery = [];
@@ -1833,6 +2112,8 @@
         }
         //刷新求职者
         this.refreshSeekers();
+        //刷新相亲广场
+        this.refreshGirls();
         this.UIController = "main";
       },
       skipTutorialAnimating(){
@@ -1864,7 +2145,7 @@
         });
         //结算钱
         this.money -= this.totalCost;
-        this.website.isBug = Math.random() < this.websiteCal.bugRate
+        this.website.isBug = Math.random() < this.websiteCal.bugRate;
         //触发bug
         if(this.website.isBug){
           //解锁测试
@@ -1922,14 +2203,18 @@
             this.unlock(2);
             this.unlock(3);
           }
-          //解锁策划
-          if(this.website.user > 1000){
-            this.unlock(8);
-          }
           //解锁架构师和技术总监
           if(this.websiteCal.userAdd === 500){
             this.unlock(6);
             this.unlock(7);
+          }
+          //解锁策划
+          if(this.website.user > 1000){
+            this.unlock(8);
+          }
+          //解锁人力
+          if(this.numberOfEmployee >= 20){
+            this.unlock(9);
           }
           //解锁销售
           if(this.vipRate >= 0.1){
@@ -1938,6 +2223,10 @@
           //解锁财务
           if(this.cost.salary > 10000){
             this.unlock(11);
+          }
+          //解锁规划师
+          if(this.numberOfEmployee > 200){
+            this.unlock(12);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -2056,17 +2345,11 @@
               }
             });
           });
-          //解锁人力
-          if(this.numberOfEmployee >= 20){
-            this.unlock(9);
-          }
-          //解锁规划师
-          if(this.numberOfEmployee > 200){
-            this.unlock(12);
-          }
 
           //刷新求职者
           this.refreshSeekers();
+          //刷新相亲广场
+          this.refreshGirls();
 
           this.day++;
           //过年
@@ -2211,13 +2494,19 @@
           if(p.unlock && index !== 0){
             p.seekers = [];
             for(let i = 0; i < this.seekerNumber; i++){
-              let s = {...this.$u.getRandomSeeker(p.gender, 10 + minAbilityBonus, p.averageSalary + expectSalaryBonus)};
+              let s = {...getRandomSeeker(p.gender, 10 + minAbilityBonus, p.averageSalary + expectSalaryBonus)};
               s.isOffer = false;
               s.offerSalary = s.expectSalary;
               p.seekers.push(s);
             }
           }
         });
+      },
+      refreshGirls(){
+        this.personal.girls = [];
+        for(let i = 0; i < 5; i++){
+          this.personal.girls.push(getRandomGirl());
+        }
       },
       showOffer(index){
         this.seekerIndex = index;
@@ -2231,8 +2520,8 @@
       },
       buyGoods(index){
         switch (index) {
-          case 0: //色欲 永久增加魅力值 10000000
-            this.money -= 10000000;
+          case 0: //色欲 永久增加魅力值 25000000
+            this.money -= 25000000;
             this.personal.baseReputation += 500;
             this.notify("魅力值已增加");
             break;
@@ -2271,6 +2560,7 @@
             for(let i = 0; i < 30; i++){
               this.next(false);
             }
+            this.newDay();
             this.notify("时间已流逝了30天");
             break;
           case 4: //暴怒 重置所有员工的心情 500/人
@@ -2289,7 +2579,7 @@
             this.money -= 100000000;
             this.notify("能力已重置");
             break;
-          case 6: //傲慢 用户数翻倍 所有员工
+          case 6: //傲慢 献祭所有员工，每个员工提升1%的网站用户数 所有员工
             this.website.user += Math.round(this.website.user * (this.numberOfEmployee - 1) / 100);
             this.employee.forEach((p, pIndex) => {
               if(pIndex !== 0){
@@ -2403,6 +2693,43 @@
         this.money += Math.round(this.personal.stock[index].price * this.personal.stock[index].number);
         this.personal.stock[index].number = 0;
       },
+      startChat(index){
+        this.personal.girls[index].show = false;
+        this.personal.contact.unshift({
+          girl: {
+            ...this.personal.girls[index],
+            nickName: "",
+          },
+          emotion: 0,
+          unread: 0,
+          history: [
+            {type: "s", text: `你已添加了${this.personal.girls[index].name}，现在可以开始聊天了。`},
+            {type: "h", text: `在吗`},
+            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
+            {type: "h", text: `在吗`},
+            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
+            {type: "h", text: `在吗`},
+            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
+            {type: "h", text: `在吗`},
+            {type: "y", text: `不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm不在cnm`},
+          ]
+        });
+      },
+      toChat(index){
+        this.personal.chatIndex = index;
+        this.UIController = "chat";
+        this.$nextTick(() => {
+          let el = document.getElementsByClassName("chat-content")[0];
+          el.scrollTop = el.scrollHeight;
+        });
+      },
+      showNickNameDialog(index){
+        this.personal.changeNickNameIndex = index;
+        this.dialogController = "changeNickName"
+      },
+      changeNickName(){
+        this.dialogController = "";
+      }
     }
   }
 </script>
