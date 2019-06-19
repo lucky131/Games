@@ -405,15 +405,18 @@
     <div v-else-if="UIController === 'chat'" class="page chat">
       <div class="chat-header">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</div>
       <div class="page-content chat-content">
-        <div v-for="(h, index) in personal.contact[personal.chatIndex].history" :key="index" class="one-chat">
-          <div :class="['line', h.type]">
-            <div class="inner">{{h.text}}</div>
-          </div>
-        </div>
+        <one-chat v-for="(h, index) in personal.contact[personal.chatIndex].history" :key="index"
+                  :history="h"></one-chat>
       </div>
       <div class="opes">
-        <div class="ope-btn"><i class="el-icon-food"></i><span>吃饭</span></div>
-        <div class="ope-btn"><i class="el-icon-video-camera"></i><span>看电影</span></div>
+        <div class="ope-btn" @click="chatOpe(0)"><i class="el-icon-chat-dot-round"></i><span>闲聊</span></div>
+        <div class="ope-btn" @click="chatOpe(1)"><i class="el-icon-price-tag"></i><span>发红包</span></div>
+        <div class="ope-btn" @click="chatOpe(2)"><i class="el-icon-food"></i><span>吃饭</span></div>
+        <div class="ope-btn" @click="chatOpe(3)"><i class="el-icon-video-camera"></i><span>看电影</span></div>
+        <div class="ope-btn" @click="chatOpe(4)"><i class="el-icon-present"></i><span>送礼物</span></div>
+        <div class="ope-btn" @click="chatOpe(5)"><i class="el-icon-position"></i><span>旅游</span></div>
+        <div class="ope-btn" @click="chatOpe(6)"><i class="el-icon-link"></i><span>表白</span></div>
+        <div class="ope-btn" @click="chatOpe(7)"><i class="el-icon-connection"></i><span>求婚</span></div>
       </div>
       <div class="page-back" @click="UIController='contact'"><i class="el-icon-back"></i></div>
     </div>
@@ -1105,59 +1108,6 @@
       .chat-content{
         background-color: #f5f5f5;
         padding: 10px 30px;
-        .one-chat{
-          width: 100%;
-          .line{
-            width: 100%;
-            margin-bottom: 20px;
-            .inner{
-              padding: 8px;
-              border-radius: 5px;
-              position: relative;
-            }
-            &.s{
-              color: #999;
-              font-size: 12px;
-              text-align: center;
-            }
-            &.h{
-              display: flex;
-              justify-content: flex-start;
-              .inner{
-                max-width: 90%;
-                background-color: white;
-                &:before{
-                  content: "";
-                  border-top: 8px solid transparent;
-                  border-left: 0 solid transparent;
-                  border-right: 10px solid white;
-                  border-bottom: 8px solid transparent;
-                  position: absolute;
-                  top: 11px;
-                  left: -9px;
-                }
-              }
-            }
-            &.y{
-              display: flex;
-              justify-content: flex-end;
-              .inner{
-                max-width: 90%;
-                background-color: #9eea6a;
-                &:before{
-                  content: "";
-                  border-top: 8px solid transparent;
-                  border-left: 10px solid #9eea6a;
-                  border-right: 0 solid transparent;
-                  border-bottom: 8px solid transparent;
-                  position: absolute;
-                  top: 11px;
-                  right: -9px;
-                }
-              }
-            }
-          }
-        }
       }
       .opes{
         width: 100%;
@@ -1165,7 +1115,7 @@
         flex-flow: row wrap;
         .ope-btn{
           width: 25%;
-          height: 80px;
+          height: 64px;
           display: flex;
           flex-flow: column nowrap;
           justify-content: center;
@@ -1340,6 +1290,7 @@
   import oneAd from "./components/one-ad"
   import oneBuilding from "./components/one-building"
   import oneCarHouse from "./components/one-car-house"
+  import oneChat from "./components/one-chat"
   import oneContact from "./components/one-contact"
   import oneDecoration from "./components/one-decoration"
   import oneGirl from "./components/one-girl"
@@ -1355,6 +1306,7 @@
   import ads from "./db/ads"
   import buildings from "./db/buildings"
   import cars from "./db/cars"
+  import chatWords from "./db/chatWords"
   import cSkills from "./db/cSkills"
   import curses from "./db/curses"
   import decorations from "./db/decorations"
@@ -1388,6 +1340,11 @@
       arr[length] = temp
     }
     return arr;
+  }
+
+  function getRandom(arr) {
+    if(arr.length === 0) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
   function getRandomName(gender) {
@@ -1442,6 +1399,7 @@
 
   function getRandomGirl() {
     let schoolDB = [
+      [],
       ["叶村小学", "解放军第八小学", "善各庄小学", "以撒修道院", "五道口小学", "中山小学", "城北小学"],
       ["山东蓝翔", "新东方烹饪学院", "丽水学院", "北大青鸟", "九九汽修", "蓉蓉美容院", "琵琶贴膜厂", "城北毛巾厂"],
       ["北京交通大学", "厦门大学", "重庆大学", "吉林大学", "同济大学", "南方科技大学", "北京科技大学", "北京化工大学", "武汉大学"],
@@ -1453,7 +1411,7 @@
     //年龄
     let age = Math.floor(Math.random() * 12) + 18;  //18-29
     //学历
-    let education = Math.floor(Math.random() * 5); //0-4
+    let education = Math.ceil(Math.random() * 5); //1-5
     //毕业学校
     let school = schoolDB[education][Math.floor(Math.random() * schoolDB[education].length)];
     //颜值
@@ -1483,8 +1441,8 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, cars, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
-    components: {oneAd, oneBuilding, oneCarHouse, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
+    mixins: [ads, buildings, cars, chatWords, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
+    components: {oneAd, oneBuilding, oneCarHouse, oneChat, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
     data(){
       return{
         height: 0,
@@ -2736,9 +2694,45 @@
         this.$nextTick(() => {
           let el = document.getElementsByClassName("chat-content");
           if(el.length > 0){
-            el.scrollTop = el.scrollHeight;
+            el[0].scrollTop = el[0].scrollHeight;
           }
         });
+      },
+      chatOpe(type){
+        let contact = this.personal.contact[this.personal.chatIndex];
+        let girl = contact.girl;
+        let total = girl.appearance + girl.education + girl.character + girl.family;
+        let condition = 1000 * total;
+        let youText = getRandom(this.chatWords[type].you);
+        let isAccept = Math.random() < this.reputation / condition;
+        let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
+        let you = {type: "y", text: youText};
+        let her = {type: "h", text: herText};
+        console.log(condition, this.reputation, isAccept);
+        switch (type) {
+          case 0:
+            break;
+          case 1:
+            break;
+          case 2:
+            break;
+          case 3:
+            break;
+          case 4:
+            break;
+          case 5:
+            break;
+          case 6:
+            break;
+          case 7:
+            break;
+        }
+        contact.history.push(you);
+        this.toChatBottom();
+        setTimeout(() => {
+          contact.history.push(her);
+          this.toChatBottom();
+        }, 500);
       },
       showNickNameDialog(index){
         this.personal.changeNickNameIndex = index;
