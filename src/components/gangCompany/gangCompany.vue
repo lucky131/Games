@@ -120,7 +120,7 @@
           <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
           <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='date'"><i class="el-icon-female"></i><span>相亲广场</span></div>
-          <div class="ope-btn" @click="UIController='contact'"><i class="el-icon-chat-line-round"></i><span>联系人</span></div>
+          <div class="ope-btn" @click="UIController='contact'"><i class="el-icon-chat-line-round"></i><span>联系人</span><el-badge v-if="allUnread > 0" :value="allUnread"></el-badge></div>
         </div>
         <div class="card">
           <div class="card-title">能力</div>
@@ -163,9 +163,10 @@
         </div>
       </div>
       <div class="main-bottom">
-        <div v-for="type in mainTypes" :key="type.value"
-             class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === type.value}"
-             @click="mainType=type.value">{{type.label}}</div>
+        <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'company'}" @click="mainType = 'company'">公司</div>
+        <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'employee'}" @click="mainType = 'employee'">员工</div>
+        <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'personal'}" @click="mainType = 'personal'">个人<el-badge v-if="allUnread > 0" :value="allUnread"></el-badge></div>
+        <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'setting'}" @click="mainType = 'setting'">设置</div>
       </div>
     </div>
 
@@ -774,12 +775,18 @@
               display: flex;
               flex-flow: column nowrap;
               align-items: center;
+              position: relative;
               i{
                 font-size: 24px;
                 margin-bottom: 4px;
               }
               span{
                 font-size: 12px;
+              }
+              .el-badge{
+                position: absolute;
+                top: 4px;
+                left: 50%;
               }
             }
           }
@@ -866,6 +873,12 @@
               top: 0;
               left: 0;
             }
+          }
+          .el-badge{
+            position: absolute;
+            font-weight: normal;
+            top: -10px;
+            left: 60%;
           }
         }
       }
@@ -1506,24 +1519,6 @@
         isTutorialAnimating: true,
         tutorialAnimationTimer: null,
         mainType: "personal",
-        mainTypes: [
-          {
-            label: "公司",
-            value: "company"
-          },
-          {
-            label: "员工",
-            value: "employee"
-          },
-          {
-            label: "个人",
-            value: "personal"
-          },
-          {
-            label: "设置",
-            value: "setting"
-          }
-        ],
         history: [],
         money: 0,
         day: 0,
@@ -1875,6 +1870,13 @@
         if(this.reputation < 5000) return 6;
         if(this.reputation < 23333) return 7;
         return 8;
+      },
+      allUnread(){
+        let u = 0;
+        this.personal.contact.forEach(c => {
+          u += c.unread;
+        });
+        return u;
       }
     },
     mounted(){
@@ -2688,6 +2690,7 @@
       toChat(index){
         this.personal.chatIndex = index;
         this.UIController = "chat";
+        this.personal.contact[this.personal.chatIndex].unread = 0;
         this.toChatBottom();
       },
       toChatBottom(){
@@ -2703,16 +2706,23 @@
         let girl = contact.girl;
         let total = girl.appearance + girl.education + girl.character + girl.family;
         let condition = 1000 * total;
-        let youText = getRandom(this.chatWords[type].you);
         let isAccept = Math.random() < this.reputation / condition;
-        let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
+        let delay = Math.ceil(Math.random() * 1000) + 200;
+        let youText = getRandom(this.chatWords[type].you);
         let you = {type: "y", text: youText};
-        let her = {type: "h", text: herText};
-        console.log(condition, this.reputation, isAccept);
         switch (type) {
           case 0:
             break;
           case 1:
+            let amount = getRandom([88,233,520,666,999,1314]);
+            if(this.money >= amount){
+              this.money -= amount;
+              you = {type: "r", amount: amount};
+              isAccept = true;
+              delay = 500;
+            } else {
+              isAccept = false;
+            }
             break;
           case 2:
             break;
@@ -2727,12 +2737,22 @@
           case 7:
             break;
         }
+        let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
+        let her = {type: "h", text: herText};
         contact.history.push(you);
         this.toChatBottom();
         setTimeout(() => {
-          contact.history.push(her);
+          this.getMessage(her, this.personal.chatIndex);
+        }, delay);
+      },
+      getMessage(msg, index){
+        this.personal.contact[index].history.push(msg);
+        if(this.UIController === "chat" && this.personal.chatIndex === index){
+          //如果正在与此人聊天
           this.toChatBottom();
-        }, 500);
+        } else {
+          this.personal.contact[index].unread++;
+        }
       },
       showNickNameDialog(index){
         this.personal.changeNickNameIndex = index;

@@ -1,7 +1,18 @@
 <template>
   <div class="one-chat">
-    <div :class="['line', history.type]">
+    <div v-if="history.type === 's'" class="line s">
       <div class="inner">{{history.text}}</div>
+    </div>
+    <div v-else-if="history.type === 'h'" class="line h">
+      <div class="inner">{{history.text}}</div>
+    </div>
+    <div v-else-if="history.type === 'y'" class="line y">
+      <div class="inner">{{history.text}}</div>
+    </div>
+    <div v-else-if="history.type === 'r'" class="line r">
+      <div class="envelope">
+        <div class="amount">￥{{history.amount}}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -55,6 +66,45 @@
             position: absolute;
             top: 11px;
             right: -9px;
+          }
+        }
+      }
+      &.r{
+        display: flex;
+        justify-content: flex-end;
+        .envelope{
+          width: 100px;
+          height: 161px;
+          background-color: #d50000;
+          border-radius: 5px;
+          overflow: hidden;
+          position: relative;
+          &:before{
+            content: "";
+            width: 500px;
+            height: 500px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            left: -200px;
+            bottom: 50px;
+          }
+          &:after{
+            content: "恭喜发财";
+            width: 100%;
+            color: #ffd282;
+            font-weight: bold;
+            text-align: center;
+            position: absolute;
+            top: 50px;
+          }
+          .amount{
+            width: 100%;
+            color: #ffd282;
+            font-weight: bold;
+            text-align: center;
+            position: absolute;
+            top: 120px;
           }
         }
       }
