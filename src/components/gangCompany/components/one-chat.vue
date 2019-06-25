@@ -37,7 +37,9 @@
         display: flex;
         justify-content: flex-start;
         .inner{
+          min-width: 4px;
           max-width: 90%;
+          min-height: 21px;
           background-color: white;
           &:before{
             content: "";
@@ -55,7 +57,9 @@
         display: flex;
         justify-content: flex-end;
         .inner{
+          min-width: 4px;
           max-width: 90%;
+          min-height: 21px;
           background-color: #9eea6a;
           &:before{
             content: "";

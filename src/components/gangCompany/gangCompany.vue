@@ -1536,42 +1536,50 @@
           {
             name: "闲聊",
             icon: "el-icon-chat-dot-round",
-            cost: 1
+            cost: 1,
+            emotion: 1
           },
           {
             name: "发红包",
             icon: "el-icon-price-tag",
-            cost: 3
+            cost: 3,
+            emotion: 1
           },
           {
             name: "吃饭",
             icon: "el-icon-food",
-            cost: 4
+            cost: 4,
+            emotion: 1
           },
           {
             name: "看电影",
             icon: "el-icon-video-camera",
-            cost: 4
+            cost: 4,
+            emotion: 20
           },
           {
             name: "送礼物",
             icon: "el-icon-present",
-            cost: 3
+            cost: 3,
+            emotion: 1
           },
           {
             name: "旅游",
             icon: "el-icon-position",
-            cost: 6
+            cost: 6,
+            emotion: 40
           },
           {
             name: "表白",
             icon: "el-icon-link",
-            cost: 10
+            cost: 10,
+            emotion: 60
           },
           {
             name: "求婚",
             icon: "el-icon-connection",
-            cost: 10
+            cost: 10,
+            emotion: 90
           }
         ],
         config: {
@@ -2757,7 +2765,7 @@
             ...this.personal.girls[index],
             nickName: "",
           },
-          emotion: 0,
+          emotion: 1,
           unread: 0,
           history: [{type: "s", text: `你已添加了${this.personal.girls[index].name}，现在可以开始聊天了。`}]
         });
@@ -2786,26 +2794,33 @@
         let girl = contact.girl;
         let total = girl.appearance + girl.education + girl.character + girl.family;
         let condition = 1000 * total;
-        let isAccept = Math.random() < this.reputation / condition;
+        let emotionCondition = this.chatOpes[type].emotion;
+        let isAccept = Math.random() < this.reputation / condition * range(contact.emotion / emotionCondition, 0, 1);
         let delay = Math.ceil(Math.random() * 1000) + 200;
         let youText = getRandom(this.chatWords[type].you);
         let you = {type: "y", text: youText};
+        let amount = 0, emotionAdd = 0;
         switch (type) {
           case 0:
             break;
           case 1:
-            let amount = getRandom([88,233,520,666,999,1314]);
+            amount = getRandom([88,233,520,666,999,1314]);
             if(this.money >= amount){
-              this.money -= amount;
               you = {type: "r", amount: amount};
               isAccept = true;
               delay = 500;
-              contact.emotion++;
+              emotionAdd = 1;
             } else {
               isAccept = false;
             }
             break;
           case 2:
+            amount = getRandom([233,300,500,800,1000,1500]);
+            if(this.money >= amount){
+              emotionAdd = 3;
+            } else {
+              isAccept = false;
+            }
             break;
           case 3:
             break;
@@ -2820,6 +2835,10 @@
         }
         let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
         let her = {type: "h", text: herText};
+        if(isAccept){
+          this.money -= amount;
+          contact.emotion += emotionAdd;
+        }
         contact.history.push(you);
         this.toChatBottom();
         setTimeout(() => {
