@@ -390,6 +390,10 @@
 
     <!--联系人-->
     <div v-else-if="UIController === 'contact'" class="page contact">
+      <div class="contact-header">
+        <div class="row">能量：{{personal.energy}}/{{maxEnergy}}</div>
+        <div class="row">每日恢复能量：{{energyHeal}}</div>
+      </div>
       <div v-if="personal.contact.length === 0" class="empty">
         <i class="el-icon-toilet-paper"></i>
         <span>暂无联系人</span>
@@ -404,20 +408,22 @@
 
     <!--聊天界面-->
     <div v-else-if="UIController === 'chat'" class="page chat">
-      <div class="chat-header">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</div>
+      <div class="chat-header">
+        <div class="name">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</div>
+        <div class="energy">可用能量：{{personal.energy}}</div>
+      </div>
       <div class="page-content chat-content">
         <one-chat v-for="(h, index) in personal.contact[personal.chatIndex].history" :key="index"
                   :history="h"></one-chat>
       </div>
       <div class="opes">
-        <div class="ope-btn" @click="chatOpe(0)"><i class="el-icon-chat-dot-round"></i><span>闲聊</span></div>
-        <div class="ope-btn" @click="chatOpe(1)"><i class="el-icon-price-tag"></i><span>发红包</span></div>
-        <div class="ope-btn" @click="chatOpe(2)"><i class="el-icon-food"></i><span>吃饭</span></div>
-        <div class="ope-btn" @click="chatOpe(3)"><i class="el-icon-video-camera"></i><span>看电影</span></div>
-        <div class="ope-btn" @click="chatOpe(4)"><i class="el-icon-present"></i><span>送礼物</span></div>
-        <div class="ope-btn" @click="chatOpe(5)"><i class="el-icon-position"></i><span>旅游</span></div>
-        <div class="ope-btn" @click="chatOpe(6)"><i class="el-icon-link"></i><span>表白</span></div>
-        <div class="ope-btn" @click="chatOpe(7)"><i class="el-icon-connection"></i><span>求婚</span></div>
+        <div v-for="(o, index) in chatOpes" :key="index"
+             class="ope-btn"
+             :class="{'disabled': personal.energy<o.cost}"
+             @click="chatOpe(index)">
+          <i :class="o.icon"></i>
+          <span>{{o.name}}({{o.cost}})</span>
+        </div>
       </div>
       <div class="page-back" @click="UIController='contact'"><i class="el-icon-back"></i></div>
     </div>
@@ -1092,6 +1098,12 @@
       }
     }
     .contact{
+      .contact-header{
+        width: 100%;
+        background-color: $headerFooterGray;
+        padding: 10px 20px;
+        .row{}
+      }
       .empty{
         width: 100%;
         flex: 1 0 0;
@@ -1117,6 +1129,14 @@
         background-color: $headerFooterGray;
         padding: 10px 20px;
         text-align: center;
+        .name{
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .energy{
+          font-size: 12px;
+          color: $textGray;
+        }
       }
       .chat-content{
         background-color: #f5f5f5;
@@ -1133,6 +1153,9 @@
           flex-flow: column nowrap;
           justify-content: center;
           align-items: center;
+          &.disabled{
+            color: $textGray;
+          }
           i{
             font-size: 24px;
             margin-bottom: 4px;
@@ -1509,6 +1532,48 @@
             curse: 3
           },
         ],
+        chatOpes: [
+          {
+            name: "闲聊",
+            icon: "el-icon-chat-dot-round",
+            cost: 1
+          },
+          {
+            name: "发红包",
+            icon: "el-icon-price-tag",
+            cost: 3
+          },
+          {
+            name: "吃饭",
+            icon: "el-icon-food",
+            cost: 4
+          },
+          {
+            name: "看电影",
+            icon: "el-icon-video-camera",
+            cost: 4
+          },
+          {
+            name: "送礼物",
+            icon: "el-icon-present",
+            cost: 3
+          },
+          {
+            name: "旅游",
+            icon: "el-icon-position",
+            cost: 6
+          },
+          {
+            name: "表白",
+            icon: "el-icon-link",
+            cost: 10
+          },
+          {
+            name: "求婚",
+            icon: "el-icon-connection",
+            cost: 10
+          }
+        ],
         config: {
           formatIntegerNumberMode: 1,
         },
@@ -1566,6 +1631,7 @@
           stock: [],
           girls: [],
           contact: [],
+          energy: 0,
           chatIndex: 0,
           changeNickNameIndex: 0,
         },
@@ -1877,6 +1943,12 @@
           u += c.unread;
         });
         return u;
+      },
+      maxEnergy(){
+        return 10;
+      },
+      energyHeal(){
+        return 3;
       }
     },
     mounted(){
@@ -2060,6 +2132,7 @@
           }),
           girls: [],
           contact: [],
+          energy: 10,
           chatIndex: 0,
           changeNickName: 0,
         };
@@ -2326,6 +2399,9 @@
               }
             });
           });
+
+          //恢复能量
+          this.personal.energy = range(this.personal.energy + this.energyHeal, 0, this.maxEnergy);
 
           //刷新求职者
           this.refreshSeekers();
@@ -2702,6 +2778,10 @@
         });
       },
       chatOpe(type){
+        let cost = this.chatOpes[type].cost;
+        if(this.personal.energy < cost) return;
+
+        this.personal.energy -= cost;
         let contact = this.personal.contact[this.personal.chatIndex];
         let girl = contact.girl;
         let total = girl.appearance + girl.education + girl.character + girl.family;
@@ -2720,6 +2800,7 @@
               you = {type: "r", amount: amount};
               isAccept = true;
               delay = 500;
+              contact.emotion++;
             } else {
               isAccept = false;
             }
