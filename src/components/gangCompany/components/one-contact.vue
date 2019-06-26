@@ -1,6 +1,11 @@
 <template>
   <div class="one-contact" @click="toChat()">
-    <div class="left">{{contact.girl.nickName || contact.girl.name}} <i @click.stop="showNickNameDialog()" class="el-icon-edit-outline"></i></div>
+    <div class="left">
+      <span class="name">{{contact.girl.nickName || contact.girl.name}}</span>
+      <span class="heart" v-html="heartHtml"></span>
+      <i @click.stop="showInfoDialog()" class="el-icon-info"></i>
+      <i @click.stop="showNickNameDialog()" class="el-icon-edit-outline"></i>
+    </div>
     <div v-if="contact.unread > 0" class="unread">{{contact.unread}}</div>
   </div>
 </template>
@@ -16,8 +21,20 @@
     align-items: center;
     .left{
       flex: 1 0 0;
-      .info{
+      display: flex;
+      align-items: center;
+      .name{
         font-weight: bold;
+      }
+      .heart{
+        font-size: 20px;
+        color: deeppink;
+        letter-spacing: -4px;
+        margin-right: 20px;
+      }
+      i{
+        font-size: 20px;
+        margin-right: 5px;
       }
     }
     .unread{
@@ -37,7 +54,8 @@
   export default {
     name: "one-contact",
     props: {
-      contact: Object
+      contact: Object,
+      heartHtml: String
     },
     data(){
       return{
@@ -53,6 +71,9 @@
     methods: {
       toChat(){
         this.$emit("toChat");
+      },
+      showInfoDialog(){
+        this.$emit("showInfoDialog");
       },
       showNickNameDialog(){
         this.$emit("showNickNameDialog");

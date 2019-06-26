@@ -400,7 +400,7 @@
       </div>
       <div v-else class="page-content contact-content">
         <one-contact v-for="(c, index) in personal.contact" :key="index"
-                     :contact="c"
+                     :contact="c" :heart-html="heartNumberToHtml(hearts[index])"
                      @toChat="toChat(index)" @showNickNameDialog="showNickNameDialog(index)"></one-contact>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -409,7 +409,10 @@
     <!--聊天界面-->
     <div v-else-if="UIController === 'chat'" class="page chat">
       <div class="chat-header">
-        <div class="name">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</div>
+        <div class="nameRow">
+          <span class="name">{{personal.contact[personal.chatIndex].girl.nickName || personal.contact[personal.chatIndex].girl.name}}</span>
+          <span class="heart" v-html="heartNumberToHtml(hearts[personal.chatIndex])"></span>
+        </div>
         <div class="energy">可用能量：{{personal.energy}}</div>
       </div>
       <div class="page-content chat-content">
@@ -1129,9 +1132,16 @@
         background-color: $headerFooterGray;
         padding: 10px 20px;
         text-align: center;
-        .name{
-          font-weight: bold;
+        .nameRow{
           margin-bottom: 10px;
+          .name{
+            font-weight: bold;
+          }
+          .heart{
+            font-size: 20px;
+            color: deeppink;
+            letter-spacing: -4px;
+          }
         }
         .energy{
           font-size: 12px;
@@ -1549,7 +1559,7 @@
             name: "吃饭",
             icon: "el-icon-food",
             cost: 4,
-            emotion: 1
+            emotion: 10
           },
           {
             name: "看电影",
@@ -1579,7 +1589,7 @@
             name: "求婚",
             icon: "el-icon-connection",
             cost: 10,
-            emotion: 90
+            emotion: 99
           }
         ],
         config: {
@@ -1944,6 +1954,18 @@
         if(this.reputation < 5000) return 6;
         if(this.reputation < 23333) return 7;
         return 8;
+      },
+      hearts(){
+        return this.personal.contact.map(c => {
+          let number;
+          if(c.emotion < 10) number = 0;
+          else if(c.emotion < 20) number = 1;
+          else if(c.emotion < 40) number = 2;
+          else if(c.emotion < 60) number = 3;
+          else if(c.emotion < 80) number = 4;
+          else number = 5;
+          return number;
+        });
       },
       allUnread(){
         let u = 0;
@@ -2758,6 +2780,14 @@
         this.money += Math.round(this.personal.stock[index].price * this.personal.stock[index].number);
         this.personal.stock[index].number = 0;
       },
+      heartNumberToHtml(number){
+        let unit = `<i class="el-icon-star-on"></i>`;
+        let html = ``;
+        for(let i = 0; i < number; i++){
+          html += unit;
+        }
+        return html
+      },
       startChat(index){
         this.personal.girls[index].show = false;
         this.personal.contact.unshift({
@@ -2801,20 +2831,20 @@
         let you = {type: "y", text: youText};
         let amount = 0, emotionAdd = 0;
         switch (type) {
-          case 0:
+          case 0: //闲聊
             break;
-          case 1:
+          case 1: //红包
             amount = getRandom([88,233,520,666,999,1314]);
             if(this.money >= amount){
               you = {type: "r", amount: amount};
               isAccept = true;
-              delay = 500;
+              delay = 250;
               emotionAdd = 1;
             } else {
               isAccept = false;
             }
             break;
-          case 2:
+          case 2: //吃饭
             amount = getRandom([233,300,500,800,1000,1500]);
             if(this.money >= amount){
               emotionAdd = 3;
@@ -2822,22 +2852,43 @@
               isAccept = false;
             }
             break;
-          case 3:
+          case 3: //电影
+            amount = 150;
+            if(this.money >= amount){
+              emotionAdd = 1;
+            } else {
+              isAccept = false;
+            }
             break;
-          case 4:
+          case 4: //送礼
+            amount = getRandom([88,500,1000,3333,6888,11228]);
+            if(this.money >= amount){
+              isAccept = true;
+              delay = 250;
+              emotionAdd = 4;
+            } else {
+              isAccept = false;
+            }
             break;
-          case 5:
+          case 5: //旅游
+            amount = getRandom([5000,10000,15000,20000,30000]);
+            if(this.money >= amount){
+              emotionAdd = 5;
+            } else {
+              isAccept = false;
+            }
             break;
-          case 6:
+          case 6: //表白
+            emotionAdd = 10;
             break;
-          case 7:
+          case 7: //求婚
             break;
         }
         let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
         let her = {type: "h", text: herText};
         if(isAccept){
           this.money -= amount;
-          contact.emotion += emotionAdd;
+          contact.emotion = range(contact.emotion + emotionAdd, 0, null);
         }
         contact.history.push(you);
         this.toChatBottom();
