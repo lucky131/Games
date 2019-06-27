@@ -565,11 +565,19 @@
           <div class="cell value">{{personal.girlInfo.school}}</div>
           <div class="cell value">{{personal.girlInfo.appearance}}分</div>
           <div class="cell label">性格</div>
-          <div class="cell label">家庭</div>
+          <div class="cell label">家庭条件</div>
           <div class="cell value">{{personal.girlInfo.characterText}}</div>
           <div class="cell value">{{personal.girlInfo.familyText}}</div>
         </div>
         <div class="btn" @click="dialogController = ''">关闭</div>
+      </div>
+
+      <!--胜利-->
+      <div v-else-if="dialogController === 'win'" class="dialog win">
+        <div class="win-title">恭喜通关</div>
+        <div class="win-content">我的三杠公司顺利运营了{{dayText}}，总共创造了{{$u.formatIntegerNumber(statistics.totalEarn, config.formatIntegerNumberMode)}}的财富，在此期间一共与{{statistics.totalEmployeeNumber}}位同事共同努力，后来结识了{{personal.contact[personal.chatIndex].girl.name}}（评价：{{personal.contact[personal.chatIndex].girl.condition}}/25）并且与她结婚。现在回想自己的人生，可真是完美啊...</div>
+        <div class="win-content">感谢游玩</div>
+        <div class="restart-btn" @click="initGame()">再来一局</div>
       </div>
 
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
@@ -1374,6 +1382,31 @@
             font-weight: bold;
           }
         }
+        &.win{
+          width: 80%;
+          .win-title{
+            height: 40px;
+            line-height: 40px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+          }
+          .win-content{
+            padding: 0 20px;
+            text-indent: 32px;
+            margin-bottom: 10px;
+          }
+          .restart-btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            margin-top: 20px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -1529,6 +1562,7 @@
       characterText,
       family,
       familyText,
+      condition: appearance + education + character + family,
       show: true
     }
   }
@@ -1651,6 +1685,10 @@
         tutorialAnimationTimer: null,
         mainType: "personal",
         history: [],
+        statistics: {
+          totalEarn: 0,
+          totalEmployeeNumber: 0
+        },
         money: 0,
         day: 0,
         baseLossRate: 0,
@@ -2122,6 +2160,7 @@
         data.tutorialAnimationTimer = this.tutorialAnimationTimer;
         data.mainType = this.mainType;
         data.history = this.history;
+        data.statistics = this.statistics;
         data.money = this.money;
         data.day = this.day;
         data.baseLossRate = this.baseLossRate;
@@ -2150,6 +2189,10 @@
         this.tutorialAnimationTimer = null;
         this.mainType = "company";
         this.history = [{}];
+        this.statistics =  {
+          totalEarn: 0,
+          totalEmployeeNumber: 0
+        },
         this.money = 0;
         this.day = 1;
         this.company = {
@@ -2302,6 +2345,7 @@
           this.unlock(5);
         } else {
           this.money += this.totalProfit;
+          this.statistics.totalEarn += this.totalProfit;
         }
         //彩票
         if(this.personal.lottery.length > 0){
@@ -2491,6 +2535,7 @@
                     gender: s.gender,
                     age: s.age,
                   });
+                  this.statistics.totalEmployeeNumber++;
                 }
               }
             });
@@ -2891,8 +2936,7 @@
         this.personal.energy -= cost;
         let contact = this.personal.contact[this.personal.chatIndex];
         let girl = contact.girl;
-        let total = girl.appearance + girl.education + girl.character + girl.family;
-        let condition = 1000 * total;
+        let condition = 1000 * girl.condition;
         let emotionCondition = this.chatOpes[type].emotion;
         let isAccept = Math.random() < this.reputation / condition * range(contact.emotion / emotionCondition, 0, 1);
         let delay = Math.ceil(Math.random() * 1000) + 200;
@@ -2955,14 +2999,19 @@
         }
         let herText = isAccept ? getRandom(this.chatWords[type].accept) : getRandom(this.chatWords[type].refuse);
         let her = {type: "h", text: herText};
-        if(isAccept){
-          this.money -= amount;
-          contact.emotion = range(contact.emotion + emotionAdd, 0, null);
-        }
         contact.history.push(you);
         this.toChatBottom();
         setTimeout(() => {
           this.getMessage(her, this.personal.chatIndex);
+          if(isAccept){
+            this.money -= amount;
+            contact.emotion = range(contact.emotion + emotionAdd, 0, null);
+
+            if(type === 7){
+              //游戏结束
+              this.dialogController = "win";
+            }
+          }
         }, delay);
       },
       getMessage(msg, index){
