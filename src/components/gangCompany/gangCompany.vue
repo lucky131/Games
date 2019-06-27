@@ -401,7 +401,7 @@
       <div v-else class="page-content contact-content">
         <one-contact v-for="(c, index) in personal.contact" :key="index"
                      :contact="c" :heart-html="heartNumberToHtml(hearts[index])"
-                     @toChat="toChat(index)" @showNickNameDialog="showNickNameDialog(index)"></one-contact>
+                     @toChat="toChat(index)" @showInfoDialog="showInfoDialog(index)" @showNickNameDialog="showNickNameDialog(index)"></one-contact>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
@@ -551,6 +551,25 @@
           <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
         </div>
         <div class="btn" @click="changeNickName()">确定</div>
+      </div>
+
+      <!--妹子详细信息-->
+      <div v-else-if="dialogController === 'girlInfo'" class="dialog girlInfo">
+        <div class="info-wrapper">
+          <div class="cell label">姓名</div>
+          <div class="cell label">年龄</div>
+          <div class="cell value">{{personal.girlInfo.name}}</div>
+          <div class="cell value">{{personal.girlInfo.age}}</div>
+          <div class="cell label">毕业学校</div>
+          <div class="cell label">实际颜值</div>
+          <div class="cell value">{{personal.girlInfo.school}}</div>
+          <div class="cell value">{{personal.girlInfo.appearance}}分</div>
+          <div class="cell label">性格</div>
+          <div class="cell label">家庭</div>
+          <div class="cell value">{{personal.girlInfo.characterText}}</div>
+          <div class="cell value">{{personal.girlInfo.familyText}}</div>
+        </div>
+        <div class="btn" @click="dialogController = ''">关闭</div>
       </div>
 
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
@@ -1326,6 +1345,35 @@
             font-weight: bold;
           }
         }
+        &.girlInfo{
+          width: 80%;
+          .info-wrapper{
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(6, 40px);
+            .cell{
+              line-height: 40px;
+              text-align: center;
+            }
+            .label{
+              background-color: #eee;
+              font-weight: bold;
+            }
+            .value{
+              background-color: white;
+            }
+          }
+          .btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -1649,6 +1697,14 @@
           stock: [],
           girls: [],
           contact: [],
+          girlInfo: {
+            name: '',
+            age: 0,
+            appearance: '',
+            school: '',
+            characterText: '',
+            familyText: ''
+          },
           energy: 0,
           chatIndex: 0,
           changeNickNameIndex: 0,
@@ -2162,6 +2218,14 @@
           }),
           girls: [],
           contact: [],
+          girlInfo: {
+            name: '',
+            age: 0,
+            appearance: '',
+            school: '',
+            characterText: '',
+            familyText: ''
+          },
           energy: 10,
           chatIndex: 0,
           changeNickName: 0,
@@ -2445,6 +2509,9 @@
               p.list.forEach(e => {
                 e.age++;
               });
+            });
+            this.personal.contact.forEach(c => {
+              c.girl.age++;
             });
           }
 
@@ -2905,9 +2972,22 @@
           this.personal.contact[index].unread++;
         }
       },
+      showInfoDialog(index){
+        let emotion = this.personal.contact[index].emotion;
+        let girl = this.personal.contact[index].girl;
+        this.personal.girlInfo = {
+          name: girl.name,
+          age: girl.age,
+          school: emotion >= 20 ? girl.school : '？',
+          appearance: emotion >= 40 ? girl.appearance : '？',
+          characterText: emotion >= 60 ? girl.characterText : '？',
+          familyText: emotion >= 80 ? girl.familyText : '？'
+        };
+        this.dialogController = "girlInfo";
+      },
       showNickNameDialog(index){
         this.personal.changeNickNameIndex = index;
-        this.dialogController = "changeNickName"
+        this.dialogController = "changeNickName";
       },
       changeNickName(){
         this.dialogController = "";
