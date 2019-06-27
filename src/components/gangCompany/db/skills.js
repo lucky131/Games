@@ -238,6 +238,30 @@ export default {
             showAbility: 1
           }
         },
+        { //29
+          img: require("../img/default.png"),
+          name: "侏儒腰带",
+          desc: "能量最大值+5",
+          effect: {
+            maxEnergy: 5
+          }
+        },
+        { //30
+          img: require("../img/default.png"),
+          name: "活力斗篷",
+          desc: "每日恢复能量+1",
+          effect: {
+            energyHeal: 1
+          }
+        },
+        { //31
+          img: require("../img/default.png"),
+          name: "三棱眼睛",
+          desc: "增加魅力值",
+          effect: {
+            reputation: 0.2
+          }
+        },
       ]
     }
   }

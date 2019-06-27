@@ -61,6 +61,15 @@ export default {
             ui: 0.5
           }
         },
+        {
+          img: require("../img/default.png"),
+          condition: [29,30,31],
+          name: "喷气背包",
+          desc: "能量消耗-1",
+          effect: {
+            energyCost: -1
+          }
+        },
       ]
     }
   }

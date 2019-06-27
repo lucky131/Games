@@ -422,10 +422,10 @@
       <div class="opes">
         <div v-for="(o, index) in chatOpes" :key="index"
              class="ope-btn"
-             :class="{'disabled': personal.energy<o.cost}"
+             :class="{'disabled': personal.energy<o.cost+getEffectBonus('energyCost',0,'+')}"
              @click="chatOpe(index)">
           <i :class="o.icon"></i>
-          <span>{{o.name}}({{o.cost}})</span>
+          <span>{{o.name}}({{o.cost+getEffectBonus('energyCost',0,'+')}})</span>
         </div>
       </div>
       <div class="page-back" @click="UIController='contact'"><i class="el-icon-back"></i></div>
@@ -1992,13 +1992,14 @@
       },
       reputation(){
         let r = this.personal.baseReputation;
+        let bonus = this.getEffectBonus("reputation", 1, "+");
         this.personal.car.forEach((b, index) => {
           if(b) r += this.allCars[index].reputation;
         });
         this.personal.house.forEach((b, index) => {
           if(b) r += this.allHouses[index].reputation;
         });
-        return r;
+        return Math.round(r * bonus);
       },
       reputationLevel(){
         if(this.reputation < 0) return 0;
@@ -2031,10 +2032,10 @@
         return u;
       },
       maxEnergy(){
-        return 10;
+        return this.getEffectBonus("maxEnergy", 10, "+");
       },
       energyHeal(){
-        return 3;
+        return this.getEffectBonus("energyHeal", 3, "+");
       }
     },
     mounted(){
@@ -2257,6 +2258,7 @@
           let arr = this.allCurses.map((n, i) => i).filter(i => this.personal.curse.indexOf(i) === -1);
           let newIndex = arr[Math.floor(Math.random() * arr.length)];
           this.personal.curse.push(newIndex);
+          this.notify(`获得诅咒：${this.allCurses[newIndex].name}`);
         }
         //刷新求职者
         this.refreshSeekers();
@@ -2883,7 +2885,7 @@
         });
       },
       chatOpe(type){
-        let cost = this.chatOpes[type].cost;
+        let cost = this.chatOpes[type].cost + this.getEffectBonus("energyCost", 0, "+");
         if(this.personal.energy < cost) return;
 
         this.personal.energy -= cost;

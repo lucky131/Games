@@ -33,6 +33,16 @@ export default {
           effect: {
             fireDay: 10086233
           }
+        },
+        { //4
+          img: require("../img/default.png"),
+          name: "钢铁直男死肥宅",
+          desc: "能量最大值+1，每日恢复能量-1，能量消耗+1",
+          effect: {
+            maxEnergy: 1,
+            energyHeal: -1,
+            energyCost: 1
+          }
         }
       ]
     }
