@@ -77,7 +77,7 @@
       padding: 0 20px;
       .one-people{
         width: 100%;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid #e1e1e6;
         &:last-child{border-bottom: none}
         display: flex;
         flex-flow: row nowrap;
@@ -122,10 +122,10 @@
         font-weight: bold;
         text-align: center;
         &.able{
-          background-color: #31c21f;
+          background-color: #409EFF;
         }
         &.disabled{
-          background-color: #ccc;
+          background-color: #a0cfff;
         }
       }
     }

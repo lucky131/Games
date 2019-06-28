@@ -60,11 +60,12 @@
           min-width: 4px;
           max-width: 90%;
           min-height: 21px;
-          background-color: #9eea6a;
+          background-color: #409EFF;
+          color: white;
           &:before{
             content: "";
             border-top: 8px solid transparent;
-            border-left: 10px solid #9eea6a;
+            border-left: 10px solid #409EFF;
             border-right: 0 solid transparent;
             border-bottom: 8px solid transparent;
             position: absolute;

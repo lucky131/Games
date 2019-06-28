@@ -16,7 +16,7 @@
           <div class="difficulty-desc">初始用户流失率：{{Math.round(difficulties[difficulty].baseLossRate * 100 * 100) / 100}}%</div>
           <div class="difficulty-desc">开局随机获得{{difficulties[difficulty].curse}}个诅咒</div>
           </div>
-        <div class="tutorial-btn" @click.stop="startGame()"><i class="el-icon-arrow-right"></i></div>
+        <div class="tutorial-btn" @click.stop="startGame()"><i class="el-icon-video-play"></i> 开始游戏</div>
       </div>
     </div>
 
@@ -24,13 +24,13 @@
     <div v-else-if="UIController === 'loadAuto'" class="page load-auto">
       <div class="text">检测到自动存档，是否读取？</div>
       <div class="pre">
-        <div class="row">保存时间：{{autoSaveInfo.date}}</div>
-        <div class="row">游戏时间：{{formatDay(autoSaveInfo.day)}}</div>
-        <div class="row">资产：{{$u.formatIntegerNumber(autoSaveInfo.money, config.formatIntegerNumberMode)}}</div>
+        <div class="label">游戏时间：</div><div class="value">{{formatDay(autoSaveInfo.day)}}</div>
+        <div class="label">资产：</div><div class="value">{{$u.formatIntegerNumber(autoSaveInfo.money, config.formatIntegerNumberMode)}}</div>
+        <div class="label">保存时间：</div><div class="value">{{autoSaveInfo.date}}</div>
       </div>
       <div class="opes">
-        <div class="btn" @click="loadAutoSave()">读取存档</div>
-        <div class="btn" @click="initGame()">新的开始</div>
+        <div class="btn" @click="loadAutoSave()"><i class="el-icon-upload"></i> 读取存档</div>
+        <div class="btn" @click="initGame()"><i class="el-icon-s-flag"></i> 新的开始</div>
       </div>
     </div>
 
@@ -115,8 +115,6 @@
           <div class="ope-btn" @click="UIController='shop'"><i class="el-icon-shopping-cart-2"></i><span>商店</span></div>
           <div class="ope-btn" @click="UIController='lottery'"><i class="el-icon-money"></i><span>彩票</span></div>
           <div class="ope-btn" @click="UIController='stock'"><i class="el-icon-wallet"></i><span>股票</span></div>
-        </div>
-        <div class="opes">
           <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
           <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
           <div class="ope-btn" @click="UIController='date'"><i class="el-icon-female"></i><span>相亲广场</span></div>
@@ -673,34 +671,41 @@
           }
         }
         .tutorial-btn{
-          width: 120px;
+          width: 130px;
           height: 60px;
           line-height: 60px;
           border-radius: 10px;
           background-color: $textBlue;
           color: white;
-          font-size: 36px;
+          font-size: 20px;
           text-align: center;
         }
       }
     }
     .load-auto{
       .text{
-        margin-bottom: 20px;
+        margin-bottom: 40px;
         font-size: 20px;
       }
       .pre{
         margin-bottom: 40px;
         color: $textGray;
         font-size: 14px;
-        text-align: center;
-        .row{}
+        display: grid;
+        grid-template-columns: auto auto;
+        .label, .value{
+          height: 20px;
+          line-height: 20px;
+        }
+        .label{
+          text-align: right;
+        }
       }
       .opes{
         display: flex;
         flex-flow: row nowrap;
         .btn{
-          width: 120px;
+          width: 130px;
           height: 60px;
           line-height: 60px;
           margin-left: 20px;
@@ -708,7 +713,7 @@
           border-radius: 10px;
           background-color: $textBlue;
           color: white;
-          font-size: 24px;
+          font-size: 20px;
           text-align: center;
         }
       }
@@ -851,10 +856,10 @@
                 font-weight: bold;
                 text-align: center;
                 &.able{
-                  background-color: #31c21f;
+                  background-color: $textBlue;
                 }
                 &.disabled{
-                  background-color: #ccc;
+                  background-color: #a0cfff;
                 }
               }
             }
@@ -869,7 +874,7 @@
           }
           .setting-row{
             padding-bottom: 10px;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid #e1e1e6;
             .el-radio{
               margin-right: 20px;
               &:last-child{margin-right: 0}
@@ -929,7 +934,7 @@
         }
         .manage-row{
           padding-bottom: 10px;
-          border-bottom: 1px solid #ccc;
+          border-bottom: 1px solid #e1e1e6;
           .el-checkbox{
             margin-right: 10px;
             .el-checkbox__label{
@@ -1043,13 +1048,13 @@
           height: 40px;
           line-height: 40px;
           border-radius: 10px;
+          color: white;
           text-align: center;
           &.able{
-            color: white;
-            background-color: #31c21f;
+            background-color: $textBlue;
           }
           &.disabled{
-            background-color: #ccc;
+            background-color: #a0cfff;
             cursor: no-drop;
           }
         }
@@ -1315,8 +1320,9 @@
               color: white;
               font-weight: bold;
               &.send{background-color: $textBlue}
-              &.cancel{background-color: #aaa}
-              &.disabled{background-color: #ccc}
+              &.cancel{background-color: #c9cbd1
+              }
+              &.disabled{background-color: #a0cfff}
             }
           }
         }

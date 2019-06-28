@@ -12,7 +12,7 @@
   .one-girl{
     width: 100%;
     padding: 10px 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;

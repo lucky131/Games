@@ -20,7 +20,7 @@
     width: 100%;
     height: 80px;
     padding: 0 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -54,7 +54,7 @@
         height: 100%;
         line-height: 40px;
         text-align: center;
-        border: 1px solid #ccc;
+        border: 1px solid #e1e1e6;
         box-sizing: border-box;
         position: absolute;
         &.minus{

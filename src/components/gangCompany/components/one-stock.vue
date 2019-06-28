@@ -28,7 +28,7 @@
   .one-stock{
     width: 100%;
     padding: 10px 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     .info-row{
       display: flex;
       flex-flow: row nowrap;
@@ -65,13 +65,13 @@
         margin-left: 10px;
         &:first-child{margin-left: 0}
         border-radius: 10px;
+        color: white;
         font-size: 12px;
         &.able{
-          color: white;
-          background-color: #31c21f;
+          background-color: #409EFF;
         }
         &.disabled{
-          background-color: #ccc;
+          background-color: #a0cfff;
           cursor: no-drop;
         }
       }

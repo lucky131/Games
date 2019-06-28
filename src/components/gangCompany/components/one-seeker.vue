@@ -21,7 +21,7 @@
     width: 100%;
     height: 80px;
     padding: 0 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -36,13 +36,13 @@
       height: 40px;
       line-height: 40px;
       border-radius: 10px;
+      color: white;
       text-align: center;
       &.able{
-        color: white;
-        background-color: #31c21f;
+        background-color: #409EFF;
       }
       &.disabled{
-        background-color: #ccc;
+        background-color: #a0cfff;
         cursor: no-drop;
       }
     }

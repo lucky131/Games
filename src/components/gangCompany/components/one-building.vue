@@ -3,7 +3,7 @@
     <div class="left">
       <div class="row">{{name}}</div>
       <div class="row">容量：{{$u.formatIntegerNumber(size, config.formatIntegerNumberMode)}}人</div>
-      <div class="row">房租：{{$u.formatIntegerNumber(rent, config.formatIntegerNumberMode)}}/天</div>
+      <div class="__text-green">房租：{{$u.formatIntegerNumber(rent, config.formatIntegerNumberMode)}}/天</div>
     </div>
     <div v-if="isNow" class="buy-btn disabled"><i class="el-icon-check"></i></div>
     <div v-else class="buy-btn able" @click="buy()">迁址</div>
@@ -15,7 +15,7 @@
     width: 100%;
     height: 80px;
     padding: 0 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -27,13 +27,13 @@
       height: 40px;
       line-height: 40px;
       border-radius: 10px;
+      color: white;
       text-align: center;
       &.able{
-        color: white;
-        background-color: #31c21f;
+        background-color: #409EFF;
       }
       &.disabled{
-        background-color: #ccc;
+        background-color: #a0cfff;
         cursor: no-drop;
       }
     }

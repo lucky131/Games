@@ -15,7 +15,7 @@
     width: 100%;
     height: 50px;
     padding: 0 20px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e1e1e6;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
