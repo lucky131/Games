@@ -117,7 +117,7 @@
           <div class="ope-btn" @click="UIController='stock'"><i class="el-icon-wallet"></i><span>股票</span></div>
           <div class="ope-btn" @click="UIController='car'"><i class="el-icon-bicycle"></i><span>买车</span></div>
           <div class="ope-btn" @click="UIController='house'"><i class="el-icon-house"></i><span>买房</span></div>
-          <div class="ope-btn" @click="UIController='date'"><i class="el-icon-female"></i><span>相亲广场</span></div>
+          <div class="ope-btn" @click="UIController='date'"><i class="el-icon-female"></i><span>相亲</span></div>
           <div class="ope-btn" @click="UIController='contact'"><i class="el-icon-chat-line-round"></i><span>联系人</span><el-badge v-if="allUnread > 0" :value="allUnread"></el-badge></div>
         </div>
         <div class="card">
@@ -1883,7 +1883,7 @@
           ue: this.getTotalEmployeeEfficiency(2) * ueBonus * architectBonus,
           ui: this.getTotalEmployeeEfficiency(3) * uiBonus * architectBonus,
           speed: this.getTotalEmployeeEfficiency(4) * this.serverAverageSpeed * speedBonus * architectBonus,
-          bugRate: range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 100 + bugRateBonus, 0, null),
+          bugRate: range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 1000 + bugRateBonus, 0, null),
         };
       },
       vipRate(){

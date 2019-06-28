@@ -3,7 +3,7 @@
     <div class="left">
       <div class="name">{{name}}</div>
       <div class="__text-gray">{{desc}}</div>
-      <div class="__text-orange">价格：{{priceCal}}</div>
+      <div class="__text-green">价格：{{priceCal}}</div>
     </div>
     <div v-if="canBuy" class="btn able" @click="buy()">购买</div>
     <div v-else class="btn disabled">无法购买</div>
