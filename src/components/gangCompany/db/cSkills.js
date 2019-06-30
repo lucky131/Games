@@ -2,8 +2,8 @@ export default {
   data(){
     return{
       allCombinedSkills: [
-        {
-          img: require("../img/default.png"),
+        { //0
+          img: require("../img/c00.png"),
           condition: [6,7,8],
           name: "工作机器",
           desc: "员工每天可接受的工作时间增加1小时",
@@ -11,8 +11,8 @@ export default {
             workHoursToMood: 1
           }
         },
-        {
-          img: require("../img/default.png"),
+        { //1
+          img: require("../img/c01.png"),
           condition: [9,10,11],
           name: "杀戮狂魔",
           desc: "员工周末加班时心情不再下降",
@@ -20,7 +20,7 @@ export default {
             weekendWorkToMood: 5
           }
         },
-        {
+        { //2
           img: require("../img/default.png"),
           condition: [22,23],
           name: "祖国的花朵",
@@ -29,7 +29,7 @@ export default {
             minAbility: 10
           }
         },
-        {
+        { //3
           img: require("../img/default.png"),
           condition: [5,21],
           name: "网管的假发",
@@ -40,7 +40,7 @@ export default {
             serversSizePerUser: -0.2
           }
         },
-        {
+        { //4
           img: require("../img/default.png"),
           condition: [4,24,25],
           name: "看门狗",
@@ -51,7 +51,7 @@ export default {
             bugRate: 0.1
           }
         },
-        {
+        { //5
           img: require("../img/default.png"),
           condition: [3,15,20],
           name: "万人迷",
@@ -61,7 +61,7 @@ export default {
             ui: 0.5
           }
         },
-        {
+        { //6
           img: require("../img/default.png"),
           condition: [29,30,31],
           name: "喷气背包",

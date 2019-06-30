@@ -46,7 +46,7 @@
     }
     .right{
       flex: 1 0 0;
-      margin-left: 10px;
+      margin-left: 20px;
       display: flex;
       flex-flow: column nowrap;
       justify-content: center;
@@ -66,7 +66,7 @@
     name: "one-skill",
     data(){
       return{
-        
+
       }
     },
     props: {
@@ -74,10 +74,10 @@
       allSkills: Array,
     },
     mounted(){
-      
+
     },
     methods: {
-      
+
     }
   }
 </script>

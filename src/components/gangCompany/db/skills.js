@@ -3,7 +3,7 @@ export default {
     return{
       allSkills: [
         { //0
-          img: require("../img/default.png"),
+          img: require("../img/s00.png"),
           name: "人格魅力",
           desc: "提升offer被接受的概率",
           effect: {
@@ -11,7 +11,7 @@ export default {
           }
         },
         { //1
-          img: require("../img/default.png"),
+          img: require("../img/s01.png"),
           name: "电子元件",
           desc: "提升网站的基本盈利",
           effect: {
@@ -19,7 +19,7 @@ export default {
           }
         },
         { //2
-          img: require("../img/default.png"),
+          img: require("../img/s02.png"),
           name: "土豪入驻",
           desc: "提升网站的会员氪金",
           effect: {
@@ -27,7 +27,7 @@ export default {
           }
         },
         { //3
-          img: require("../img/default.png"),
+          img: require("../img/s03.png"),
           name: "包租婆的口红",
           desc: "降低租金",
           effect: {
@@ -35,7 +35,7 @@ export default {
           }
         },
         { //4
-          img: require("../img/default.png"),
+          img: require("../img/s04.png"),
           name: "艾登的口罩",
           desc: "降低电费",
           effect: {
@@ -43,7 +43,7 @@ export default {
           }
         },
         { //5
-          img: require("../img/default.png"),
+          img: require("../img/s05.png"),
           name: "网管的手办",
           desc: "降低网费",
           effect: {
@@ -51,7 +51,7 @@ export default {
           }
         },
         { //6
-          img: require("../img/default.png"),
+          img: require("../img/s06.png"),
           name: "不存在的餐补",
           desc: "员工每天可接受的工作时间增加1小时",
           effect: {
@@ -59,7 +59,7 @@ export default {
           }
         },
         { //7
-          img: require("../img/default.png"),
+          img: require("../img/s07.png"),
           name: "资本家的剥削",
           desc: "员工每天可接受的工作时间增加1小时",
           effect: {
@@ -67,7 +67,7 @@ export default {
           }
         },
         { //8
-          img: require("../img/default.png"),
+          img: require("../img/s08.png"),
           name: "996的庇护",
           desc: "员工每天可接受的工作时间增加1小时",
           effect: {
@@ -75,7 +75,7 @@ export default {
           }
         },
         { //9
-          img: require("../img/default.png"),
+          img: require("../img/s09.png"),
           name: "福报",
           desc: "减少员工周末加班时心情下降的值",
           effect: {
@@ -83,7 +83,7 @@ export default {
           }
         },
         { //10
-          img: require("../img/default.png"),
+          img: require("../img/s10.png"),
           name: "ICU",
           desc: "减少员工周末加班时心情下降的值",
           effect: {
@@ -91,7 +91,7 @@ export default {
           }
         },
         { //11
-          img: require("../img/default.png"),
+          img: require("../img/s11.png"),
           name: "奋斗",
           desc: "减少员工周末加班时心情下降的值",
           effect: {
