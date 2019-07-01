@@ -363,10 +363,11 @@
     <div v-else-if="UIController === 'stock'" class="page stock">
       <div class="stock-header">
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+        <div class="remain-row">保底金：<el-input-number v-model="personal.stockRemain" :min="0" :step="10000" size="small"></el-input-number></div>
       </div>
       <div class="page-content stock-content">
         <one-stock v-for="(s, index) in personal.stock" :key="index"
-                   :item="s" :money="money" :config="config"
+                   :item="s" :money="money" :remain="personal.stockRemain" :config="config"
                    @showChart="showChart(index)" @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
@@ -1115,10 +1116,15 @@
     .stock{
       .stock-header{
         width: 100%;
-        height: 40px;
         background-color: $headerFooterGray;
         padding: 8px 20px;
         .row{}
+        .remain-row{
+          margin-top: 10px;
+          .el-input-number{
+            width: 180px;
+          }
+        }
       }
       .stock-content{}
     }
@@ -1739,6 +1745,7 @@
           lotteryNumber: 1,
           lotteryRepeat: false,
           stock: [],
+          stockRemain: 0,
           girls: [],
           contact: [],
           girlInfo: {
@@ -2266,6 +2273,7 @@
               a: s.a
             }
           }),
+          stockRemain: 0,
           girls: [],
           contact: [],
           girlInfo: {
@@ -2366,9 +2374,9 @@
         //股票
         this.personal.stock.forEach(s => {
           s.yesterdayPrice = s.price;
-          s.a = (s.originalPrice - s.price) * Math.random() * 0.1;
+          s.a = (s.originalPrice - s.price) * Math.random() * 0.05;
           s.v += s.a;
-          s.price = range(Math.round((s.price + s.v + (Math.random() * 2 - 1) * s.originalPrice / 3) * 100) / 100, 0.01, null);
+          s.price = range(Math.round((s.price + s.v + (Math.random() * 2 - 1) * s.originalPrice / 10) * 100) / 100, 0.01, null);
         });
 
         if(this.money < 0){

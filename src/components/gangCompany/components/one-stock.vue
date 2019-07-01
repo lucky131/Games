@@ -12,11 +12,11 @@
       </div>
     </div>
     <div class="btn-row">
-      <div v-if="money < item.price * 100" class="btn disabled">买入100股</div>
+      <div v-if="money-remain < item.price * 100" class="btn disabled">买入100股</div>
       <div v-else class="btn able" @click="buy(100)">买入100股</div>
-      <div v-if="money < item.price * 1000" class="btn disabled">买入1000股</div>
+      <div v-if="money-remain < item.price * 1000" class="btn disabled">买入1000股</div>
       <div v-else class="btn able" @click="buy(1000)">买入1000股</div>
-      <div v-if="money < item.price * 100" class="btn disabled">买入最大</div>
+      <div v-if="money-remain < item.price * 100" class="btn disabled">买入最大</div>
       <div v-else class="btn able" @click="buyMax()">买入最大</div>
       <div v-if="item.number === 0" class="btn disabled">全部卖出</div>
       <div v-else class="btn able" @click="sellAll()">全部卖出</div>
@@ -85,6 +85,7 @@
     props: {
       item: Object,
       money: Number,
+      remain: Number,
       config: Object,
     },
     data(){
@@ -111,7 +112,7 @@
         this.$emit("buy", number);
       },
       buyMax(){
-        let number = Math.floor(this.money / this.item.price / 100) * 100;
+        let number = Math.floor((this.money - this.remain) / this.item.price / 100) * 100;
         this.$emit("buy", number);
       },
       sellAll(){
