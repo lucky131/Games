@@ -99,7 +99,7 @@ export default {
           }
         },
         { //12
-          img: require("../img/default.png"),
+          img: require("../img/s12.png"),
           name: "价值观不合警告",
           desc: "缩短新员工可开除的最短天数",
           effect: {
@@ -107,7 +107,7 @@ export default {
           }
         },
         { //13
-          img: require("../img/default.png"),
+          img: require("../img/s13.png"),
           name: "互联网寒冬",
           desc: "降低求职者的期望薪资，减少求职者人数，降低offer被接受的概率",
           effect: {
@@ -117,7 +117,7 @@ export default {
           }
         },
         { //14
-          img: require("../img/default.png"),
+          img: require("../img/s14.png"),
           name: "虚假宣传",
           desc: "增加公司知名度，增加求职者人数",
           effect: {
@@ -126,7 +126,7 @@ export default {
           }
         },
         { //15
-          img: require("../img/default.png"),
+          img: require("../img/s15.png"),
           name: "洁癖",
           desc: "略微改善公司环境",
           effect: {
@@ -134,7 +134,7 @@ export default {
           }
         },
         { //16
-          img: require("../img/default.png"),
+          img: require("../img/s16.png"),
           name: "表结构优化",
           desc: "减少用户每天产生的数据量",
           effect: {
@@ -142,7 +142,7 @@ export default {
           }
         },
         { //17
-          img: require("../img/default.png"),
+          img: require("../img/s17.png"),
           name: "投资鬼才",
           desc: "降低学习新能力的价格",
           effect: {
@@ -150,7 +150,7 @@ export default {
           }
         },
         { //18
-          img: require("../img/default.png"),
+          img: require("../img/s18.png"),
           name: "技术出身",
           desc: "增加工作日的用户增量",
           effect: {
@@ -158,7 +158,7 @@ export default {
           }
         },
         { //19
-          img: require("../img/default.png"),
+          img: require("../img/s19.png"),
           name: "产品出身",
           desc: "提高网站的用户体验",
           effect: {
@@ -166,7 +166,7 @@ export default {
           }
         },
         { //20
-          img: require("../img/default.png"),
+          img: require("../img/s20.png"),
           name: "美工出身",
           desc: "美化网站的用户界面",
           effect: {
@@ -174,7 +174,7 @@ export default {
           }
         },
         { //21
-          img: require("../img/default.png"),
+          img: require("../img/s21.png"),
           name: "网管出身",
           desc: "加快网站的响应速度，减少用户每天产生的数据量",
           effect: {
@@ -183,7 +183,7 @@ export default {
           }
         },
         { //22
-          img: require("../img/default.png"),
+          img: require("../img/s22.png"),
           name: "大学普及",
           desc: "提高国民的智力水平",
           effect: {
@@ -191,7 +191,7 @@ export default {
           }
         },
         { //23
-          img: require("../img/default.png"),
+          img: require("../img/s23.png"),
           name: "义务教育",
           desc: "提高国民的智力水平",
           effect: {
@@ -199,7 +199,7 @@ export default {
           }
         },
         { //24
-          img: require("../img/default.png"),
+          img: require("../img/s24.png"),
           name: "艾登的手机",
           desc: "降低网站的bug率",
           effect: {
@@ -207,7 +207,7 @@ export default {
           }
         },
         { //25
-          img: require("../img/default.png"),
+          img: require("../img/s25.png"),
           name: "艾登的甩棍",
           desc: "缩短新员工可开除的最短天数",
           effect: {
@@ -215,7 +215,7 @@ export default {
           }
         },
         { //26
-          img: require("../img/default.png"),
+          img: require("../img/s26.png"),
           name: "透明胶",
           desc: "减少用户流失率",
           effect: {
@@ -223,7 +223,7 @@ export default {
           }
         },
         { //27
-          img: require("../img/default.png"),
+          img: require("../img/s27.png"),
           name: "读心术",
           desc: "显示员工的心情具体值（0~100）",
           effect: {
@@ -231,7 +231,7 @@ export default {
           }
         },
         { //28
-          img: require("../img/default.png"),
+          img: require("../img/s28.png"),
           name: "照妖镜",
           desc: "显示求职者与员工的能力具体值（0~100）",
           effect: {
@@ -239,7 +239,7 @@ export default {
           }
         },
         { //29
-          img: require("../img/default.png"),
+          img: require("../img/s29.png"),
           name: "侏儒腰带",
           desc: "能量最大值+5",
           effect: {
@@ -247,7 +247,7 @@ export default {
           }
         },
         { //30
-          img: require("../img/default.png"),
+          img: require("../img/s30.png"),
           name: "活力斗篷",
           desc: "每日恢复能量+1",
           effect: {
@@ -255,8 +255,8 @@ export default {
           }
         },
         { //31
-          img: require("../img/default.png"),
-          name: "三棱眼睛",
+          img: require("../img/s31.png"),
+          name: "三棱镜",
           desc: "增加魅力值",
           effect: {
             reputation: 0.2
