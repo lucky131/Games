@@ -31,7 +31,7 @@
         font-size: 20px;
         color: deeppink;
         letter-spacing: -4px;
-        margin-right: 20px;
+        margin-right: 10px;
       }
       i{
         font-size: 20px;
@@ -43,7 +43,7 @@
       height: 20px;
       line-height: 20px;
       border-radius: 50%;
-      background-color: red;
+      background-color: #F56C6C;
       color: white;
       font-size: 14px;
       text-align: center;
