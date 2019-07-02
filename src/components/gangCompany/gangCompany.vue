@@ -586,7 +586,7 @@
       <!--胜利-->
       <div v-else-if="dialogController === 'win'" class="dialog win">
         <div class="win-title">恭喜通关</div>
-        <div class="win-content">我的三杠公司顺利运营了{{dayText}}，总共创造了{{$u.formatIntegerNumber(statistics.totalEarn, config.formatIntegerNumberMode)}}的财富，在此期间一共与{{statistics.totalEmployeeNumber}}位同事共同努力，后来结识了{{personal.contact[personal.chatIndex].girl.name}}（评价：{{personal.contact[personal.chatIndex].girl.condition}}/25）并且与她结婚。现在回想自己的人生，可真是完美啊...</div>
+        <div class="win-content">我的三杠公司顺利运营了{{dayText}}，在此期间一共与{{statistics.totalEmployeeNumber}}位同事共同努力，总共创造了{{$u.formatIntegerNumber(statistics.totalEarn, config.formatIntegerNumberMode)}}的财富；然后我成了业界成功人士，最高资产达到了{{$u.formatIntegerNumber(maxMoney, config.formatIntegerNumberMode)}}，拥有{{carNumber}}辆车、{{houseNumber}}套房；再后来我通过某APP结识了{{personal.contact[personal.chatIndex].girl.name}}（评价：{{personal.contact[personal.chatIndex].girl.condition}}/25）并且与她结婚。现在回想自己的人生，可真是完美啊...</div>
         <div class="win-content">感谢游玩</div>
         <div class="restart-btn" @click="initGame()">再来一局</div>
       </div>
@@ -1805,6 +1805,17 @@
         let day = this.day - 365 * year;
         return (year > 0 ? `${year}年` : '') + (day > 0 ? `${day}天` : '');
       },
+      maxMoney(){
+        let max = 0;
+        this.history.forEach(h => {
+          if(h){
+            if(h.money > max){
+              max = h.money;
+            }
+          }
+        });
+        return max;
+      },
       weekday(){
         return ["星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][this.day % 7];
       },
@@ -2075,6 +2086,12 @@
       seekerNumber(){
         let seekerNumberBonus = this.getEffectBonus("seekerNumber", 0, "+");
         return range(this.popularityLevel + seekerNumberBonus, 1, null); //最少1人
+      },
+      carNumber(){
+        return this.personal.car.filter(n => n).length;
+      },
+      houseNumber(){
+        return this.personal.house.filter(n => n).length;
       },
       reputation(){
         let r = this.personal.baseReputation;
