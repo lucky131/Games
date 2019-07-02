@@ -4,7 +4,7 @@
       <span class="name">{{contact.girl.nickName || contact.girl.name}}</span>
       <span class="heart" v-html="heartHtml"></span>
       <i @click.stop="showInfoDialog()" class="el-icon-info"></i>
-      <i @click.stop="showNickNameDialog()" class="el-icon-edit-outline"></i>
+      <i @click.stop="showNickNameDialog()" class="el-icon-s-order"></i>
       <i @click.stop="deleteContact()" class="el-icon-delete-solid"></i>
     </div>
     <div v-if="contact.unread > 0" class="unread">{{contact.unread}}</div>

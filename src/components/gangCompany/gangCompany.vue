@@ -547,23 +547,6 @@
         <div class="back-btn" @click="dialogController = ''">关闭</div>
       </div>
 
-      <!--更换昵称-->
-      <div v-else-if="dialogController === 'changeNickName'" class="dialog changeNickName">
-        <div class="input-wrapper">
-          <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
-        </div>
-        <div class="btn" @click="changeNickName()">确定</div>
-      </div>
-
-      <!--删除妹子-->
-      <div v-else-if="dialogController === 'deleteGirl'" class="dialog deleteGirl">
-        <div class="text">确定要删除{{personal.contact[personal.deleteIndex].girl.name}}吗？</div>
-        <div class="ope">
-          <div class="btn ok" @click="deleteContact()">删 除</div>
-          <div class="btn cancel" @click="dialogController=''">取 消</div>
-        </div>
-      </div>
-
       <!--妹子详细信息-->
       <div v-else-if="dialogController === 'girlInfo'" class="dialog girlInfo">
         <div class="info-wrapper">
@@ -581,6 +564,23 @@
           <div class="cell value">{{personal.girlInfo.familyText}}</div>
         </div>
         <div class="btn" @click="dialogController = ''">关闭</div>
+      </div>
+
+      <!--更换昵称-->
+      <div v-else-if="dialogController === 'changeNickName'" class="dialog changeNickName">
+        <div class="input-wrapper">
+          <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
+        </div>
+        <div class="btn" @click="changeNickName()">确定</div>
+      </div>
+
+      <!--删除妹子-->
+      <div v-else-if="dialogController === 'deleteGirl'" class="dialog deleteGirl">
+        <div class="text">确定要删除{{personal.contact[personal.deleteIndex].girl.name}}吗？</div>
+        <div class="ope">
+          <div class="btn ok" @click="deleteContact()">删 除</div>
+          <div class="btn cancel" @click="dialogController=''">取 消</div>
+        </div>
       </div>
 
       <!--胜利-->
@@ -1361,6 +1361,35 @@
             font-weight: bold;
           }
         }
+        &.girlInfo{
+          width: 80%;
+          .info-wrapper{
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(6, 40px);
+            .cell{
+              line-height: 40px;
+              text-align: center;
+            }
+            .label{
+              background-color: #eee;
+              font-weight: bold;
+            }
+            .value{
+              background-color: white;
+            }
+          }
+          .btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $textBlue;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
         &.changeNickName{
           width: 80%;
           .input-wrapper{
@@ -1397,35 +1426,6 @@
               &.ok{background-color: $textBlue}
               &.cancel{background-color: #c9cbd1}
             }
-          }
-        }
-        &.girlInfo{
-          width: 80%;
-          .info-wrapper{
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: repeat(6, 40px);
-            .cell{
-              line-height: 40px;
-              text-align: center;
-            }
-            .label{
-              background-color: #eee;
-              font-weight: bold;
-            }
-            .value{
-              background-color: white;
-            }
-          }
-          .btn{
-            width: 100%;
-            height: 60px;
-            line-height: 60px;
-            background-color: $textBlue;
-            text-align: center;
-            color: white;
-            font-weight: bold;
           }
         }
         &.win{
@@ -2593,6 +2593,14 @@
 
           //恢复能量
           this.personal.energy = range(this.personal.energy + this.energyHeal, 0, this.maxEnergy);
+
+          //妹子主动发消息
+          this.personal.contact.forEach((c, index) => {
+            let rate = 0.01 * c.emotion - 0.5;
+            if(Math.random() < rate){
+              this.getMessage({type: "h", text: getRandom(this.chatWords[8])}, index);
+            }
+          });
 
           //刷新求职者
           this.refreshSeekers();
