@@ -400,7 +400,10 @@
       <div v-else class="page-content contact-content">
         <one-contact v-for="(c, index) in personal.contact" :key="index"
                      :contact="c" :heart-html="heartNumberToHtml(hearts[index])"
-                     @toChat="toChat(index)" @showInfoDialog="showInfoDialog(index)" @showNickNameDialog="showNickNameDialog(index)"></one-contact>
+                     @toChat="toChat(index)"
+                     @showInfoDialog="showInfoDialog(index)"
+                     @showNickNameDialog="showNickNameDialog(index)"
+                     @deleteContact="showDeleteDialog(index)"></one-contact>
       </div>
       <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
     </div>
@@ -550,6 +553,15 @@
           <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
         </div>
         <div class="btn" @click="changeNickName()">确定</div>
+      </div>
+
+      <!--删除妹子-->
+      <div v-else-if="dialogController === 'deleteGirl'" class="dialog deleteGirl">
+        <div class="text">确定要删除{{personal.contact[personal.deleteIndex].girl.name}}吗？</div>
+        <div class="ope">
+          <div class="btn ok" @click="deleteContact()">删 除</div>
+          <div class="btn cancel" @click="dialogController=''">取 消</div>
+        </div>
       </div>
 
       <!--妹子详细信息-->
@@ -1365,6 +1377,28 @@
             font-weight: bold;
           }
         }
+        &.deleteGirl{
+          width: 80%;
+          .text{
+            padding: 20px;
+            text-align: center;
+          }
+          .ope{
+            height: 60px;
+            display: flex;
+            flex-flow: row nowrap;
+            .btn{
+              flex: 1 0 0;
+              height: 60px;
+              line-height: 60px;
+              text-align: center;
+              color: white;
+              font-weight: bold;
+              &.ok{background-color: $textBlue}
+              &.cancel{background-color: #c9cbd1}
+            }
+          }
+        }
         &.girlInfo{
           width: 80%;
           .info-wrapper{
@@ -1759,6 +1793,7 @@
           energy: 0,
           chatIndex: 0,
           changeNickNameIndex: 0,
+          deleteIndex: 0,
         },
         yesterdayLottery: [],
         winLottery: [],
@@ -2287,6 +2322,7 @@
           energy: 10,
           chatIndex: 0,
           changeNickName: 0,
+          deleteIndex: 0,
         };
         this.yesterdayLottery = [];
         this.winLottery = [];
@@ -3055,6 +3091,14 @@
         this.dialogController = "changeNickName";
       },
       changeNickName(){
+        this.dialogController = "";
+      },
+      showDeleteDialog(index){
+        this.personal.deleteIndex = index;
+        this.dialogController = "deleteGirl";
+      },
+      deleteContact(){
+        this.personal.contact.splice(this.personal.deleteIndex, 1);
         this.dialogController = "";
       }
     }
