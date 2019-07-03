@@ -201,7 +201,7 @@
           <div class="manage-tips">每一名规划师每天会从能力不高于自己的员工中开除一位性价比最低的，且不同的规划师之间不会重复开除，规划师不会开除规划师</div>
         </div>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--装修-->
@@ -215,7 +215,7 @@
                         :text="d.name" :size="company.building.size" :price="d.price" :money="money" :already-buy="company.decoration[index]" :config="config"
                         @buy="buyDecoration(index)"></one-decoration>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--迁址-->
@@ -226,7 +226,7 @@
                       :name="b.address" :size="b.size" :rent="b.rent" :is-now="company.building.id===b.id" :config="config"
                       @buy="buyBuilding(index)"></one-building>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--服务器-->
@@ -244,7 +244,7 @@
                     :name="s.name" :desc="s.desc" :size="s.size" :price="s.price" :number="company.server[index]" :config="config"
                     @change="changeServer($event, index)"></one-server>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--贷款-->
@@ -254,7 +254,7 @@
                   :item="item" :config="config" :remain-day="company.loan[index]"
                   @loan="loan(index)"></one-loan>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--广告-->
@@ -264,7 +264,7 @@
                 :item="item" :config="config" :is-buy="company.ad[index]"
                 @change="changeAd(index)"></one-ad>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--商店-->
@@ -273,7 +273,7 @@
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
       </div>
       <div class="page-content shop-content">
-        <one-goods name="色欲" desc="永久增加魅力值" :price="25000000" :can-buy="money>=25000000" :config="config" @buy="buyGoods(0)"></one-goods>
+        <one-goods name="色欲" desc="恢复所有能量" :price="500000" :can-buy="money>=500000" :config="config" @buy="buyGoods(0)"></one-goods>
         <one-goods name="暴食" desc="减少一半服务器数据" :price="'随机10名开发'" :can-buy="employee[1].list.length>=10" :config="config" @buy="buyGoods(1)"></one-goods>
         <one-goods name="贪婪" desc="获得一个随机能力" :price="'随机50名员工'" :can-buy="personal.skill.length<allSkills.length&&numberOfEmployee>=51" :config="config" @buy="buyGoods(2)"></one-goods>
         <one-goods name="懒惰" desc="快速跳过30天" :price="10000" :can-buy="money>=10000" :config="config" @buy="buyGoods(3)"></one-goods>
@@ -281,7 +281,7 @@
         <one-goods name="嫉妒" desc="重置能力与能力的价格" :price="100000000" :can-buy="money>=100000000" :config="config" @buy="buyGoods(5)"></one-goods>
         <one-goods name="傲慢" desc="献祭所有员工，每个员工提升1%的网站用户数" :price="'所有员工'" :can-buy="numberOfEmployee>=2" :config="config" @buy="buyGoods(6)"></one-goods>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--买车-->
@@ -291,7 +291,7 @@
                        :is-buy="personal.car[index]" :item="c" :money="money" :config="config"
                        @buy="buyCar(index)"></one-car-house>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--买房-->
@@ -301,7 +301,7 @@
                        :is-buy="personal.house[index]" :item="c" :money="money" :config="config"
                        @buy="buyHouse(index)"></one-car-house>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--彩票-->
@@ -356,7 +356,7 @@
           <div class="tips">杠三杠提醒您：小搏怡情，大赌伤身，强赌灰飞烟灭</div>
         </div>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--股票-->
@@ -370,7 +370,7 @@
                    :item="s" :money="money" :remain="personal.stockRemain" :config="config"
                    @showChart="showChart(index)" @buy="buyStock($event, index)" @sellAll="sellAllStock(index)"></one-stock>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--相亲广场-->
@@ -384,7 +384,7 @@
                   :girl="g"
                   @startChat="startChat(index)"></one-girl>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--联系人-->
@@ -405,7 +405,7 @@
                      @showNickNameDialog="showNickNameDialog(index)"
                      @deleteContact="showDeleteDialog(index)"></one-contact>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--聊天界面-->
@@ -441,12 +441,12 @@
                     :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config" :show-ability="showAbility"
                     @sendOffer="showOffer(index)"></one-seeker>
       </div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <div v-else-if="UIController === 'xxx'" class="page xxx">
       <div class="page-content xxx-content"></div>
-      <div class="page-back" @click="UIController='main'"><i class="el-icon-back"></i></div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
 
     <!--弹窗-->
@@ -1630,44 +1630,49 @@
         difficulty: 0,
         difficulties: [
           {
+            initMoney: 500000,
+            baseLossRate: 0.01,
+            curse: 0
+          },
+          {
+            initMoney: 400000,
+            baseLossRate: 0.01,
+            curse: 0
+          },
+          {
+            initMoney: 400000,
+            baseLossRate: 0.03,
+            curse: 0
+          },
+          {
+            initMoney: 400000,
+            baseLossRate: 0.03,
+            curse: 1
+          },
+          {
             initMoney: 300000,
-            baseLossRate: 0.01,
-            curse: 0
-          },
-          {
-            initMoney: 250000,
-            baseLossRate: 0.01,
-            curse: 0
-          },
-          {
-            initMoney: 250000,
-            baseLossRate: 0.03,
-            curse: 0
-          },
-          {
-            initMoney: 250000,
             baseLossRate: 0.03,
             curse: 1
           },
           {
-            initMoney: 200000,
-            baseLossRate: 0.03,
-            curse: 1
-          },
-          {
-            initMoney: 200000,
+            initMoney: 300000,
             baseLossRate: 0.05,
             curse: 1
           },
           {
-            initMoney: 200000,
+            initMoney: 300000,
             baseLossRate: 0.05,
             curse: 2
           },
           {
-            initMoney: 200000,
+            initMoney: 300000,
             baseLossRate: 0.05,
             curse: 3
+          },
+          {
+            initMoney: 300000,
+            baseLossRate: 0.05,
+            curse: 4
           },
         ],
         chatOpes: [
@@ -1936,7 +1941,7 @@
           ue: this.getTotalEmployeeEfficiency(2) * ueBonus * architectBonus,
           ui: this.getTotalEmployeeEfficiency(3) * uiBonus * architectBonus,
           speed: this.getTotalEmployeeEfficiency(4) * this.serverAverageSpeed * speedBonus * architectBonus,
-          bugRate: range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 1000 + bugRateBonus, 0, null),
+          bugRate: this.getEffectBonus("fixedBugRate", 0, "+") > 0 ? 0.1 : range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 1000 + bugRateBonus, 0, null),
         };
       },
       vipRate(){
@@ -2065,12 +2070,10 @@
         return totalSpeed / this.serversMaxSize;
       },
       showAbility(){
-        let a = this.getEffectBonus("showAbility", 0, "+");
-        return a > 0;
+        return this.getEffectBonus("showAbility", 0, "+");
       },
       showMood(){
-        let m = this.getEffectBonus("showMood", 0, "+");
-        return m > 0;
+        return this.getEffectBonus("showMood", 0, "+");
       },
       employeeEfficiency(){
         let e = [];
@@ -2374,7 +2377,7 @@
         this.refreshSeekers();
         //刷新相亲广场
         this.refreshGirls();
-        this.UIController = "main";
+        this.backToMain();
       },
       skipTutorialAnimating(){
         if(this.isTutorialAnimating){
@@ -2393,6 +2396,15 @@
           this.employee[index].unlock = true;
           this.notify(`已解锁职位：${this.employee[index].name}`);
         }
+      },
+      backToMain(){
+        this.UIController = "main";
+        this.$nextTick(() => {
+          let el = document.getElementsByClassName("main-center");
+          if(el.length > 0){
+            el[0].scrollTop = 0;
+          }
+        });
       },
       next(showDialog = true){
         //历史
@@ -2429,7 +2441,7 @@
           s.yesterdayPrice = s.price;
           s.a = (s.originalPrice - s.price) * Math.random() * 0.05;
           s.v += s.a;
-          s.price = range(Math.round((s.price + s.v + (Math.random() * 2 - 1) * s.originalPrice / 10) * 100) / 100, 0.01, null);
+          s.price = range(Math.round((s.price + s.v + (Math.random() * 2 - 1) * s.originalPrice / 10) * 100) / 100, s.originalPrice / 2, null);
         });
 
         if(this.money < 0){
@@ -2548,8 +2560,8 @@
                   }
                 });
               });
-              seekerPool.sort((a, b) => b.quality - a.quality);
               seekerPool = seekerPool.filter(s => s.ability <= hr.ability * hr.mood / 80);
+              seekerPool.sort((a, b) => b.quality - a.quality);
               if(seekerPool.length > 0){
                 this.employee[seekerPool[0].pIndex].seekers[seekerPool[0].sIndex].isOffer = true;
               }
@@ -2561,7 +2573,7 @@
               let employeePool = [];
               this.employee.forEach((p, pIndex) => {
                 p.list.forEach((s, sIndex) => {
-                  if(pIndex !== 0 && pIndex !== 12){
+                  if(pIndex !== 0 && pIndex !== 12 && this.day >= s.canFireDay){
                     employeePool.push({
                       pIndex,
                       sIndex,
@@ -2572,8 +2584,8 @@
                   }
                 });
               });
-              employeePool.sort((a, b) => a.quality - b.quality);
               employeePool = employeePool.filter(s => s.ability <= pl.ability * pl.mood / 80);
+              employeePool.sort((a, b) => a.quality - b.quality);
               if(employeePool.length > 0){
                 this.fire(employeePool[0].sIndex, employeePool[0].pIndex);
               }
@@ -2660,6 +2672,12 @@
           } else if(this.dialogController === "offer"){
             this.dialogController = "";
           } else if(this.dialogController === "stockChart"){
+            this.dialogController = "";
+          } else if(this.dialogController === "girlInfo"){
+            this.dialogController = "";
+          } else if(this.dialogController === "changeNickName"){
+            this.dialogController = "";
+          } else if(this.dialogController === "deleteGirl"){
             this.dialogController = "";
           }
         }
@@ -2779,8 +2797,9 @@
         });
       },
       refreshGirls(){
+        let num = this.getEffectBonus("girlNumber", 6, "+");
         this.personal.girls = [];
-        for(let i = 0; i < 5; i++){
+        for(let i = 0; i < num; i++){
           this.personal.girls.push(getRandomGirl());
         }
       },
@@ -2796,10 +2815,10 @@
       },
       buyGoods(index){
         switch (index) {
-          case 0: //色欲 永久增加魅力值 25000000
-            this.money -= 25000000;
-            this.personal.baseReputation += 500;
-            this.notify("魅力值已增加");
+          case 0: //色欲 恢复所有能量 500000
+            this.money -= 500000;
+            this.personal.energy = this.maxEnergy;
+            this.notify("能量已恢复");
             break;
           case 1: //暴食 减少一半服务器数据 10个开发
             let arr1 = this.employee[1].list.map((e, eIndex) => ({

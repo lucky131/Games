@@ -25,11 +25,12 @@
           </div>
           <div v-if="e.ability || e.mood" class="info">
             <span>能力：</span>
-            <span v-html="abilityHtml(e.ability)"></span>
-            <span v-if="showAbility">({{Math.round(e.ability)}})</span>
+            <span v-if="showAbility < 0">？</span>
+            <span v-else v-html="abilityHtml(e.ability)"></span>
+            <span v-if="showAbility > 0">({{Math.round(e.ability)}})</span>
             <span style="margin-left: 10px">心情：</span>
             <span v-html="moodHtml(e.mood)"></span>
-            <span v-if="showMood">({{Math.round(e.mood)}})</span>
+            <span v-if="showMood > 0">({{Math.round(e.mood)}})</span>
           </div>
           <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
         </div>
@@ -143,8 +144,8 @@
       employeeArray: Array,
       day: Number,
       config: Object,
-      showAbility: Boolean,
-      showMood: Boolean,
+      showAbility: Number,
+      showMood: Number,
     },
     data(){
       return{
@@ -163,18 +164,18 @@
     },
     methods: {
       abilityHtml(ability){
-        if(ability < 20) return `<span class="__text-red">极差</span>`;
-        if(ability < 40) return `<span class="__text-orange">稍差</span>`;
-        if(ability < 60) return `<span class="__text-gray">中等</span>`;
-        if(ability < 80) return `<span class="__text-blue">优秀</span>`;
-        return `<span class="__text-green">顶尖</span>`;
+        if(ability < 20) return `<span class="__text-red">辣鸡</span>`;
+        if(ability < 40) return `<span class="__text-orange">丢人</span>`;
+        if(ability < 60) return `<span class="__text-gray">凑活</span>`;
+        if(ability < 80) return `<span class="__text-blue">牛逼</span>`;
+        return `<span class="__text-green">大神</span>`;
       },
       moodHtml(mood){
-        if(mood < 20) return `<span class="__text-red">崩溃</span>`;
-        if(mood < 40) return `<span class="__text-orange">烦躁</span>`
-        if(mood < 60) return `<span class="__text-gray">一般</span>`
-        if(mood < 80) return `<span class="__text-blue">开心</span>`
-        return `<span class="__text-green">狂欢</span>`
+        if(mood < 20) return `<span class="__text-red">痛苦</span>`;
+        if(mood < 40) return `<span class="__text-orange">沮丧</span>`
+        if(mood < 60) return `<span class="__text-gray">寻常</span>`
+        if(mood < 80) return `<span class="__text-blue">欢喜</span>`
+        return `<span class="__text-green">乐极</span>`
       },
       toggleShowFull(){
         this.$emit("toggleShowFull");

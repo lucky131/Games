@@ -7,7 +7,9 @@
         {{seeker.name}}
         {{seeker.age}}岁
       </div>
-      <div class="row">能力：<span v-html="abilityHtml"></span><span v-if="showAbility">({{Math.round(seeker.ability)}})</span></div>
+      <div v-if="showAbility < 0" class="row">能力：？</div>
+      <div v-else-if="showAbility === 0" class="row">能力：<span v-html="abilityHtml"></span></div>
+      <div v-else class="row">能力：<span v-html="abilityHtml"></span><span>({{Math.round(seeker.ability)}})</span></div>
       <div class="row">期望日薪：{{$u.formatIntegerNumber(seeker.expectSalary, config.formatIntegerNumberMode)}}</div>
     </div>
     <div v-if="seeker.isOffer" class="offer disabled">已发offer</div>
@@ -56,7 +58,7 @@
       seeker: Object,
       canOffer: Boolean,
       config: Object,
-      showAbility: Boolean,
+      showAbility: Number,
     },
     data(){
       return{
@@ -65,11 +67,11 @@
     },
     computed: {
       abilityHtml(){
-        if(this.seeker.ability < 20) return `<span class="__text-red">极差</span>`;
-        if(this.seeker.ability < 40) return `<span class="__text-orange">稍差</span>`;
-        if(this.seeker.ability < 60) return `<span class="__text-gray">中等</span>`;
-        if(this.seeker.ability < 80) return `<span class="__text-blue">优秀</span>`;
-        return `<span class="__text-green">顶尖</span>`;
+        if(this.seeker.ability < 20) return `<span class="__text-red">辣鸡</span>`;
+        if(this.seeker.ability < 40) return `<span class="__text-orange">丢人</span>`;
+        if(this.seeker.ability < 60) return `<span class="__text-gray">凑活</span>`;
+        if(this.seeker.ability < 80) return `<span class="__text-blue">牛逼</span>`;
+        return `<span class="__text-green">大神</span>`;
       },
     },
     mounted(){
