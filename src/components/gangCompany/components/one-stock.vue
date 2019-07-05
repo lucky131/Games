@@ -8,7 +8,7 @@
       </div>
       <div class="right" @click="showChart()">
         <i class="chart-btn el-icon-data-line"></i>
-        <span>上周走势</span>
+        <span>股票走势</span>
       </div>
     </div>
     <div class="btn-row">

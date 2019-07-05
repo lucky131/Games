@@ -81,7 +81,7 @@ export default {
           name: "当局者迷",
           desc: "减少每天刷新的相亲妹子数",
           effect: {
-            girlNumber: -3
+            girlNumber: -4
           }
         }
       ]

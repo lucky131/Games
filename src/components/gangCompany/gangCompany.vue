@@ -6,8 +6,8 @@
       <div class="tutorial-complete-text">{{tutorialCompleteText}}
         <div class="tutorial-text">{{tutorialText}}</div>
       </div>
-      <div v-if="isTutorialAnimating" class="mask"></div>
-      <div class="tutorial-bottom">
+      <div v-if="isTutorialAnimating" class="tutorial-mask"></div>
+      <div class="tutorial-bottom" :style="{opacity: isTutorialAnimating ? 0 : 1}">
         <div class="difficulty">
           <div class="difficulty-ope">
             难度：<el-input-number v-model="difficulty" :min="0" :max="difficulties.length-1" :step="1" step-strictly size="small"></el-input-number>
@@ -599,6 +599,7 @@
 
 <style scoped lang="scss">
   $headerFooterGray: #e1e1e6;
+  $menuBlueDeep: #275C98;
   $textRed: #f5524c;
   $textOrange: #ed8a1a;
   $textGray: #909399;
@@ -644,7 +645,46 @@
       }
     }
     .tutorial{
+      background-image: linear-gradient(#c0d9ff, #7b8aff);
       position: relative;
+      &:before{
+        content: '';
+        width: 500px;
+        height: 500px;
+        background-color: rgba(253, 255, 0, 0.3);
+        border-radius: 50%;
+        position: fixed;
+        top: 50px;
+        left: -350px;
+        animation: a3 ease-in-out 8s infinite alternate;
+        @keyframes a3 {
+          from{
+            transform: translate(0, 0);
+          }
+          to{
+            transform: translate(0, 150px);
+          }
+        }
+      }
+      &:after{
+        content: '';
+        width: 1000px;
+        height: 1000px;
+        background-color: rgba(255, 129, 0, 0.2);
+        border-radius: 50%;
+        position: fixed;
+        top: 400px;
+        right: -400px;
+        animation: a4 ease-in-out 11s infinite alternate;
+        @keyframes a4 {
+          from{
+            transform: translate(0, 0);
+          }
+          to{
+            transform: translate(0, 50px);
+          }
+        }
+      }
       .tutorial-complete-text{
         width: 80%;
         margin-bottom: 60px;
@@ -656,39 +696,43 @@
         .tutorial-text{
           position: absolute;
           top: 0;
-          color: black;
+          color: $menuBlueDeep;
         }
       }
-      .mask{
+      .tutorial-mask{
         width: 100%;
         height: 100%;
         position: absolute;
         top: 0;
         left: 0;
-        background-color: white;
         z-index: 2;
       }
       .tutorial-bottom{
+        width: 100%;
+        padding: 0 20px;
         display: flex;
         flex-flow: column nowrap;
         align-items: center;
+        z-index: 1;
         .difficulty{
           margin-bottom: 40px;
+          color: $menuBlueDeep;
           text-align: center;
           .difficulty-ope{
             margin-bottom: 10px;
           }
           .difficulty-desc{
             font-size: 14px;
-            color: #999;
           }
         }
         .tutorial-btn{
-          width: 130px;
+          width: 100%;
           height: 60px;
           line-height: 60px;
-          border-radius: 10px;
-          background-color: $textBlue;
+          margin: 0 20px;
+          border-radius: 30px;
+          background-color: $menuBlueDeep;
+          box-shadow: 0px 2px 10px rgba(16, 50, 75, 0.2);
           color: white;
           font-size: 20px;
           text-align: center;
@@ -696,16 +740,57 @@
       }
     }
     .load-auto{
+      background-image: linear-gradient(#c0d9ff, #7b8aff);
+      &:before{
+        content: '';
+        width: 400px;
+        height: 1000px;
+        position: fixed;
+        top: -100px;
+        left: 200px;
+        background-image: linear-gradient(rgba(0, 255, 124, 0.21), rgba(5, 255, 0, 0.31));
+        animation: a1 ease-in-out 5s infinite alternate;
+        @keyframes a1 {
+          from{
+            transform: translate(-20px, 0) rotate(15deg);
+          }
+          to{
+            transform: translate(20px, 0) rotate(25deg);
+          }
+        }
+      }
+      &:after{
+        content: '';
+        width: 1000px;
+        height: 400px;
+        position: fixed;
+        bottom: -350px;
+        left: -200px;
+        background-image: linear-gradient(rgba(207, 0, 255, 0.13), rgba(229, 0, 255, 0.2));
+        animation: a2 ease-in-out 7s infinite alternate;
+        @keyframes a2 {
+          from{
+            transform: translate(0, 50px) rotate(25deg);
+          }
+          to{
+            transform: translate(0, -20px) rotate(15deg);
+          }
+        }
+      }
       .text{
         margin-bottom: 40px;
+        font-weight: bold;
         font-size: 20px;
+        color: $menuBlueDeep;
+        z-index: 1;
       }
       .pre{
         margin-bottom: 40px;
-        color: $textGray;
+        color: $menuBlueDeep;
         font-size: 14px;
         display: grid;
         grid-template-columns: auto auto;
+        z-index: 1;
         .label, .value{
           height: 20px;
           line-height: 20px;
@@ -715,16 +800,15 @@
         }
       }
       .opes{
-        display: flex;
-        flex-flow: row nowrap;
+        width: 100%;
+        z-index: 1;
         .btn{
-          width: 130px;
+          margin: 0 20px 10px;
           height: 60px;
           line-height: 60px;
-          margin-left: 20px;
-          &:first-child{margin-left: 0}
-          border-radius: 10px;
-          background-color: $textBlue;
+          border-radius: 30px;
+          background-color: $menuBlueDeep;
+          box-shadow: 0px 2px 10px rgba(16, 50, 75, 0.2);
           color: white;
           font-size: 20px;
           text-align: center;
@@ -2797,7 +2881,7 @@
         });
       },
       refreshGirls(){
-        let num = this.getEffectBonus("girlNumber", 6, "+");
+        let num = this.getEffectBonus("girlNumber", 7, "+");
         this.personal.girls = [];
         for(let i = 0; i < num; i++){
           this.personal.girls.push(getRandomGirl());
@@ -2947,6 +3031,7 @@
         }
       },
       showChart(index){
+        let day = this.getEffectBonus("stockDay", 7, "+");
         let yAxis = this.history.slice(1).map(n => n.stocks[index]);
         yAxis.push(this.personal.stock[index].price);
         let xAxis = yAxis.map((n, index) => index + 1);
@@ -2958,7 +3043,7 @@
               name: "天数",
               type: 'category',
               boundaryGap: false,
-              data: xAxis.slice(-7)
+              data: xAxis.slice(-day)
             },
             yAxis: {
               name: "价格",
@@ -2971,7 +3056,7 @@
               }
             },
             series: [{
-              data: yAxis.slice(-7),
+              data: yAxis.slice(-day),
               type: 'line',
               label: {
                 show: true
