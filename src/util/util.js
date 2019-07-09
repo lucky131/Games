@@ -21,23 +21,36 @@ export function formatIntegerNumber(number, mode = 0) {
     case 1:
       return s.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     case 2:
-      let s1 = Math.floor(n/100000000);
-      let s2 = Math.floor(n%100000000/10000);
-      let s3 = n%10000;
-      return (flag ? "" : "负") + (s1 !== 0 ? s1 + "亿" : "") + (s2 !== 0 ? s2 + "万" : "") + (s3 !== 0 ? s3 : "");
+      let s1 = Math.floor(n/10000000000000000);
+      let s2 = Math.floor(n%10000000000000000/1000000000000);
+      let s3 = Math.floor(n%1000000000000/100000000);
+      let s4 = Math.floor(n%100000000/10000);
+      let s5 = n%10000;
+      return (flag ? "" : "负")
+        + (s1 !== 0 ? s1 + "亿亿" : "")
+        + (s2 !== 0 ? s2 + "万亿" : "")
+        + (s3 !== 0 ? s3 + "亿" : "")
+        + (s4 !== 0 ? s4 + "万" : "")
+        + (s5 !== 0 ? s5 : "");
     case 3:
-      let s4, unit;
+      let ss, unit;
       if(n < 10000){
-        s4 = n;
+        ss = n;
         unit = "";
       } else if(n < 100000000){
-        s4 = Math.round(n/10000*100)/100;
+        ss = Math.round(n/10000*100)/100;
         unit = "万";
-      } else {
-        s4 = Math.round(n/100000000*100)/100;
+      } else if (n < 1000000000000) {
+        ss = Math.round(n/100000000*100)/100;
         unit = "亿";
+      } else if (n < 10000000000000000) {
+        ss = Math.round(n/1000000000000*100)/100;
+        unit = "万亿";
+      } else {
+        ss = Math.round(n/10000000000000000*100)/100;
+        unit = "亿亿";
       }
-      return (flag ? "" : "-") + s4 + unit;
+      return (flag ? "" : "-") + ss + unit;
   }
   return "";
 }
