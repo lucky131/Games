@@ -15,6 +15,7 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-skill{
     width: 100%;
     padding: 5px 0;
@@ -55,7 +56,7 @@
       }
       .desc{
         font-size: 12px;
-        color: gray;
+        color: $textBlueNormal;
       }
     }
   }

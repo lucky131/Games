@@ -12,11 +12,12 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-contact{
     width: 100%;
     height: 50px;
     padding: 0 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -29,7 +30,7 @@
       }
       .heart{
         font-size: 20px;
-        color: deeppink;
+        color: #f249b0;
         letter-spacing: -4px;
         margin-right: 10px;
       }

@@ -1,0 +1,38 @@
+$headerFooter: #52b3f7;
+$headerFooterLight: #84c8f9;
+$headerFooterDeep: #53a3e8;
+$headerFooterDark: #2491d7;
+
+$border: #8ebde2;
+
+$btnBlue: #007bd0;
+$btnBlueLight: #008ae0;
+$btnBlueDisabled: #7db0e2;
+$btnGray: #c9cbd1;
+
+$cardTitle: #52b3f7;
+$cardContent: rgba(223, 237, 255, 0.5);
+
+$textBlueLight: #cfe2ff;
+$textBlueNormal: #7c9abd;
+
+$textRed: #d63a37;
+$textOrange: #dd7b1b;
+$textGray: #82858b;
+$textBlue: #0082be;
+$textGreen: #139908;
+
+*{
+  box-sizing: border-box;
+  font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
+}
+
+/deep/ {
+  .__text-red{color: $textRed}
+  .__text-orange{color: $textOrange}
+  .__text-gray{color: $textGray}
+  .__text-blue{color: $textBlue}
+  .__text-green{color: $textGreen}
+  .male{color: #2e7bff}
+  .female{color: #f249b0}
+}

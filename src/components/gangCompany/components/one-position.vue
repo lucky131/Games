@@ -44,15 +44,17 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-position{
     margin: 0 10px 10px;
     border-radius: 10px;
     overflow: hidden;
+    background-color: $cardContent;
     box-shadow: 0 0 6px rgba(0,0,0,.1);
     .position-name{
       height: 40px;
       line-height: 40px;
-      background-color: #e7eaef;
+      background-color: $headerFooter;
       text-align: center;
       font-size: 18px;
       font-weight: bold;
@@ -78,7 +80,7 @@
       padding: 0 20px;
       .one-people{
         width: 100%;
-        border-bottom: 1px solid #e1e1e6;
+        border-bottom: 1px solid $border;
         &:last-child{border-bottom: none}
         display: flex;
         flex-flow: row nowrap;
@@ -105,7 +107,7 @@
             width: 100%;
             height: 28px;
             line-height: 28px;
-            background-color: #f5524c;
+            background-color: $textRed;
             border-radius: 10px;
             font-size: 14px;
             color: white;
@@ -117,16 +119,16 @@
         width: 100%;
         height: 40px;
         line-height: 40px;
-        border-radius: 10px;
+        border-radius: 20px;
         margin: 10px 0;
         color: white;
         font-weight: bold;
         text-align: center;
         &.able{
-          background-color: #409EFF;
+          background-color: $btnBlue;
         }
         &.disabled{
-          background-color: #a0cfff;
+          background-color: $btnBlueDisabled;
         }
       }
     }

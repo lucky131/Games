@@ -18,6 +18,7 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-chat{
     width: 100%;
     .line{
@@ -29,7 +30,7 @@
         position: relative;
       }
       &.s{
-        color: #999;
+        color: $textBlue;
         font-size: 12px;
         text-align: center;
       }
@@ -60,12 +61,12 @@
           min-width: 4px;
           max-width: 90%;
           min-height: 21px;
-          background-color: #409EFF;
+          background-color: $headerFooter;
           color: white;
           &:before{
             content: "";
             border-top: 8px solid transparent;
-            border-left: 10px solid #409EFF;
+            border-left: 10px solid $headerFooter;
             border-right: 0 solid transparent;
             border-bottom: 8px solid transparent;
             position: absolute;

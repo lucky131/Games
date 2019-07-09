@@ -11,11 +11,12 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-ad{
     width: 100%;
     height: 60px;
     padding: 0 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -46,13 +47,13 @@
         transition: left 200ms;
       }
       &.on{
-        background-color: #31c21f;
+        background-color: $btnBlue;
         .switch-btn{
           left: 33px;
         }
       }
       &.off{
-        background-color: #eee;
+        background-color: #9fc0e2;
         .switch-btn{
           left: 3px;
         }

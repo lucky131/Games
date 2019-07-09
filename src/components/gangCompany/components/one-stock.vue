@@ -25,10 +25,11 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-stock{
     width: 100%;
     padding: 10px 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     .info-row{
       display: flex;
       flex-flow: row nowrap;
@@ -64,14 +65,14 @@
         margin-top: 10px;
         margin-left: 10px;
         &:first-child{margin-left: 0}
-        border-radius: 10px;
+        border-radius: 14px;
         color: white;
         font-size: 12px;
         &.able{
-          background-color: #409EFF;
+          background-color: $btnBlue;
         }
         &.disabled{
-          background-color: #a0cfff;
+          background-color: $btnBlueDisabled;
           cursor: no-drop;
         }
       }

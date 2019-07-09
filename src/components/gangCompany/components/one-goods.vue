@@ -11,10 +11,11 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-goods{
     width: 100%;
     padding: 10px 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -32,15 +33,15 @@
       width: 80px;
       height: 40px;
       line-height: 40px;
-      border-radius: 10px;
+      border-radius: 20px;
       margin-left: 10px;
       color: white;
       text-align: center;
       &.able{
-        background-color: #409EFF;
+        background-color: $btnBlue;
       }
       &.disabled{
-        background-color: #a0cfff;
+        background-color: $btnBlueDisabled;
         cursor: no-drop;
       }
     }

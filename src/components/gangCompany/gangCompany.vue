@@ -36,7 +36,7 @@
 
     <!--主界面-->
     <div v-else-if="UIController === 'main'" class="page main">
-      <div class="main-top">
+      <div class="page-header main-top">
         <div class="main-top-left">
           <div class="row">{{formatDay(day)}} {{weekday}}</div>
           <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
@@ -206,7 +206,7 @@
 
     <!--装修-->
     <div v-else-if="UIController === 'decoration'" class="page decoration">
-      <div class="decoration-header">
+      <div class="page-header decoration-header">
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
         <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
       </div>
@@ -231,10 +231,10 @@
 
     <!--服务器-->
     <div v-else-if="UIController === 'server'" class="page server">
-      <div class="server-header">
+      <div class="page-header server-header">
         <div class="title-row">服务器使用率</div>
         <div class="progress-row">
-          <div class="progress"><el-progress :text-inside="true" :stroke-width="18" :percentage="serversSizeRate"></el-progress></div>
+          <div class="progress"><el-progress :text-inside="true" :stroke-width="18" :percentage="serversSizeRate" :color="progressColor"></el-progress></div>
           <div class="info">{{$u.formatHardDiskSize(company.serversSize) + '/' + $u.formatHardDiskSize(serversMaxSize)}}</div>
         </div>
       </div>
@@ -269,7 +269,7 @@
 
     <!--商店-->
     <div v-else-if="UIController === 'shop'" class="page shop">
-      <div class="shop-header">
+      <div class="page-header shop-header">
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
       </div>
       <div class="page-content shop-content">
@@ -306,7 +306,7 @@
 
     <!--彩票-->
     <div v-else-if="UIController === 'lottery'" class="page lottery">
-      <div class="lottery-head">
+      <div class="page-header lottery-head">
         <el-input-number v-model="personal.lotteryNumber" :min="1" :step="1" step-strictly size="small"></el-input-number><span>注</span>
         <el-checkbox v-model="personal.lotteryRepeat">重复</el-checkbox>
         <div v-if="money < personal.lotteryNumber * 2" class="btn disabled">无法购买</div>
@@ -361,7 +361,7 @@
 
     <!--股票-->
     <div v-else-if="UIController === 'stock'" class="page stock">
-      <div class="stock-header">
+      <div class="page-header stock-header">
         <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
         <div class="remain-row">保底金：<el-input-number v-model="personal.stockRemain" :min="0" :step="10000" size="small"></el-input-number></div>
       </div>
@@ -375,7 +375,7 @@
 
     <!--相亲广场-->
     <div v-else-if="UIController === 'date'" class="page date">
-      <div class="date-header">
+      <div class="page-header date-header">
         <!--<div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>-->
         <div class="row">魅力等级：Lv{{reputationLevel}}</div>
       </div>
@@ -389,7 +389,7 @@
 
     <!--联系人-->
     <div v-else-if="UIController === 'contact'" class="page contact">
-      <div class="contact-header">
+      <div class="page-header contact-header">
         <div class="row">能量：{{personal.energy}}/{{maxEnergy}}</div>
         <div class="row">每日恢复能量：{{energyHeal}}</div>
       </div>
@@ -435,7 +435,7 @@
 
     <!--招聘-->
     <div v-else-if="UIController === 'recruit'" class="page recruit">
-      <div class="recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
+      <div class="page-header recruit-header">当前职位：{{employee[recruitIndex].name}}</div>
       <div class="page-content recruit-content">
         <one-seeker v-for="(s, index) in employee[recruitIndex].seekers" :key="index"
                     :seeker="s" :can-offer="numberOfEmployee + numberOfOffer < company.building.size" :config="config" :show-ability="showAbility"
@@ -598,30 +598,10 @@
 </template>
 
 <style scoped lang="scss">
-  $headerFooterGray: #e1e1e6;
-  $menuBlueDeep: #275C98;
-  $textRed: #f5524c;
-  $textOrange: #ed8a1a;
-  $textGray: #909399;
-  $textBlue: #409EFF;
-  $textGreen: #31c21f;
-
-  *{
-    box-sizing: border-box;
-    font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
-  }
-  /deep/ {
-    .__text-red{color: $textRed}
-    .__text-orange{color: $textOrange}
-    .__text-gray{color: $textGray}
-    .__text-blue{color: $textBlue}
-    .__text-green{color: $textGreen}
-    .male{color: #2e7bff}
-    .female{color: deeppink}
-  }
-
+  @import "css/common";
   .gang-company{
     width: 100vw;
+    background-image: linear-gradient(#c2e5ff, #7ec3e9);
     .page{
       width: 100%;
       height: 100%;
@@ -629,6 +609,10 @@
       flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
+      .page-header{
+        width: 100%;
+        box-shadow: 0px 5px 10px rgba(0,0,0,.1);
+      }
       .page-content{
         width: 100%;
         flex: 1 0 0;
@@ -639,7 +623,8 @@
         width: 100%;
         height: 60px;
         line-height: 60px;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
+        box-shadow: 0px -5px 10px rgba(0,0,0,.1);
         font-size: 32px;
         text-align: center;
       }
@@ -696,7 +681,7 @@
         .tutorial-text{
           position: absolute;
           top: 0;
-          color: $menuBlueDeep;
+          color: $btnBlue;
         }
       }
       .tutorial-mask{
@@ -716,7 +701,7 @@
         z-index: 1;
         .difficulty{
           margin-bottom: 40px;
-          color: $menuBlueDeep;
+          color: $btnBlue;
           text-align: center;
           .difficulty-ope{
             margin-bottom: 10px;
@@ -731,7 +716,7 @@
           line-height: 60px;
           margin: 0 20px;
           border-radius: 30px;
-          background-color: $menuBlueDeep;
+          background-color: $btnBlue;
           box-shadow: 0px 2px 10px rgba(16, 50, 75, 0.2);
           color: white;
           font-size: 20px;
@@ -781,12 +766,12 @@
         margin-bottom: 40px;
         font-weight: bold;
         font-size: 20px;
-        color: $menuBlueDeep;
+        color: $btnBlue;
         z-index: 1;
       }
       .pre{
         margin-bottom: 40px;
-        color: $menuBlueDeep;
+        color: $btnBlue;
         font-size: 14px;
         display: grid;
         grid-template-columns: auto auto;
@@ -807,7 +792,7 @@
           height: 60px;
           line-height: 60px;
           border-radius: 30px;
-          background-color: $menuBlueDeep;
+          background-color: $btnBlue;
           box-shadow: 0px 2px 10px rgba(16, 50, 75, 0.2);
           color: white;
           font-size: 20px;
@@ -817,9 +802,8 @@
     }
     .main{
       .main-top{
-        width: 100%;
         height: 80px;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         display: flex;
         flex-flow: row nowrap;
         z-index: 1;
@@ -836,11 +820,12 @@
           width: 60px;
           height: 60px;
           line-height: 60px;
-          background-color: $textBlue;
-          border-radius: 10px;
+          background-color: $btnBlue;
+          border-radius: 50%;
           margin: 10px;
           color: white;
           font-size: 20px;
+          font-weight: bold;
           text-align: center;
         }
       }
@@ -871,6 +856,7 @@
             }
           }
           .card{
+            background-color: $cardContent;
             margin: 0 10px 10px;
             border-radius: 10px;
             overflow: hidden;
@@ -878,10 +864,10 @@
             .card-title{
               height: 40px;
               line-height: 40px;
-              background-color: #e7eaef;
+              background-color: $cardTitle;
               text-align: center;
-              font-size: 18px;
               font-weight: bold;
+              font-size: 18px;
             }
             .card-content{
               padding: 10px 20px 0;
@@ -892,7 +878,7 @@
               .info-value{
                 text-align: center;
                 size: 14px;
-                color: #888;
+                color: $textBlueNormal;
                 margin-bottom: 10px;
               }
             }
@@ -929,6 +915,7 @@
             }
           }
           .card{
+            background-color: $cardContent;
             margin: 0 10px 10px;
             border-radius: 10px;
             overflow: hidden;
@@ -936,7 +923,7 @@
             .card-title{
               height: 40px;
               line-height: 40px;
-              background-color: #e7eaef;
+              background-color: $cardTitle;
               text-align: center;
               font-size: 18px;
               font-weight: bold;
@@ -947,16 +934,16 @@
                 width: 100%;
                 height: 40px;
                 line-height: 40px;
-                border-radius: 10px;
+                border-radius: 20px;
                 margin: 10px 0;
                 color: white;
                 font-weight: bold;
                 text-align: center;
                 &.able{
-                  background-color: $textBlue;
+                  background-color: $btnBlue;
                 }
                 &.disabled{
-                  background-color: #a0cfff;
+                  background-color: $btnBlueDisabled;
                 }
               }
             }
@@ -971,7 +958,7 @@
           }
           .setting-row{
             padding-bottom: 10px;
-            border-bottom: 1px solid #e1e1e6;
+            border-bottom: 1px solid $border;
             .el-radio{
               margin-right: 20px;
               &:last-child{margin-right: 0}
@@ -982,7 +969,7 @@
             .setting-tips{
               margin-top: 10px;
               font-size: 10px;
-              color: #ccc;
+              color: $textBlueNormal;
             }
           }
         }
@@ -991,7 +978,8 @@
         width: 100%;
         height: 60px;
         line-height: 60px;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
+        box-shadow: 0px -5px 10px rgba(0,0,0,.1);
         text-align: center;
         display: flex;
         flex-flow: row nowrap;
@@ -1000,13 +988,13 @@
           height: 100%;
           position: relative;
           &.main-bottom-btn__selected{
-            background-color: #d5d5da;
+            background-color: $headerFooterDeep;
             font-weight: bold;
             &:before{
               content: "";
               width: 100%;
               height: 4px;
-              background-color: #b4b4b9;
+              background-color: $headerFooterDark;
               position: absolute;
               top: 0;
               left: 0;
@@ -1031,7 +1019,7 @@
         }
         .manage-row{
           padding-bottom: 10px;
-          border-bottom: 1px solid #e1e1e6;
+          border-bottom: 1px solid $border;
           .el-checkbox{
             margin-right: 10px;
             .el-checkbox__label{
@@ -1041,17 +1029,15 @@
           .manage-tips{
             margin-top: 10px;
             font-size: 10px;
-            color: #ccc;
+            color: $textBlueNormal;
           }
         }
       }
     }
     .decoration{
       .decoration-header{
-        width: 100%;
-        height: 60px;
-        background-color: $headerFooterGray;
-        padding: 8px 20px;
+        background-color: $headerFooter;
+        padding: 10px 20px;
         .row{}
       }
       .decoration-content{}
@@ -1061,17 +1047,16 @@
         .tips{
           width: 100%;
           padding: 10px 20px;
-          background-color: $headerFooterGray;
+          background-color: $headerFooter;
           font-size: 12px;
         }
       }
     }
     .server{
       .server-header{
-        width: 100%;
         height: 70px;
         padding: 10px 20px 0;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         .title-row{
           font-size: 16px;
           margin-bottom: 4px;
@@ -1094,7 +1079,7 @@
         .tips{
           width: 100%;
           padding: 10px 20px;
-          background-color: #eaeaef;
+          background-color: $headerFooterLight;
           font-size: 12px;
         }
       }
@@ -1108,10 +1093,10 @@
     }
     .shop{
       .shop-header{
-        width: 100%;
         height: 40px;
-        background-color: $headerFooterGray;
-        padding: 8px 20px;
+        line-height: 40px;
+        background-color: $headerFooter;
+        padding: 0 20px;
         .row{}
       }
       .shop-content{}
@@ -1124,9 +1109,8 @@
     }
     .lottery{
       .lottery-head{
-        width: 100%;
         height: 60px;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         padding: 0 20px;
         display: flex;
         flex-flow: row nowrap;
@@ -1144,14 +1128,14 @@
           width: 80px;
           height: 40px;
           line-height: 40px;
-          border-radius: 10px;
+          border-radius: 20px;
           color: white;
           text-align: center;
           &.able{
-            background-color: $textBlue;
+            background-color: $btnBlue;
           }
           &.disabled{
-            background-color: #a0cfff;
+            background-color: $btnBlueDisabled;
             cursor: no-drop;
           }
         }
@@ -1190,17 +1174,17 @@
         }
         .help{
           font-size: 12px;
-          color: $textGray;
-          border-top: 1px solid $textGray;
+          color: $textBlueNormal;
+          border-top: 1px solid $border;
           table{
             width: 100%;
             margin-top: 20px;
-            border-bottom: 1px solid $textGray;
-            border-right: 1px solid $textGray;
+            border-bottom: 1px solid $border;
+            border-right: 1px solid $border;
             th, td{
               padding: 5px;
-              border-top: 1px solid $textGray;
-              border-left: 1px solid $textGray;
+              border-top: 1px solid $border;
+              border-left: 1px solid $border;
             }
           }
           .tips{
@@ -1211,9 +1195,8 @@
     }
     .stock{
       .stock-header{
-        width: 100%;
-        background-color: $headerFooterGray;
-        padding: 8px 20px;
+        background-color: $headerFooter;
+        padding: 10px 20px;
         .row{}
         .remain-row{
           margin-top: 10px;
@@ -1226,8 +1209,7 @@
     }
     .date{
       .date-header{
-        width: 100%;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         padding: 10px 20px;
         .row{}
       }
@@ -1236,8 +1218,7 @@
     }
     .contact{
       .contact-header{
-        width: 100%;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         padding: 10px 20px;
         .row{}
       }
@@ -1248,7 +1229,7 @@
         flex-flow: column nowrap;
         justify-content: center;
         align-items: center;
-        color: #999;
+        color: $textBlueNormal;
         i{
           font-size: 48px;
           margin-bottom: 10px;
@@ -1263,7 +1244,7 @@
     .chat{
       .chat-header{
         width: 100%;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
         padding: 10px 20px;
         text-align: center;
         .nameRow{
@@ -1273,21 +1254,22 @@
           }
           .heart{
             font-size: 20px;
-            color: deeppink;
+            color: #f249b0;
             letter-spacing: -4px;
           }
         }
         .energy{
           font-size: 12px;
-          color: $textGray;
+          color: $textBlue;
         }
       }
       .chat-content{
-        background-color: #f5f5f5;
+        background-color: #c2e5ff;
         padding: 10px 30px;
       }
       .opes{
         width: 100%;
+        background-color: #84c8f9;
         display: flex;
         flex-flow: row wrap;
         .ope-btn{
@@ -1298,7 +1280,7 @@
           justify-content: center;
           align-items: center;
           &.disabled{
-            color: $textGray;
+            color: $textBlueNormal;
           }
           i{
             font-size: 24px;
@@ -1312,11 +1294,10 @@
     }
     .recruit{
       .recruit-header{
-        width: 100%;
         height: 40px;
         line-height: 40px;
         padding: 0 20px;
-        background-color: $headerFooterGray;
+        background-color: $headerFooter;
       }
       .recruit-content{}
     }
@@ -1353,7 +1334,7 @@
             height: 60px;
             line-height: 60px;
             margin-top: 20px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1383,7 +1364,7 @@
             width: 100%;
             height: 60px;
             line-height: 60px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1421,10 +1402,10 @@
               text-align: center;
               color: white;
               font-weight: bold;
-              &.send{background-color: $textBlue}
-              &.cancel{background-color: #c9cbd1
+              &.send{background-color: $btnBlueLight}
+              &.cancel{background-color: $btnGray
               }
-              &.disabled{background-color: #a0cfff}
+              &.disabled{background-color: $btnBlueDisabled}
             }
           }
         }
@@ -1439,7 +1420,7 @@
             width: 100%;
             height: 60px;
             line-height: 60px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1468,7 +1449,7 @@
             width: 100%;
             height: 60px;
             line-height: 60px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1484,7 +1465,7 @@
             width: 100%;
             height: 60px;
             line-height: 60px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1507,7 +1488,7 @@
               text-align: center;
               color: white;
               font-weight: bold;
-              &.ok{background-color: $textBlue}
+              &.ok{background-color: $btnBlueLight}
               &.cancel{background-color: #c9cbd1}
             }
           }
@@ -1531,7 +1512,7 @@
             height: 60px;
             line-height: 60px;
             margin-top: 20px;
-            background-color: $textBlue;
+            background-color: $btnBlueLight;
             text-align: center;
             color: white;
             font-weight: bold;
@@ -1808,6 +1789,11 @@
             cost: 10,
             emotion: 99
           }
+        ],
+        progressColor: [
+          {color: '#5cb87a', percentage: 60},
+          {color: '#e6a23c', percentage: 80},
+          {color: '#f56c6c', percentage: 100}
         ],
         config: {
           formatIntegerNumberMode: 1,

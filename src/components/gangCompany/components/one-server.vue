@@ -4,7 +4,8 @@
       <div class="name">{{name}}</div>
       <div class="desc">{{desc}}</div>
       <div class="size-price">
-        <span class="size">容量：{{$u.formatHardDiskSize(size)}}</span><span class="price">价格：{{$u.formatIntegerNumber(price, config.formatIntegerNumberMode)}}/天</span>
+        <span class="size __text-orange">容量：{{$u.formatHardDiskSize(size)}}</span>
+        <span class="price __text-green">价格：{{$u.formatIntegerNumber(price, config.formatIntegerNumberMode)}}/天</span>
       </div>
     </div>
     <div class="right">
@@ -16,11 +17,12 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-server{
     width: 100%;
     height: 80px;
     padding: 0 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -32,17 +34,15 @@
       }
       .desc{
         font-size: 12px;
-        color: gray;
+        color: $textBlueNormal;
         margin-bottom: 6px;
       }
       .size-price{
         font-size: 14px;
         .size{
-          color: #ed8a1a;
           margin-right: 20px;
         }
         .price{
-          color: #31c21f;
         }
       }
     }
@@ -54,7 +54,8 @@
         height: 100%;
         line-height: 40px;
         text-align: center;
-        border: 1px solid #e1e1e6;
+        background-color: $cardContent;
+        border: 1px solid $border;
         box-sizing: border-box;
         position: absolute;
         &.minus{

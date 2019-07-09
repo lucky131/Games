@@ -9,10 +9,11 @@
 </template>
 
 <style scoped lang="scss">
+  @import "../css/common";
   .one-girl{
     width: 100%;
     padding: 10px 20px;
-    border-bottom: 1px solid #e1e1e6;
+    border-bottom: 1px solid $border;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -21,7 +22,7 @@
       .info{
         font-weight: bold;
         .pink{
-          color: deeppink;
+          color: #f249b0;
         }
       }
     }
@@ -29,14 +30,14 @@
       width: 80px;
       height: 40px;
       line-height: 40px;
-      border-radius: 10px;
+      border-radius: 20px;
       text-align: center;
       &.able{
         color: white;
-        background-color: deeppink;
+        background-color: #f249b0;
       }
       &.disabled{
-        background-color: #ccc;
+        background-color: #ffa2d3;
         cursor: no-drop;
       }
     }
