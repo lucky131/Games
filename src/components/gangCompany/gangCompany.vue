@@ -983,6 +983,7 @@
         text-align: center;
         display: flex;
         flex-flow: row nowrap;
+        z-index: 1;
         .main-bottom-btn{
           flex: 1 0 0;
           height: 100%;
@@ -2284,7 +2285,8 @@
           this.$notify({
             message: msg,
             showClose: false,
-            duration: 2000,
+            duration: 1500,
+            position: 'top-left'
           });
         });
       },
