@@ -1588,9 +1588,9 @@
 
   function getRandomName(gender) {
     //1男 2女
-    let lastNames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴鬱胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍卻璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相查后荆红游竺权逯盖益桓公";
-    let boys = "伟刚勇毅俊峰强军平保东文辉力明永健世广志义兴良海山仁波宁贵福生龙元全国胜学祥才发武新利清飞彬富顺信子杰涛昌成康星光天达安岩中茂进林有坚和彪博诚先敬震振壮会思群豪心邦承乐绍功松善厚庆磊民友裕河哲江超浩亮政谦亨奇固之轮翰朗伯宏言若鸣朋斌梁栋维启克伦翔旭鹏泽晨辰士以建家致树炎德行时泰盛雄琛钧冠策腾楠榕风航弘宇";
-    let girls = "秀娟英华慧巧美娜静淑惠珠翠雅芝玉萍红娥玲芬芳燕彩春菊兰凤洁梅琳素云莲真环雪荣爱妹霞香月莺媛艳瑞凡佳嘉琼勤珍贞莉桂娣叶璧璐娅琦晶妍茜秋珊莎锦黛青倩婷姣婉娴瑾颖露瑶怡婵雁蓓纨仪荷丹蓉眉君琴蕊薇菁梦岚苑婕馨瑗琰韵融园艺咏卿聪澜纯毓悦昭冰爽琬茗羽希宁欣飘育滢馥筠柔竹霭凝晓欢霄枫芸菲寒伊亚宜可姬舒影荔枝思丽";
+    let lastNames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉龚程邢滑裴陆荣翁荀羊惠甄曲家封芮羿储松井段富巫乌焦巴弓牧隗山谷车侯全秋仲伊宫宁仇甘钭厉戎祖武符刘景詹束龙叶幸司黎宿白怀从赖卓蔺屠蒙池乔阴能苍双闻莘党翟姬申扶桑桂牛寿通边扈燕冀浦尚农温别庄晏柴瞿阎慕连习艾鱼容向古易戈廖耿满弘匡国文广蔚越聂晁勾敖冷辛那简曾沙关相荆权盖";
+    let boys = "伟刚勇毅俊峰强军平保东文辉力明永健世广志义兴良海山仁波宁贵福生龙元全国胜学祥才发武新利清飞彬富顺信子杰涛昌成康星光天达安岩中茂进林有坚和彪博诚先敬震振壮会思群豪心邦承乐绍功松善厚庆磊民友裕河哲江超浩亮政谦奇固之轮翰朗伯宏言鸣朋斌梁栋维启克伦翔旭鹏泽晨辰士以建家致树炎德行泰盛雄琛钧冠策腾楠榕风航弘宇";
+    let girls = "秀娟英华慧巧美娜静淑惠珠翠雅芝玉萍红娥玲芬芳燕彩春菊兰凤洁梅琳素云莲真环雪荣爱妹霞香月莺媛艳瑞佳嘉琼勤珍莉桂娣璧璐娅琦晶妍茜秋珊莎锦黛青倩婷姣婉娴瑾颖露瑶怡婵仪荷丹蓉眉君琴蕊薇菁梦岚苑婕馨瑗琰韵融园艺卿聪澜纯毓悦昭冰琬茗羽希宁欣育馥筠柔竹凝晓欢霄枫芸菲寒伊亚宜可姬舒影荔枝思丽";
 
     let lastName = lastNames.charAt(Math.floor(Math.random() * lastNames.length));
     let firstName = "";
@@ -1796,10 +1796,10 @@
           {color: '#e6a23c', percentage: 80},
           {color: '#f56c6c', percentage: 100}
         ],
+
         config: {
           formatIntegerNumberMode: 1,
         },
-
         UIController: "",
         dialogController: "",
         tutorialText: "",
@@ -2007,12 +2007,12 @@
         let speedBonus = this.getEffectBonus("speed", 1, "+");
         let bugRateBonus = this.getEffectBonus("bugRate", 0, "+");
         return {
-          userAdd: this.isTodayWorkDay ? range(Math.round((this.getTotalEmployeeEfficiency(1) + adBonus) * userAddBonus * architectBonus * Math.exp(-this.company.serverFullDay)), null, this.maxUserAdd) : 0,
+          userAdd: range(Math.round(((this.isTodayWorkDay ? this.getTotalEmployeeEfficiency(1) : 0) + adBonus) * userAddBonus * architectBonus * Math.exp(-this.company.serverFullDay)), 0, this.maxUserAdd),
           userLoss: Math.round(this.website.user * this.lossRate),
           ue: this.getTotalEmployeeEfficiency(2) * ueBonus * architectBonus,
           ui: this.getTotalEmployeeEfficiency(3) * uiBonus * architectBonus,
           speed: this.getTotalEmployeeEfficiency(4) * this.serverAverageSpeed * speedBonus * architectBonus,
-          bugRate: this.getEffectBonus("fixedBugRate", 0, "+") > 0 ? 0.1 : range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 1000 + bugRateBonus, 0, null),
+          bugRate: this.getEffectBonus("fixedBugRate", 0, "+") > 0 ? 0.1 : range(Math.sqrt(this.website.user) / 1000 - this.getTotalEmployeeEfficiency(5) / 1000 - this.getTotalEmployeeEfficiency(14) / 125 + bugRateBonus, 0, null),
         };
       },
       vipRate(){
@@ -2293,6 +2293,7 @@
       autoSave(){
         let data = {};
         data._saveDate = new Date().format("yyyy-MM-dd hh:mm:ss");
+        data.config = this.config;
         data.UIController = this.UIController;
         data.dialogController = this.dialogController;
         data.tutorialText = this.tutorialText;
@@ -2364,12 +2365,14 @@
           /* 4*/ {name: "运维", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400, info: "提高响应速度"},
           /* 5*/ {name: "测试", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 400, info: "降低bug概率"},
           /* 6*/ {name: "架构师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000, info: "提高开发、产品、设计、运维的效率"},
-          /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1500, info: "提高用户增量的上限值"},
+          /* 7*/ {name: "技术总监", showFull: false, unlock: false, list: [], seekers: [], gender: 1, averageSalary: 1500, info: "提高用户增量的上限值"},
           /* 8*/ {name: "策划", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 888, info: "降低用户流失率"},
           /* 9*/ {name: "人力", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 500, info: "自动招聘新员工"},
           /*10*/ {name: "销售", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 800, info: "提高会员日价"},
           /*11*/ {name: "财务", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 1000, info: "在不影响员工心情的同时，降低工资"},
           /*12*/ {name: "规划师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 600, info: "开除末位员工"},
+          /*13*/ {name: "大数据分析师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 2500, info: "清理服务器过期资源"},
+          /*14*/ {name: "测试经理", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 4000, info: "大幅降低bug概率"},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -2521,7 +2524,7 @@
           localStorage.removeItem("autoSave");
         } else{
           //服务器容量
-          this.company.serversSize += this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
+          this.company.serversSize = range(this.company.serversSize + this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+") - this.getTotalEmployeeEfficiency(13) * 10000, 0, null);
           if(this.company.serversSize >= 1024){
             //解锁运维
             this.unlock(4);
@@ -2543,35 +2546,52 @@
           this.website.user += this.websiteCal.userAdd - this.websiteCal.userLoss;
           this.website.user = range(this.website.user, 0, null);
           this.website.vip = Math.round(this.website.user * this.vipRate);
-          //解锁产品和UI
+          //解锁产品
           if(this.website.user > 500){
             this.unlock(2);
+          }
+          //解锁UI
+          if(this.website.user > 1000){
             this.unlock(3);
           }
-          //解锁架构师和技术总监
-          if(this.websiteCal.userAdd === 500){
+          //解锁架构师
+          if(this.employee[1].list.length
+            + this.employee[2].list.length
+            + this.employee[3].list.length
+            + this.employee[4].list.length >= 15){
             this.unlock(6);
+          }
+          //解锁技术总监
+          if(this.websiteCal.userAdd === 500){
             this.unlock(7);
           }
           //解锁策划
-          if(this.website.user > 1000){
+          if(this.website.user > 2000){
             this.unlock(8);
           }
           //解锁人力
-          if(this.numberOfEmployee >= 20){
+          if(this.numberOfEmployee >= 30){
             this.unlock(9);
           }
           //解锁销售
-          if(this.vipRate >= 0.1){
+          if(this.vipRate >= 0.2){
             this.unlock(10);
           }
           //解锁财务
-          if(this.cost.salary > 10000){
+          if(this.cost.salary > 20000){
             this.unlock(11);
           }
           //解锁规划师
           if(this.numberOfEmployee > 200){
             this.unlock(12);
+          }
+          //解锁大数据分析师
+          if(this.serversMaxSize >= 167772160){
+            this.unlock(13);
+          }
+          //解锁测试经理
+          if(this.employee[5].list.length >= 10){
+            this.unlock(14);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
