@@ -1848,7 +1848,6 @@
         personal: {
           skill: [],
           curse: [],
-          baseReputation: 0,
           car: [],
           house: [],
           lottery: [],
@@ -2168,7 +2167,7 @@
         return this.personal.house.filter(n => n).length;
       },
       reputation(){
-        let r = this.personal.baseReputation;
+        let r = 0;
         let bonus = this.getEffectBonus("reputation", 1, "+");
         this.personal.car.forEach((b, index) => {
           if(b) r += this.allCars[index].reputation;
@@ -2387,7 +2386,6 @@
         this.personal = {
           skill: [],
           curse: [],
-          baseReputation: 0,
           car: this.allCars.map(n => false),
           house: this.allHouses.map(n => false),
           lottery: [],
