@@ -206,9 +206,26 @@
 
     <!--装修-->
     <div v-else-if="UIController === 'decoration'" class="page decoration">
-      <div class="page-header decoration-header">
-        <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
-        <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
+      <div class="page-header">
+        <div class="decoration-header">
+          <div class="row">总资产：{{$u.formatIntegerNumber(money, config.formatIntegerNumberMode)}}</div>
+          <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
+        </div>
+        <div class="decoration-preview">
+          <img class="img" src="./img/d.png">
+          <img v-if="company.decoration[0]" class="img unit" src="./img/d00.png">
+          <img v-if="company.decoration[1]" class="img unit" src="./img/d01.png">
+          <img v-if="company.decoration[2]" class="img unit" src="./img/d02.png">
+          <div v-if="!company.decoration[3]" class="img unit black"></div>
+          <img v-if="company.decoration[4]" class="img unit" src="./img/d04.png">
+          <img v-if="company.decoration[5]" class="img unit" src="./img/d05.png">
+          <img v-if="company.decoration[6]" class="img unit" src="./img/d06.png">
+          <img v-if="company.decoration[7]" class="img unit" src="./img/d07.png">
+          <img v-if="company.decoration[8]" class="img unit" src="./img/d08.png">
+          <img v-if="company.decoration[9]" class="img unit" src="./img/d09.png">
+          <img v-if="company.decoration[10]" class="img unit" src="./img/d10.png">
+          <img v-if="company.decoration[11]" class="img unit" src="./img/d11.png">
+        </div>
       </div>
       <div class="page-content decoration-content">
         <one-decoration v-for="(d, index) in allDecorations" :key="d.value"
@@ -1041,7 +1058,26 @@
         padding: 10px 20px;
         .row{}
       }
-      .decoration-content{}
+      .decoration-preview{
+        width: 100%;
+        position: relative;
+        .img{
+          width: 100vw;
+          height: 56vw;
+          display: block;
+        }
+        .unit{
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        .black{
+          background-color: rgba(0,0,0,.5);
+          z-index: 1;
+        }
+      }
+      .decoration-content{
+      }
     }
     .relocation{
       .relocation-content{
