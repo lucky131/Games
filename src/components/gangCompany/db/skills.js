@@ -263,7 +263,7 @@ export default {
           }
         },
         { //32
-          img: require("../img/default.png"),
+          img: require("../img/s32.png"),
           name: "金融达人",
           desc: "可查看最近14天的股票历史价格",
           effect: {
