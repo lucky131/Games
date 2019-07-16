@@ -20,6 +20,7 @@ CssDraw         | 纯CSS绘制的一些图形 | [Click Me](https://lucky131.gith
 TripleDisaster  | 三灾，移动端文字冒险游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/tripleDisaster)
 MagicCube       | 3D魔方 | [Click Me](https://lucky131.github.io/GamesPage/#/magicCube)
 GangEditor      | 杠·地图编辑器 | [Click Me](https://lucky131.github.io/GamesPage/#/gangEditor)
+GangCompany     | 三杠公司，移动端模拟经营类游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/GangCompany)
 
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
