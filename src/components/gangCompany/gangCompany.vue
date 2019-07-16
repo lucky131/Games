@@ -159,6 +159,10 @@
           </el-radio-group>
           <div class="setting-tips">例如：-297914729<br>模式一：-297,914,729<br>模式二：负2亿9791万4729<br>模式三：-2.98亿</div>
         </div>
+        <div class="setting-title">更新日志</div>
+        <div class="setting-row setting-btn" @click="showLogs()">点击查看</div>
+        <div class="setting-title">Github仓库</div>
+        <div class="setting-row setting-btn" @click="toGithub()">点击访问</div>
       </div>
       <div class="main-bottom">
         <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'company'}" @click="mainType = 'company'">公司</div>
@@ -608,6 +612,21 @@
         <div class="restart-btn" @click="initGame()">再来一局</div>
       </div>
 
+      <!--日志-->
+      <div v-else-if="dialogController === 'logs'" class="dialog logs">
+        <div class="content">
+          <el-timeline>
+            <el-timeline-item v-for="(l, index1) in allLogs" :key="index1" :timestamp="l.time" placement="top">
+              <el-card>
+                <div class="version">{{l.version}}</div>
+                <div v-for="(c, index2) in l.content" :key="index2" class="row">{{c}}</div>
+              </el-card>
+            </el-timeline-item>
+          </el-timeline>
+        </div>
+        <div class="btn" @click="dialogController = ''">关闭</div>
+      </div>
+
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
     </div>
 
@@ -974,7 +993,7 @@
             font-weight: bold;
           }
           .setting-row{
-            padding-bottom: 10px;
+            padding-bottom: 20px;
             border-bottom: 1px solid $border;
             .el-radio{
               margin-right: 20px;
@@ -988,6 +1007,10 @@
               font-size: 10px;
               color: $textBlueNormal;
             }
+          }
+          .setting-btn{
+            font-size: 14px;
+            color: $textBlue;
           }
         }
       }
@@ -1555,6 +1578,31 @@
             font-weight: bold;
           }
         }
+        &.logs{
+          width: 80%;
+          .content{
+            padding: 30px 30px 0 0;
+            max-height: 70vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            .version{
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .row{
+              font-size: 12px;
+            }
+          }
+          .btn{
+            width: 100%;
+            height: 60px;
+            line-height: 60px;
+            background-color: $btnBlueLight;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+          }
+        }
       }
     }
   }
@@ -1587,6 +1635,7 @@
   import decorations from "./db/decorations"
   import houses from "./db/houses"
   import loans from "./db/loans"
+  import logs from "./db/logs"
   import servers from "./db/servers"
   import skills from "./db/skills"
   import stocks from "./db/stocks"
@@ -1717,7 +1766,7 @@
 
   export default {
     name: "gangCompany",
-    mixins: [ads, buildings, cars, chatWords, cSkills, curses, decorations, houses, loans, servers, skills, stocks],
+    mixins: [ads, buildings, cars, chatWords, cSkills, curses, decorations, houses, loans, logs, servers, skills, stocks],
     components: {oneAd, oneBuilding, oneCarHouse, oneChat, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
     data(){
       return{
@@ -3271,7 +3320,13 @@
       deleteContact(){
         this.personal.contact.splice(this.personal.deleteIndex, 1);
         this.dialogController = "";
-      }
+      },
+      showLogs(){
+        this.dialogController = "logs";
+      },
+      toGithub(){
+        window.open("https://github.com/lucky131/Games");
+      },
     }
   }
 </script>
