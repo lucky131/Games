@@ -20,8 +20,7 @@
           <div class="name">
             <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
             <i v-else class="el-icon-s-custom female"></i>
-            {{e.name}}
-            {{e.age}}岁
+            <span :class="{'__text-orange': e.ability === 100}">{{e.name}} {{e.age}}岁</span>
           </div>
           <div v-if="e.ability || e.mood" class="info">
             <span>能力：</span>
@@ -35,7 +34,8 @@
           <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
         </div>
         <div v-if="e.mood !== undefined" class="right">
-          <div v-if="day >= e.canFireDay" class="fireBtn" @click="fire(index)">开除</div>
+          <div v-if="canTrain && e.ability < 100" class="ope-btn train" @click="train(index)">训练</div>
+          <div v-if="day >= e.canFireDay" class="ope-btn fire" @click="fire(index)">开除</div>
         </div>
       </div>
       <div v-if="canRecruited" class="recruit-btn able" @click="toRecruit()"><i class="el-icon-s-custom"></i> 招聘新{{name}}</div>
@@ -99,19 +99,22 @@
           }
         }
         .right{
-          width: 64px;
+          width: 60px;
           display: flex;
           flex-flow: column nowrap;
           justify-content: center;
-          .fireBtn{
+          .ope-btn{
             width: 100%;
-            height: 28px;
-            line-height: 28px;
-            background-color: $textRed;
-            border-radius: 10px;
-            font-size: 14px;
+            height: 24px;
+            line-height: 24px;
+            margin-top: 5px;
+            &:first-child{margin-top: 0}
+            border-radius: 12px;
+            font-size: 12px;
             color: white;
             text-align: center;
+            &.train{background-color: $btnBlue}
+            &.fire{background-color: $textRed}
           }
         }
       }
@@ -148,6 +151,7 @@
       config: Object,
       showAbility: Number,
       showMood: Number,
+      canTrain: Boolean,
     },
     data(){
       return{
@@ -181,6 +185,9 @@
       },
       toggleShowFull(){
         this.$emit("toggleShowFull");
+      },
+      train(index){
+        this.$emit("train", index);
       },
       fire(index){
         this.$emit("fire", index);

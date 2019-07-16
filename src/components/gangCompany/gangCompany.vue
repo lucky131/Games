@@ -56,6 +56,7 @@
           <div class="ope-btn" @click="UIController='server'"><i class="el-icon-cloudy"></i><span>服务器</span></div>
           <div class="ope-btn" @click="UIController='loan'"><i class="el-icon-bank-card"></i><span>贷款</span></div>
           <div class="ope-btn" @click="UIController='ad'"><i class="el-icon-news"></i><span>广告</span></div>
+          <div class="ope-btn" @click="UIController='train'"><i class="el-icon-medal-1"></i><span>训练</span></div>
         </div>
         <div class="card">
           <div class="card-title">公司概况</div>
@@ -106,8 +107,8 @@
       <!--员工-->
       <div v-else-if="mainType === 'employee'" class="main-center employee">
         <one-position v-for="(p, index) in employee" :key="index" v-if="p.unlock"
-                      :name="p.name" :info="p.info" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config" :show-ability="showAbility" :show-mood="showMood"
-                      @toggleShowFull="toggleShowFull(index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
+                      :name="p.name" :info="p.info" :can-recruited="index !== 0" :show-full="p.showFull" :employee-array="p.list" :day="day" :config="config" :show-ability="showAbility" :show-mood="showMood" :can-train="employee[15].list.length > 0 && index !== 15"
+                      @toggleShowFull="toggleShowFull(index)" @train="train($event, index)" @fire="fire($event, index)" @toRecruit="toRecruit(index)"></one-position>
       </div>
       <!--个人-->
       <div v-else-if="mainType === 'personal'" class="main-center personal">
@@ -284,6 +285,20 @@
         <one-ad v-for="(item, index) in allAds" :key="index"
                 :item="item" :config="config" :is-buy="company.ad[index]"
                 @change="changeAd(index)"></one-ad>
+      </div>
+      <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
+    </div>
+
+    <!--训练-->
+    <div v-else-if="UIController === 'train'" class="page train">
+      <div v-if="company.train.length === 0" class="empty">
+        <i class="el-icon-toilet-paper"></i>
+        <span>暂无训练</span>
+      </div>
+      <div v-else class="page-content train-content">
+        <one-train v-for="(t, index) in company.train" :key="index"
+                   :train="t" :position-name="employee[t.pIndex].name" :speed="trainSpeed"
+                   @cancelTrain="cancelTrain(index)"></one-train>
       </div>
       <div class="page-back" @click="backToMain()"><i class="el-icon-back"></i></div>
     </div>
@@ -1151,6 +1166,27 @@
       .ad-content{
       }
     }
+    .train{
+      .train-content{
+
+      }
+      .empty{
+        width: 100%;
+        flex: 1 0 0;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        color: $textBlueNormal;
+        i{
+          font-size: 48px;
+          margin-bottom: 10px;
+        }
+        span{
+          font-weight: bold;
+        }
+      }
+    }
     .shop{
       .shop-header{
         height: 40px;
@@ -1624,6 +1660,7 @@
   import oneServer from "./components/one-server"
   import oneSkill from "./components/one-skill"
   import oneStock from "./components/one-stock"
+  import oneTrain from "./components/one-train"
 
   //db mixins
   import ads from "./db/ads"
@@ -1767,7 +1804,7 @@
   export default {
     name: "gangCompany",
     mixins: [ads, buildings, cars, chatWords, cSkills, curses, decorations, houses, loans, logs, servers, skills, stocks],
-    components: {oneAd, oneBuilding, oneCarHouse, oneChat, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock},
+    components: {oneAd, oneBuilding, oneCarHouse, oneChat, oneContact, oneDecoration, oneGirl, oneGoods, oneLoan, onePosition, oneSeeker, oneServer, oneSkill, oneStock, oneTrain},
     data(){
       return{
         height: 0,
@@ -1918,6 +1955,7 @@
           serverFullDay: 0,
           loan: [],
           ad: [],
+          train: [],
         },
         website: {
           user: 0,
@@ -1999,6 +2037,7 @@
         this.employee.forEach(p => {
           num += p.list.length;
         });
+        num += this.company.train.length;
         return num;
       },
       numberOfOffer(){
@@ -2224,6 +2263,9 @@
         });
         return totalSpeed / this.serversMaxSize;
       },
+      trainSpeed(){
+        return Math.floor(this.getTotalEmployeeEfficiency(15) / 10 / this.company.train.length);
+      },
       showAbility(){
         return this.getEffectBonus("showAbility", 0, "+");
       },
@@ -2434,6 +2476,7 @@
           serverFullDay: 0,
           loan: this.allLoans.map(n => 0),
           ad: this.allAds.map(n => false),
+          train: [],
         };
         this.initDecoration();
         this.website = {
@@ -2457,6 +2500,7 @@
           /*12*/ {name: "规划师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 600, info: "开除末位员工"},
           /*13*/ {name: "大数据分析师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 2500, info: "清理服务器过期资源"},
           /*14*/ {name: "测试经理", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 4000, info: "大幅降低bug概率"},
+          /*15*/ {name: "训练师", showFull: false, unlock: false, list: [], seekers: [], gender: 0, averageSalary: 5000, info: "提高其他员工能力值"},
         ];
         this.employee[0].list.push({
           name: "杠三杠",
@@ -2607,7 +2651,11 @@
           localStorage.removeItem("autoSave");
         } else{
           //服务器容量
-          this.company.serversSize = range(this.company.serversSize + this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+") - this.getTotalEmployeeEfficiency(13) * 10000, 0, null);
+          this.company.serversSize += this.company.serversSize + this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
+          if(this.isTodayWorkDay){
+            this.company.serversSize -= this.getTotalEmployeeEfficiency(13) * 10000;
+          }
+          this.company.serversSize = range(this.company.serversSize, 0, null);
           if(this.company.serversSize >= 1024){
             //解锁运维
             this.unlock(4);
@@ -2665,7 +2713,7 @@
             this.unlock(11);
           }
           //解锁规划师
-          if(this.numberOfEmployee > 200){
+          if(this.numberOfEmployee >= 100){
             this.unlock(12);
           }
           //解锁大数据分析师
@@ -2675,6 +2723,10 @@
           //解锁测试经理
           if(this.employee[5].list.length >= 10){
             this.unlock(14);
+          }
+          //解锁训练师
+          if(this.numberOfEmployee >= 200){
+            this.unlock(15);
           }
           //员工心情
           let workHoursBonus = this.getEffectBonus("workHoursToMood", 0, "+");
@@ -2718,53 +2770,55 @@
             });
           });
           this.filterNullEmployee();
-          //人力发offer
-          this.employee[9].list.forEach(hr => {
-            if(this.numberOfEmployee + this.numberOfOffer < this.company.building.size){
-              let seekerPool = [];
-              this.employee.forEach((p, pIndex) => {
-                p.seekers.forEach((s, sIndex) => {
-                  if(this.company.manage.hr.indexOf(pIndex) > -1 && !s.isOffer){
-                    seekerPool.push({
-                      pIndex,
-                      sIndex,
-                      ability: s.ability,
-                      expectSalary: s.expectSalary,
-                      quality: s.ability / (s.expectSalary / p.averageSalary)
-                    });
-                  }
+          if(this.isTodayWorkDay){
+            //人力发offer
+            this.employee[9].list.forEach(hr => {
+              if(this.numberOfEmployee + this.numberOfOffer < this.company.building.size){
+                let seekerPool = [];
+                this.employee.forEach((p, pIndex) => {
+                  p.seekers.forEach((s, sIndex) => {
+                    if(this.company.manage.hr.indexOf(pIndex) > -1 && !s.isOffer){
+                      seekerPool.push({
+                        pIndex,
+                        sIndex,
+                        ability: s.ability,
+                        expectSalary: s.expectSalary,
+                        quality: s.ability / (s.expectSalary / p.averageSalary)
+                      });
+                    }
+                  });
                 });
-              });
-              seekerPool = seekerPool.filter(s => s.ability <= hr.ability * hr.mood / 80);
-              seekerPool.sort((a, b) => b.quality - a.quality);
-              if(seekerPool.length > 0){
-                this.employee[seekerPool[0].pIndex].seekers[seekerPool[0].sIndex].isOffer = true;
-              }
-            }
-          });
-          //规划师开除员工
-          if(this.company.manage.eliminate){
-            this.employee[12].list.forEach(pl => {
-              let employeePool = [];
-              this.employee.forEach((p, pIndex) => {
-                p.list.forEach((s, sIndex) => {
-                  if(pIndex !== 0 && pIndex !== 12 && this.day >= s.canFireDay){
-                    employeePool.push({
-                      pIndex,
-                      sIndex,
-                      ability: s.ability,
-                      salary: s.salary,
-                      quality: s.ability / (s.salary / p.averageSalary)
-                    });
-                  }
-                });
-              });
-              employeePool = employeePool.filter(s => s.ability <= pl.ability * pl.mood / 80);
-              employeePool.sort((a, b) => a.quality - b.quality);
-              if(employeePool.length > 0){
-                this.fire(employeePool[0].sIndex, employeePool[0].pIndex);
+                seekerPool = seekerPool.filter(s => s.ability <= hr.ability * hr.mood / 80);
+                seekerPool.sort((a, b) => b.quality - a.quality);
+                if(seekerPool.length > 0){
+                  this.employee[seekerPool[0].pIndex].seekers[seekerPool[0].sIndex].isOffer = true;
+                }
               }
             });
+            //规划师开除员工
+            if(this.company.manage.eliminate){
+              this.employee[12].list.forEach(pl => {
+                let employeePool = [];
+                this.employee.forEach((p, pIndex) => {
+                  p.list.forEach((s, sIndex) => {
+                    if(pIndex !== 0 && pIndex !== 12 && this.day >= s.canFireDay){
+                      employeePool.push({
+                        pIndex,
+                        sIndex,
+                        ability: s.ability,
+                        salary: s.salary,
+                        quality: s.ability / (s.salary / p.averageSalary)
+                      });
+                    }
+                  });
+                });
+                employeePool = employeePool.filter(s => s.ability <= pl.ability * pl.mood / 80);
+                employeePool.sort((a, b) => a.quality - b.quality);
+                if(employeePool.length > 0){
+                  this.fire(employeePool[0].sIndex, employeePool[0].pIndex);
+                }
+              });
+            }
           }
           //处理offer
           let fireDayBonus = this.getEffectBonus("fireDay", 0, "+");
@@ -2794,6 +2848,22 @@
               }
             });
           });
+          //训练员工
+          if(this.isTodayWorkDay && this.company.train.length > 0){
+            this.company.train.forEach((t, index) => {
+              t.current += this.trainSpeed;
+              if(t.current >= t.total){
+                //训练完成
+                this.employee[t.pIndex].list.push({
+                  ...t.employee,
+                  ability: 100,
+                  mood: 100
+                });
+                this.company.train[index] = undefined;
+              }
+            });
+            this.company.train = this.company.train.filter(t => t);
+          }
 
           //恢复能量
           this.personal.energy = range(this.personal.energy + this.energyHeal, 0, this.maxEnergy);
@@ -2818,6 +2888,9 @@
               p.list.forEach(e => {
                 e.age++;
               });
+            });
+            this.company.train.forEach(t => {
+              t.employee.age++;
             });
             this.personal.contact.forEach(c => {
               c.girl.age++;
@@ -2942,6 +3015,20 @@
       },
       toggleShowFull(index){
         this.employee[index].showFull = !this.employee[index].showFull;
+      },
+      train(eIndex, pIndex){
+        this.company.train.push({
+          employee: this.employee[pIndex].list[eIndex],
+          pIndex,
+          total: 100 - this.employee[pIndex].list[eIndex].ability,
+          current: 0
+        });
+        this.employee[pIndex].list.splice(eIndex, 1);
+      },
+      cancelTrain(index){
+        let t = this.company.train[index];
+        this.employee[t.pIndex].list.push(t.employee);
+        this.company.train.splice(index, 1);
       },
       fire(eIndex, pIndex){
         this.fireEmployee.push({
