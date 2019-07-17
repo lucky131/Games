@@ -7,8 +7,10 @@ import App from './App'
 import router from './router'
 import $ from 'jquery'
 import * as util from "./util/util"
+import * as api from "./api/index"
 
 Vue.prototype.$u = util
+Vue.prototype.$api = api
 Vue.config.productionTip = false
 Vue.use(ElementUI);
 

@@ -2354,6 +2354,9 @@
       }
     },
     mounted(){
+      this.$api.post('getDate').then(res => {
+        // console.log(res.data)
+      })
       window.vue = this;
       this.height = window.innerHeight;
 
