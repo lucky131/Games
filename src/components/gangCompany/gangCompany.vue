@@ -96,11 +96,12 @@
           <div class="card-title">每日开销</div>
           <div class="card-content">
             <div class="info-label">工资</div><div class="info-value">{{$u.formatIntegerNumber(cost.salary, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">税收</div><div class="info-value">{{$u.formatIntegerNumber(cost.tax, config.formatIntegerNumberMode)}}（{{Math.round(taxRate*100*100)/100}}%）</div>
             <div class="info-label">房租</div><div class="info-value">{{$u.formatIntegerNumber(cost.rent, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">电费</div><div class="info-value">{{$u.formatIntegerNumber(cost.electricity, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">网费</div><div class="info-value">{{$u.formatIntegerNumber(cost.net, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">还款</div><div class="info-value">{{$u.formatIntegerNumber(cost.loan, config.formatIntegerNumberMode)}}</div>
-            <div class="info-label">广告费</div><div class="info-value">{{$u.formatIntegerNumber(cost.ad, config.formatIntegerNumberMode)}}</div>
+            <div class="info-label">广告</div><div class="info-value">{{$u.formatIntegerNumber(cost.ad, config.formatIntegerNumberMode)}}</div>
           </div>
         </div>
       </div>
@@ -2176,6 +2177,16 @@
         let bonus = 1 / (b / 4000 + 1);
         return s * bonus;
       },
+      taxRate(){
+        if(this.numberOfEmployee <= 10) return 0.05;
+        if(this.numberOfEmployee <= 100) return 0.15;
+        if(this.numberOfEmployee <= 500) return 0.25;
+        if(this.numberOfEmployee <= 2000) return 0.35;
+        return 0.5
+      },
+      taxCost(){
+        return this.totalProfit * this.taxRate;
+      },
       electricityCost(){
         let e = 0;
         this.allDecorations.forEach((d, index) => {
@@ -2213,6 +2224,7 @@
       cost(){
         let c = {
           salary: this.salaryCost,
+          tax: this.taxCost,
           rent: this.company.building.rent * this.getEffectBonus("rentCost", 1, "+"),
           electricity: this.electricityCost,
           net: this.netCost,
@@ -2609,25 +2621,29 @@
         });
       },
       next(showDialog = true){
-        //历史
-        this.history.push({
+        let history = {
           money: this.money,
           totalProfit: this.totalProfit,
           totalCost: this.totalCost,
           numberOfEmployee: this.numberOfEmployee,
           stocks: this.personal.stock.map(s => s.price),
-        });
-        //结算钱
-        this.money -= this.totalCost;
+        };
         this.website.isBug = Math.random() < this.websiteCal.bugRate;
         //触发bug
         if(this.website.isBug){
+          history.totalProfit = 0;
+          history.totalCost = this.totalCost - this.cost.tax;
+          this.money += this.cost.tax;
+          this.money -= this.totalCost;
           //解锁测试
           this.unlock(5);
         } else {
           this.money += this.totalProfit;
+          this.money -= this.totalCost;
           this.statistics.totalEarn += this.totalProfit;
         }
+        //历史
+        this.history.push(history);
         //彩票
         if(this.personal.lottery.length > 0){
           this.yesterdayLottery = this.generateLottery();
@@ -2651,7 +2667,7 @@
           localStorage.removeItem("autoSave");
         } else{
           //服务器容量
-          this.company.serversSize += this.company.serversSize + this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
+          this.company.serversSize += this.website.user * this.getEffectBonus("serversSizePerUser", 1, "+");
           if(this.isTodayWorkDay){
             this.company.serversSize -= this.getTotalEmployeeEfficiency(13) * 10000;
           }
