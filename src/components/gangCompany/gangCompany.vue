@@ -97,6 +97,7 @@
           <div class="card-content">
             <div class="info-label">工资</div><div class="info-value">{{$u.formatIntegerNumber(cost.salary, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">税收</div><div class="info-value">{{$u.formatIntegerNumber(cost.tax, config.formatIntegerNumberMode)}}（{{Math.round(taxRate*100*100)/100}}%）</div>
+            <div class="info-label">社保</div><div class="info-value">{{$u.formatIntegerNumber(cost.ss, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">房租</div><div class="info-value">{{$u.formatIntegerNumber(cost.rent, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">电费</div><div class="info-value">{{$u.formatIntegerNumber(cost.electricity, config.formatIntegerNumberMode)}}</div>
             <div class="info-label">网费</div><div class="info-value">{{$u.formatIntegerNumber(cost.net, config.formatIntegerNumberMode)}}</div>
@@ -2169,7 +2170,7 @@
         this.employee.forEach(p => {
           p.list.forEach(e => {
             if(e.salary){
-              s += e.salary;
+              s += this.day < e.regularDay ? Math.round(e.salary*0.8) : e.salary;
             }
           });
         });
@@ -2186,6 +2187,17 @@
       },
       taxCost(){
         return this.totalProfit * this.taxRate;
+      },
+      socialSecurityCost(){
+        let s = 0;
+        this.employee.forEach(p => {
+          p.list.forEach(e => {
+            if(e.salary && this.day >= e.regularDay){
+              s += e.salary * 0.1;
+            }
+          });
+        });
+        return s;
       },
       electricityCost(){
         let e = 0;
@@ -2225,6 +2237,7 @@
         let c = {
           salary: this.salaryCost,
           tax: this.taxCost,
+          ss: this.socialSecurityCost,
           rent: this.company.building.rent * this.getEffectBonus("rentCost", 1, "+"),
           electricity: this.electricityCost,
           net: this.netCost,
@@ -2855,6 +2868,7 @@
                     mood: range(60 * s.offerSalary / s.expectSalary, null, 100),
                     salary: s.offerSalary,
                     canFireDay: this.day + 1 + 30 + fireDayBonus,
+                    regularDay: this.day + 1 + 90,
                   });
                   this.newEmployee.push({
                     position: p.name,

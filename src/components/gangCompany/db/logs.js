@@ -3,6 +3,11 @@ export default {
     return{
       allLogs: [
         {
+          time: "2019/7/18",
+          version: "v1.0.3",
+          content: ["新增员工试用期", "新增社保"]
+        },
+        {
           time: "2019/7/17",
           version: "v1.0.2",
           content: ["新增税收"]

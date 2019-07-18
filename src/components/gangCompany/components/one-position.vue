@@ -20,7 +20,7 @@
           <div class="name">
             <i v-if="e.gender === 1" class="el-icon-s-custom male"></i>
             <i v-else class="el-icon-s-custom female"></i>
-            <span :class="{'__text-orange': e.ability === 100}">{{e.name}} {{e.age}}岁</span>
+            <span :class="{'__text-orange': e.ability === 100}">{{e.name}} {{e.age}}岁<span v-if="day < e.regularDay"> (试用期)</span></span>
           </div>
           <div v-if="e.ability || e.mood" class="info">
             <span>能力：</span>
@@ -31,7 +31,11 @@
             <span v-html="moodHtml(e.mood)"></span>
             <span v-if="showMood > 0">({{Math.round(e.mood)}})</span>
           </div>
-          <div v-if="e.salary" class="salary">日薪：{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</div>
+          <div v-if="e.salary" class="salary">
+            日薪：
+            <span v-if="day < e.regularDay">{{$u.formatIntegerNumber(Math.round(e.salary*0.8), config.formatIntegerNumberMode)}}</span>
+            <span v-else>{{$u.formatIntegerNumber(e.salary, config.formatIntegerNumberMode)}}</span>
+          </div>
         </div>
         <div v-if="e.mood !== undefined" class="right">
           <div v-if="canTrain && e.ability < 100" class="ope-btn train" @click="train(index)">训练</div>
