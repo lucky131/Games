@@ -1,19 +1,6 @@
 <template>
   <div class="wrap">
-    <div class="title">Little Tools by -3-
-      <el-tooltip placement="bottom">
-        <div slot="content">
-          v1.2<br>
-          新增第二tab页<br>
-          v1.1<br>
-          清空<br>
-          复制到剪切板<br>
-          空单元格算法改进<br>
-          v1.0<br>
-          第一版
-        </div>
-        <span>v1.2</span>
-      </el-tooltip>
+    <div class="title">Little Tools by -3- v1.3
     </div>
     <el-tabs type="border-card">
       <el-tab-pane label="1">
@@ -47,6 +34,22 @@
         </div>
         <div id="result2" class="result"></div>
       </el-tab-pane>
+
+      <el-tab-pane label="3">
+        <el-input
+          type="textarea"
+          :rows="10"
+          resize="none"
+          placeholder="请粘贴要匹配的名称，回车换行"
+          v-model="input3">
+        </el-input>
+        <div class="opeBtns">
+          <el-button type="primary" icon="el-icon-refresh" :disabled="input3.length === 0" @click="transform3()">匹配</el-button>
+          <el-button type="default" icon="el-icon-close" @click="clear3()">清空</el-button>
+          <el-button v-if="isCopyBtn3Show" class="copyBtn" type="success" icon="el-icon-share" data-clipboard-target="#result3">复制结果</el-button>
+        </div>
+        <div id="result3" class="result"></div>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -78,14 +81,18 @@
 
 <script>
   import Clipboard from "clipboard/dist/clipboard.min"
+  import data from "./cityData"
   export default {
     name: "ccc",
+    mixins: [data],
     data(){
       return{
         inputHtml1: "",
         isCopyBtn1Show: false,
         inputHtml2: "",
         isCopyBtn2Show: false,
+        input3: "",
+        isCopyBtn3Show: false,
       }
     },
     mounted(){
@@ -182,6 +189,43 @@
         this.isCopyBtn2Show = false;
         $("#result2").empty();
       },
+      transform3(){
+        let names = this.input3.split("\n").filter(str => str.length > 0);
+        let oriCityData = this.oriCityData.split("\n");
+        let cityMap = {"个人": ["个人"]};
+        oriCityData.forEach(str => {
+          let [name1, name2] = str.split("\t");
+          if(!cityMap.hasOwnProperty(name1)){
+            cityMap[name1] = [name1];
+          }
+          if(cityMap[name1].indexOf(name2) === -1){ //防止吉林-吉林的情况
+            cityMap[name1].push(name2);
+          }
+        });
+        let result = names.map(name => {
+          for(let key in cityMap){
+            let l = cityMap[key].length;
+            for(let i = 0; i < l; i++){
+              if(name.indexOf(cityMap[key][i]) === 0){
+                return key;
+              }
+            }
+          }
+          return "NA"
+        });
+        let appendTableDom = $("<table border='1' cellpadding='5' cellspacing='0'></table>");
+        result.forEach(r => {
+          appendTableDom.append(`<tr><td>${r}</td></tr>>`);
+        });
+        $("#result3").empty();
+        $("#result3").append(appendTableDom);
+        this.isCopyBtn3Show = true;
+      },
+      clear3(){
+        this.input3 = "";
+        this.isCopyBtn3Show = false;
+        $("#result3").empty();
+      }
     }
   }
 </script>
