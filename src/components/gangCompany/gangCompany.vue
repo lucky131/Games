@@ -2960,6 +2960,8 @@
             this.dialogController = "";
           } else if(this.dialogController === "deleteGirl"){
             this.dialogController = "";
+          } else if(this.dialogController === "logs"){
+            this.dialogController = "";
           }
         }
       },
