@@ -166,6 +166,8 @@
         <div class="setting-row setting-btn" @click="showLogs()">点击查看</div>
         <div class="setting-title">Github仓库</div>
         <div class="setting-row setting-btn" @click="toGithub()">点击访问</div>
+        <div class="setting-title">反馈</div>
+        <div class="setting-row setting-btn" @click="toFeedback()">填写反馈</div>
       </div>
       <div class="main-bottom">
         <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'company'}" @click="mainType = 'company'">公司</div>
@@ -554,7 +556,7 @@
             </div>
           </div>
         </div>
-        <div class="continue-btn" @click="newDay()">确定</div>
+        <div class="continue-btn" @click="newDay()">确 定</div>
       </div>
 
       <!--offer-->
@@ -582,7 +584,7 @@
       <!--股票折线图-->
       <div v-else-if="dialogController === 'stockChart'" class="dialog stockChart">
         <div id="stockChart" class="chart"></div>
-        <div class="back-btn" @click="dialogController = ''">关闭</div>
+        <div class="back-btn" @click="dialogController = ''">关 闭</div>
       </div>
 
       <!--妹子详细信息-->
@@ -601,7 +603,7 @@
           <div class="cell value">{{personal.girlInfo.characterText}}</div>
           <div class="cell value">{{personal.girlInfo.familyText}}</div>
         </div>
-        <div class="btn" @click="dialogController = ''">关闭</div>
+        <div class="btn" @click="dialogController = ''">关 闭</div>
       </div>
 
       <!--更换昵称-->
@@ -609,7 +611,7 @@
         <div class="input-wrapper">
           <el-input v-model="personal.contact[personal.changeNickNameIndex].girl.nickName" placeholder="请输入昵称，空为不设定" maxlength="10" show-word-limit></el-input>
         </div>
-        <div class="btn" @click="changeNickName()">确定</div>
+        <div class="btn" @click="changeNickName()">确 定</div>
       </div>
 
       <!--删除妹子-->
@@ -641,7 +643,35 @@
             </el-timeline-item>
           </el-timeline>
         </div>
-        <div class="btn" @click="dialogController = ''">关闭</div>
+        <div class="btn" @click="dialogController = ''">关 闭</div>
+      </div>
+
+      <!--github点赞-->
+      <div v-else-if="dialogController === 'github'" class="dialog github">
+        <div class="content">你肯定没给我点Star，对吗？</div>
+        <div class="ope">
+          <div class="btn ok" @click="toGithub()">我这就去</div>
+          <div class="btn cancel" @click="dialogController=''">关 闭</div>
+        </div>
+      </div>
+
+      <!--反馈-->
+      <div v-else-if="dialogController === 'feedback'" class="dialog feedback">
+        <div class="content">
+          <el-form>
+            <el-form-item label="反馈内容">
+              <el-input type="textarea" :rows="3" resize="none" placeholder="请输入反馈内容，必填" v-model="feedback.content"></el-input>
+            </el-form-item>
+            <el-form-item label="反馈者">
+              <el-input placeholder="非必填，但我劝你填" v-model="feedback.name"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="ope">
+          <div v-if="feedback.content.length === 0" class="btn disabled">发 送</div>
+          <div v-else class="btn send" @click="sendFeedback()">发 送</div>
+          <div class="btn cancel" @click="dialogController=''">关 闭</div>
+        </div>
       </div>
 
       <div v-else-if="dialogController === 'xxx'" class="dialog xxx"></div>
@@ -1501,8 +1531,7 @@
               color: white;
               font-weight: bold;
               &.send{background-color: $btnBlueLight}
-              &.cancel{background-color: $btnGray
-              }
+              &.cancel{background-color: $btnGray}
               &.disabled{background-color: $btnBlueDisabled}
             }
           }
@@ -1639,6 +1668,50 @@
             text-align: center;
             color: white;
             font-weight: bold;
+          }
+        }
+        &.github{
+          width: 80%;
+          .content{
+            padding: 20px;
+            text-align: center;
+          }
+          .ope{
+            height: 60px;
+            display: flex;
+            flex-flow: row nowrap;
+            .btn{
+              flex: 1 0 0;
+              height: 60px;
+              line-height: 60px;
+              text-align: center;
+              color: white;
+              font-weight: bold;
+              &.ok{background-color: $btnBlueLight}
+              &.cancel{background-color: #c9cbd1}
+            }
+          }
+        }
+        &.feedback{
+          width: 80%;
+          .content{
+            padding: 20px;
+          }
+          .ope{
+            height: 60px;
+            display: flex;
+            flex-flow: row nowrap;
+            .btn{
+              flex: 1 0 0;
+              height: 60px;
+              line-height: 60px;
+              text-align: center;
+              color: white;
+              font-weight: bold;
+              &.send{background-color: $btnBlueLight}
+              &.cancel{background-color: $btnGray}
+              &.disabled{background-color: $btnBlueDisabled}
+            }
           }
         }
       }
@@ -1920,6 +1993,10 @@
           {color: '#e6a23c', percentage: 80},
           {color: '#f56c6c', percentage: 100}
         ],
+        feedback: {
+          content: "",
+          name: "",
+        },
 
         config: {
           formatIntegerNumberMode: 1,
@@ -2367,9 +2444,6 @@
       }
     },
     mounted(){
-      this.$api.post('getDate').then(res => {
-        console.log(res.data)
-      })
       window.vue = this;
       this.height = window.innerHeight;
 
@@ -2950,17 +3024,15 @@
         if(e.target.classList.contains("mask")){
           if(this.dialogController === "next"){
             this.newDay();
-          } else if(this.dialogController === "offer"){
-            this.dialogController = "";
-          } else if(this.dialogController === "stockChart"){
-            this.dialogController = "";
-          } else if(this.dialogController === "girlInfo"){
-            this.dialogController = "";
-          } else if(this.dialogController === "changeNickName"){
-            this.dialogController = "";
-          } else if(this.dialogController === "deleteGirl"){
-            this.dialogController = "";
-          } else if(this.dialogController === "logs"){
+          } else if([
+            "offer",
+            "stockChart",
+            "girlInfo",
+            "changeNickName",
+            "deleteGirl",
+            "logs",
+            "github",
+            "feedback"].indexOf(this.dialogController) > -1){
             this.dialogController = "";
           }
         }
@@ -3448,7 +3520,29 @@
       },
       toGithub(){
         window.open("https://github.com/lucky131/Games");
+        this.dialogController = "github";
       },
+      toFeedback(){
+        this.dialogController = "feedback";
+      },
+      async sendFeedback() {
+        let res = await this.$api.post('feedback', {
+          userAgent: navigator.userAgent,
+          content: this.feedback.content,
+          name: this.feedback.name || "匿名"
+        }).then(res => {
+          if(res.data.code === 200){
+            this.dialogController = "";
+            this.notify("反馈成功-3-");
+            this.feedback.content = "";
+            this.feedback.name = "";
+          } else {
+            this.notify("提交时遇到未知错误，请联系杠三杠")
+          }
+        }).catch(e => {
+          this.notify("提交时遇到未知错误，请联系杠三杠")
+        })
+      }
     }
   }
 </script>
