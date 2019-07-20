@@ -51,7 +51,7 @@
   @import "../css/common";
   .one-position{
     margin: 0 10px 10px;
-    border-radius: 10px;
+    border-radius: 20px;
     overflow: hidden;
     background-color: $cardContent;
     box-shadow: 0 0 6px rgba(0,0,0,.1);

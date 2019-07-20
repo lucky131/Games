@@ -221,19 +221,19 @@
           <div class="row">办公环境：<span v-html="environmentHtml"></span></div>
         </div>
         <div class="decoration-preview">
-          <img class="img" src="./img/d.png">
-          <img v-if="company.decoration[0]" class="img unit" src="./img/d00.png">
-          <img v-if="company.decoration[1]" class="img unit" src="./img/d01.png">
-          <img v-if="company.decoration[2]" class="img unit" src="./img/d02.png">
+          <img class="img" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d.png">
+          <img v-if="company.decoration[0]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d00.png">
+          <img v-if="company.decoration[1]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d01.png">
+          <img v-if="company.decoration[2]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d02.png">
           <div v-if="!company.decoration[3]" class="img unit black"></div>
-          <img v-if="company.decoration[4]" class="img unit" src="./img/d04.png">
-          <img v-if="company.decoration[5]" class="img unit" src="./img/d05.png">
-          <img v-if="company.decoration[6]" class="img unit" src="./img/d06.png">
-          <img v-if="company.decoration[7]" class="img unit" src="./img/d07.png">
-          <img v-if="company.decoration[8]" class="img unit" src="./img/d08.png">
-          <img v-if="company.decoration[9]" class="img unit" src="./img/d09.png">
-          <img v-if="company.decoration[10]" class="img unit" src="./img/d10.png">
-          <img v-if="company.decoration[11]" class="img unit" src="./img/d11.png">
+          <img v-if="company.decoration[4]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d04.png">
+          <img v-if="company.decoration[5]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d05.png">
+          <img v-if="company.decoration[6]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d06.png">
+          <img v-if="company.decoration[7]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d07.png">
+          <img v-if="company.decoration[8]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d08.png">
+          <img v-if="company.decoration[9]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d09.png">
+          <img v-if="company.decoration[10]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d10.png">
+          <img v-if="company.decoration[11]" class="img unit" src="//lucky131-1256476187.cos.ap-shanghai.myqcloud.com/gangCompany/d11.png">
         </div>
       </div>
       <div class="page-content decoration-content">
@@ -941,7 +941,7 @@
           .card{
             background-color: $cardContent;
             margin: 0 10px 10px;
-            border-radius: 10px;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 0 6px rgba(0,0,0,.1);
             .card-title{
@@ -1000,7 +1000,7 @@
           .card{
             background-color: $cardContent;
             margin: 0 10px 10px;
-            border-radius: 10px;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 0 6px rgba(0,0,0,.1);
             .card-title{
@@ -3525,23 +3525,23 @@
       toFeedback(){
         this.dialogController = "feedback";
       },
-      async sendFeedback() {
-        let res = await this.$api.post('feedback', {
+      sendFeedback() {
+        let res = this.$api.post('feedback', {
           userAgent: navigator.userAgent,
           content: this.feedback.content,
           name: this.feedback.name || "匿名"
         }).then(res => {
           if(res.data.code === 200){
-            this.dialogController = "";
             this.notify("反馈成功-3-");
-            this.feedback.content = "";
-            this.feedback.name = "";
           } else {
             this.notify("提交时遇到未知错误，请联系杠三杠")
           }
         }).catch(e => {
           this.notify("提交时遇到未知错误，请联系杠三杠")
         })
+        this.dialogController = "";
+        this.feedback.content = "";
+        this.feedback.name = "";
       }
     }
   }
