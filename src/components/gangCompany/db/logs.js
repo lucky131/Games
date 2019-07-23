@@ -3,6 +3,11 @@ export default {
     return{
       allLogs: [
         {
+          time: "2019/7/20",
+          version: "v1.0.4",
+          content: ["新增反馈功能", "装修里的图片改为腾讯云资源"]
+        },
+        {
           time: "2019/7/18",
           version: "v1.0.3",
           content: ["新增员工试用期", "新增社保"]

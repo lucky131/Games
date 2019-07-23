@@ -24,10 +24,13 @@
     <div v-else-if="UIController === 'loadAuto'" class="page load-auto">
       <div class="text">检测到自动存档，是否读取？</div>
       <div class="pre">
+        <div class="label">保存时间：</div><div class="value">{{autoSaveInfo.date}}</div>
+        <div class="label">存档版本：</div><div class="value">{{autoSaveInfo.version}}</div>
+        <div class="label">当前版本：</div><div class="value">{{version}}</div>
         <div class="label">游戏时间：</div><div class="value">{{formatDay(autoSaveInfo.day)}}</div>
         <div class="label">资产：</div><div class="value">{{$u.formatIntegerNumber(autoSaveInfo.money, config.formatIntegerNumberMode)}}</div>
-        <div class="label">保存时间：</div><div class="value">{{autoSaveInfo.date}}</div>
       </div>
+      <div v-if="autoSaveInfo.version !== version" class="tips">存档版本与当前游戏版本不同，可能会造成无法读取存档的情况，如遇此情况，请重新开始游戏</div>
       <div class="opes">
         <div class="btn" @click="loadAutoSave()"><i class="el-icon-upload"></i> 读取存档</div>
         <div class="btn" @click="initGame()"><i class="el-icon-s-flag"></i> 新的开始</div>
@@ -162,12 +165,12 @@
           </el-radio-group>
           <div class="setting-tips">例如：-297914729<br>模式一：-297,914,729<br>模式二：负2亿9791万4729<br>模式三：-2.98亿</div>
         </div>
-        <div class="setting-title">更新日志</div>
-        <div class="setting-row setting-btn" @click="showLogs()">点击查看</div>
+        <div class="setting-title">当前版本</div>
+        <div class="setting-row">{{version}} <span class="setting-btn" @click="showLogs()">查看日志</span></div>
         <div class="setting-title">Github仓库</div>
-        <div class="setting-row setting-btn" @click="toGithub()">点击访问</div>
+        <div class="setting-row"><span class="setting-btn" @click="toGithub()">点击访问</span></div>
         <div class="setting-title">反馈</div>
-        <div class="setting-row setting-btn" @click="toFeedback()">填写反馈</div>
+        <div class="setting-row"><span class="setting-btn" @click="toFeedback()">填写反馈</span></div>
       </div>
       <div class="main-bottom">
         <div class="main-bottom-btn" :class="{'main-bottom-btn__selected': mainType === 'company'}" @click="mainType = 'company'">公司</div>
@@ -867,6 +870,13 @@
           text-align: right;
         }
       }
+      .tips{
+        margin: 0 20px 10px;
+        color: $btnBlue;
+        font-size: 12px;
+        text-align: center;
+        z-index: 1;
+      }
       .opes{
         width: 100%;
         z-index: 1;
@@ -905,6 +915,7 @@
           line-height: 60px;
           background-color: $btnBlue;
           border-radius: 50%;
+          box-shadow: 0 0 10px rgba(0,0,0,.1);
           margin: 10px;
           color: white;
           font-size: 20px;
@@ -1077,6 +1088,7 @@
           position: relative;
           &.main-bottom-btn__selected{
             background-color: $headerFooterDeep;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
             font-weight: bold;
             &:before{
               content: "";
@@ -1886,6 +1898,7 @@
         notifyPromise: Promise.resolve(),
         autoSaveInfo: {
           date: "",
+          version: "",
           day: 0,
           money: 0
         },
@@ -2077,6 +2090,9 @@
       }
     },
     computed: {
+      version(){
+        return this.allLogs[0].version;
+      },
       dayText(){
         let year = Math.floor(this.day / 365);
         let day = this.day - 365 * year;
@@ -2500,6 +2516,7 @@
       if(localStorage.getItem("autoSave")){
         let autoSave = JSON.parse(localStorage.getItem("autoSave"));
         this.autoSaveInfo.date = autoSave._saveDate;
+        this.autoSaveInfo.version = autoSave.version || "v1.0.3";
         this.autoSaveInfo.day = autoSave.day;
         this.autoSaveInfo.money = autoSave.money;
         this.UIController = "loadAuto";
@@ -2521,6 +2538,7 @@
       autoSave(){
         let data = {};
         data._saveDate = new Date().format("yyyy-MM-dd hh:mm:ss");
+        data.version = this.version;
         data.config = this.config;
         data.UIController = this.UIController;
         data.dialogController = this.dialogController;
