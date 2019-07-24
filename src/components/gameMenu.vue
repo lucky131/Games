@@ -4,7 +4,7 @@
          v-if="!isMobile || item.mobile"
          v-for="(item, index) in gameList"
          :key="index"
-         :style="{backgroundColor: item.color}">
+         :style="color2Style(item.color)">
       <div class="innerBlock" @click="goto(index)">
         <div class="name"><span>{{item.name}}</span></div>
         <div v-if="!isMobile" class="desc">{{item.desc}}</div>
@@ -30,7 +30,7 @@
       position: relative;
       cursor: pointer;
       &.mobileBlock{
-        min-width: 100%;
+        min-width: 50%;
         .innerBlock{
           background-color: rgba(0,0,0,0);
           .name{
@@ -43,8 +43,9 @@
         height: 100%;
         padding: 0 20px;
         box-sizing: border-box;
+        border: 8px solid transparent;
         background-color: rgba(0,0,0,0.5);
-        transition: background-color 300ms;
+        transition: background-color 300ms, border-color 300ms;
         display: flex;
         flex-flow: column nowrap;
         justify-content: center;
@@ -63,7 +64,24 @@
           font-size: 12px;
         }
         &:hover{
+          border-top-color: rgba(255,255,255,0.5);
+          border-left-color: rgba(255,255,255,0.3);
+          border-right-color: rgba(0,0,0,0.3);
+          border-bottom-color: rgba(0,0,0,0.5);
           background-color: rgba(0,0,0,0);
+          .name{
+            color: rgba(0,0,0,.75);
+          }
+          .desc{
+            color: rgba(0,0,0,.5);
+          }
+        }
+        &:active{
+          border-top-color: rgba(0,0,0,0.5);
+          border-left-color: rgba(0,0,0,0.3);
+          border-right-color: rgba(255,255,255,0.3);
+          border-bottom-color: rgba(255,255,255,0.5);
+          background-color: rgba(0,0,0,0.3);
           .name{
             color: rgba(0,0,0,.75);
           }
@@ -183,7 +201,7 @@ export default {
           name: "三灾",
           path: "/tripleDisaster",
           desc: "移动端文字冒险游戏",
-          color: "#ff8161",
+          color: ["135deg", "#ffad51", "#87511e"],
           loading: false,
           mobile: true,
         },
@@ -191,7 +209,7 @@ export default {
           name: "魔方",
           path: "/magicCube",
           desc: "用three.js创建的魔方游戏，支持3-5阶，自由旋转视角",
-          color: "#b75fff",
+          color: ["135deg", "#fbff00", "#ff6625"],
           loading: false,
           newTab: true,
         },
@@ -199,15 +217,23 @@ export default {
           name: "杠·地图编辑器",
           path: "/gangEditor",
           desc: "用three.js创建的地图编辑器",
-          color: "#38ff38",
+          color: ["135deg", "#eaff00", "#00d220"],
           loading: false,
           newTab: true,
         },
         {
           name: "杭州三杠科技有限公司",
           path: "/gangCompany",
-          desc: "移动端经营模拟类有",
-          color: "#fbff1a",
+          desc: "移动端模拟经营类游戏",
+          color: ["135deg", "#35e7ff", "#6f39e2"],
+          loading: false,
+          mobile: true,
+        },
+        {
+          name: "动物世界",
+          path: "/animal",
+          desc: "根据电影《动物世界》引发的一些思考",
+          color: ["135deg", "#ffc162", "#e4417e"],
           loading: false,
           mobile: true,
         },
@@ -218,6 +244,13 @@ export default {
     this.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
   },
   methods: {
+    color2Style (color) {
+      if (typeof color === 'string') return {'backgroundColor': color}
+      if (Array.isArray(color)) {
+        return {'backgroundImage': `linear-gradient(${color.join(',')})`}
+      }
+      return {}
+    },
     goto(index){
       if(!this.loading){
         if(this.gameList[index].newTab){
