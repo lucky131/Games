@@ -54,3 +54,21 @@ export function formatIntegerNumber(number, mode = 0) {
   }
   return "";
 }
+
+export function shuffleArray(arr){
+  let length = arr.length,
+    randomIndex,
+    temp;
+  while (length) {
+    randomIndex = Math.floor(Math.random() * (length--));
+    temp = arr[randomIndex];
+    arr[randomIndex] = arr[length];
+    arr[length] = temp
+  }
+  return arr;
+}
+
+export function getRandom(arr) {
+  if(arr.length === 0) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
