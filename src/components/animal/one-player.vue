@@ -75,7 +75,7 @@
 
 <script>
 export default {
-  name: 'player',
+  name: 'one-player',
   data () {
     return {
     }

@@ -2,7 +2,7 @@
   <div>
 
     <div v-if="scene === 1" class="scene flex">
-      <div class="text center">你看过电影《动物世界》吗？</div>
+      <div class="text center mb">你看过电影《动物世界》吗？</div>
       <div class="opes">
         <div class="btn" @click="changeScene(2)">看过</div>
         <div class="btn" @click="changeScene(3)">没看过</div>
@@ -10,7 +10,7 @@
     </div>
 
     <div v-else-if="scene === 2" class="scene flex">
-      <div class="text center">你是否还记得电影里的石头剪刀布的游戏规则？</div>
+      <div class="text center mb">你是否还记得电影里的石头剪刀布的游戏规则？</div>
       <div class="opes">
         <div class="btn" @click="changeScene(4)">记得</div>
         <div class="btn" @click="changeScene(3)">忘记了</div>
@@ -28,8 +28,8 @@
     </div>
 
     <div v-else-if="scene === 4" class="scene flex" @click="changeScene(5)">
-      <div class="text center">现在我用下面这个玩意来表示一个玩家</div>
-      <player style="margin: 20px 0" :player="defaultPlayer"></player>
+      <div class="text center mb">现在我用下面这个玩意来表示一个玩家</div>
+      <one-player style="margin-bottom: 20px" :player="defaultPlayer"></one-player>
       <div class="text center">
         第一行表示玩家的名字<br>
         第二行3个数字分别表示石头、剪刀、布卡牌的数量<br>
@@ -38,18 +38,33 @@
     </div>
 
     <div v-else-if="scene === 5" class="scene flex" @click="changeScene(6)">
-      <div class="text center">现在我们模拟一个简单的10人游戏</div>
-      <div class="players">
-        <player v-for="(p, index) in players" :key="index" :player="p"></player>
+      <div class="text center mb">现在我们模拟一个简单的10人游戏</div>
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
       </div>
-      <div class="text center">并且假设没有时间限制，10个人完全随机出牌，星星一旦为0立即淘汰，牌打完之后星星少于3颗的也淘汰，直到所有人都无法再出牌为止，不考虑任何其他因素，来看看结果如何</div>
+      <div class="text center">并且假设没有时间限制，10个人完全随机出牌，不考虑任何其他因素，一旦达成淘汰条件就立刻出局，直到所有人都无法再出牌为止，来看看结果如何</div>
     </div>
 
-    <div v-else-if="scene === 6" class="scene flex">
-      <div class="players">
-        <player v-for="(p, index) in players" :key="index" :player="p"></player>
+    <div v-else-if="scene === 6" class="scene flex" @click="changeScene(7)">
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
       </div>
-      <div class="text center">{{tempText}}</div>
+      <speed-controller class="mb" :interval="interval" @changeInterval="changeInterval($event)"></speed-controller>
+      <div class="logs" @click.stop>
+        <div v-for="(l, index) in logs" :key="index" class="row">{{l}}</div>
+      </div>
+    </div>
+
+    <div v-else-if="scene === 7" class="scene flex" @click="changeScene(8)">
+      <div class="text center mb">是不是感觉不到什么？</div>
+      <div class="text center">没有关系，接下来我们把人数调到50人，再重复一次以上步骤</div>
+    </div>
+
+    <div v-else-if="scene === 8" class="scene flex">
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+      <speed-controller class="mb" :interval="interval" @changeInterval="changeInterval($event)"></speed-controller>
     </div>
 
     <div v-else-if="scene === 666" class="scene flex">
@@ -61,6 +76,9 @@
 <style scoped lang="scss">
   *{
     box-sizing: border-box;
+  }
+  .mb{
+    margin-bottom: 20px;
   }
   .scene{
     width: 100vw;
@@ -81,7 +99,6 @@
     .opes{
       width: 100%;
       padding: 0 20px;
-      margin-top: 20px;
       display: flex;
       flex-flow: row nowrap;
       .btn{
@@ -99,15 +116,24 @@
     .players{
       width: 100%;
       padding: 0 20px;
-      margin: 20px 0;
       display: flex;
       flex-flow: row wrap;
       justify-content: center;
+    }
+    .logs{
+      width: 100%;
+      height: 200px;
+      padding: 0 20px;
+      overflow-y: auto;
+      font-size: 12px;
     }
   }
 </style>
 
 <script>
+  import onePlayer from "./one-player"
+  import speedController from "./speed-controller"
+
   class Player {
     constructor (index, name = "未命名", rock = 4, scissors = 4, paper = 4, star = 3) {
       this.index = index;
@@ -133,36 +159,51 @@
       return play;
     }
   }
-  import player from "./player"
+
   export default {
     name: 'animal',
-    components: {player},
+    components: {onePlayer, speedController},
     data () {
       return {
         timeInterval: null,
+        interval: 2000,
         scene: 1,
         players: [],
         defaultPlayer: new Player("player1"),
-        tempText: "",
+        logs: [],
       }
     },
     mounted () {
     },
     computed: {
-      availablePlayers () {
+      playingPlayers () {
         return this.players.filter(p => p.status === "playing");
       }
     },
     methods: {
       changeScene (scene) {
         if (this.scene !== scene) {
-          this.scene = scene;
           switch (scene) {
             case 5:
+              this.scene = 5;
               this.generatePlayers(10);
               break;
             case 6:
+              this.scene = 6;
               this.startGame();
+              break;
+            case 7:
+              if (this.playingPlayers.length === 0) {
+                this.scene = 7;
+              }
+              break;
+            case 8:
+              this.scene = 8;
+              this.generatePlayers(50);
+              this.startGame();
+              break;
+            default:
+              this.scene = scene;
               break;
           }
         }
@@ -174,43 +215,63 @@
         }
       },
       startGame () {
-        this.timeInterval = setInterval(() => {
-          if (this.availablePlayers.length >= 2) {
-            let randomSortAvailablePlayers = this.$u.shuffleArray(this.availablePlayers)
-            let [indexA, indexB] = [randomSortAvailablePlayers[0].index, randomSortAvailablePlayers[1].index];
+        this.logs = [];
+        this.autoPlay();
+      },
+      autoPlay () {
+        setTimeout(() => {
+          if (this.playingPlayers.length >= 2) {
+            let randomSortPlayingPlayers = this.$u.shuffleArray(this.playingPlayers);
+            let [indexA, indexB] = [randomSortPlayingPlayers[0].index, randomSortPlayingPlayers[1].index];
             let [playerA, playerB] = [this.players[indexA], this.players[indexB]];
             let playA = playerA.play(), playB = playerB.play();
             switch ((playA - playB + 3) % 3) {
               case 0:
-                this.tempText = `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`;
+                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);
                 break;
               case 1:
                 playerA.star--;
                 playerB.star++;
-                this.tempText = `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`;
+                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`);
                 break;
               case 2:
                 playerA.star++;
                 playerB.star--;
-                this.tempText = `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`;
+                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
                 break;
             }
+            this.toLogsBottom();
             this.refreshPlayerStatus(playerA);
             this.refreshPlayerStatus(playerB);
+            this.autoPlay();
           } else {
-            clearInterval(this.timeInterval);
-            alert("完成！");
+            this.players.forEach(p => {
+              this.refreshPlayerStatus(p, false);
+            });
           }
-        }, 100);
+        }, this.interval);
       },
-      refreshPlayerStatus (player) {
+      refreshPlayerStatus (player, playing = true) {
         if (player.star === 0) {
           player.status = "lose";
         } else {
           if (player.cardNumber() === 0) {
             player.status = player.star >= 3 ? "win" : "lose";
+          } else if (!playing) {
+            player.status = "lose";
           }
         }
+      },
+      toLogsBottom () {
+        this.$nextTick(() => {
+          let el = document.getElementsByClassName("logs");
+          if(el.length > 0){
+            el[0].scrollTop = el[0].scrollHeight;
+          }
+        });
+      },
+      changeInterval (i) {
+        this.interval = i
       }
     }
   }
