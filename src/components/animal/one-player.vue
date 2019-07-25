@@ -1,6 +1,6 @@
 <template>
   <div class="player">
-    <div class="name">{{player.name}}</div>
+    <div class="name" :class="player.style">{{player.name}}</div>
     <div class="card">
       <div class="item">{{player.rock}}</div>
       <div class="item">{{player.scissors}}</div>
@@ -19,7 +19,6 @@
   }
   .player{
     width: 60px;
-    height: 50px;
     margin-right: 2px;
     margin-bottom: 2px;
     border-top: 1px solid black;
@@ -33,16 +32,19 @@
       border-right: 1px solid black;
       border-bottom: 1px solid black;
       text-align: center;
+      &.observe{
+        color: blue;
+      }
     }
     .card{
       width: 100%;
-      height: 20px;
+      height: 15px;
       display: flex;
       flex-flow: row nowrap;
       .item{
         flex: 1 0 0;
-        height: 20px;
-        line-height: 20px;
+        height: 15px;
+        line-height: 15px;
         border-right: 1px solid black;
         border-bottom: 1px solid black;
         text-align: center;
@@ -64,10 +66,10 @@
       left: 0;
       z-index: 1;
       &.win{
-        background-color: rgba(0,128,0,0.5);
+        background-color: rgba(0,128,0,0.3);
       }
       &.lose{
-        background-color: rgba(139,0,0,0.5);
+        background-color: rgba(139,0,0,0.3);
       }
     }
   }
