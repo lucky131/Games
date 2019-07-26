@@ -146,8 +146,47 @@
       <div class="text center">是不是感到一点点失望，随机者的胜者比例是53.99%，而观察者的为54.48%，仅比随机者多了0.5%还不到</div>
     </div>
 
-    <div v-else-if="scene === 17" class="scene flex">
-      <div class="text center mb">但是不要失望，不要觉得观察者就是个憨批，他只是没有遇到他的猎物，就好像鱼人杀手蟹没有遇到鱼人一样，我们暂时先把观察者放一边</div>
+    <div v-else-if="scene === 17" class="scene flex" @click="changeScene(18)">
+      <div class="text center mb">但是不要失望，不要觉得观察者就是个憨批，我们暂时先把观察者放一边</div>
+      <div class="text center mb">接下来我们再引入一种新的角色，他叫和平者，名字用紫色来表示</div>
+      <one-player style="margin-bottom: 20px" :player="defaultPlayer"></one-player>
+      <div class="text center">和平者是一群佛系玩家，他们不求获胜，只求平局，因此他们的出牌策略是<span class="bold">尽量打出一张当前电子屏上最多的那张牌</span></div>
+    </div>
+
+    <div v-else-if="scene === 18" class="scene flex" @click="changeScene(19)">
+      <div class="text center mb">我们再模拟一次50人的游戏，25位随机者，25位和平者，看看结果如何</div>
+      <div class="players">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+    </div>
+
+    <div v-else-if="scene === 19" class="scene flex" @click="changeScene(20)">
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+      <speed-controller class="mb" :interval="interval" @changeInterval="changeInterval($event)"></speed-controller>
+      <board class="mb" :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
+      <div class="text center">胜利{{winPlayers.length}}人，淘汰{{losePlayers.length}}人</div>
+      <div class="text center">其中和平者胜利{{winPlayers.filter(p => p.style === 'peace').length}}人，淘汰{{losePlayers.filter(p => p.style === 'peace').length}}人</div>
+    </div>
+
+    <div v-else-if="scene === 20" class="scene flex" @click="changeScene(21)">
+      <div class="text center mb">同理我又做了实验，1000人的游戏，包含500个随机者和500个和平者，一共进行10次游戏，结果如下：</div>
+      <table class="table mb">
+        <tr><td>次数</td><td>和平者胜利</td><td>和平者淘汰</td></tr>
+        <tr><td>1</td><td>276</td><td>224</td></tr>
+        <tr><td>2</td><td>278</td><td>222</td></tr>
+        <tr><td>3</td><td>270</td><td>230</td></tr>
+        <tr><td>4</td><td>259</td><td>241</td></tr>
+        <tr><td>5</td><td>258</td><td>242</td></tr>
+        <tr><td>6</td><td>263</td><td>237</td></tr>
+        <tr><td>7</td><td>276</td><td>224</td></tr>
+        <tr><td>8</td><td>268</td><td>232</td></tr>
+        <tr><td>9</td><td>271</td><td>229</td></tr>
+        <tr><td>10</td><td>261</td><td>239</td></tr>
+        <tr><td>总计</td><td>2680</td><td>2320</td></tr>
+      </table>
+      <div class="text center">和平者的胜率为53.60%，甚至比随机者还要低</div>
     </div>
 
     <div v-else-if="scene === 666" class="scene flex">
@@ -260,7 +299,7 @@
     }
     play (allRock = 0, allScissors = 0, allPaper = 0) {
       if (this.cardNumber() === 0) return null;
-      let play;
+      let play, allSort;
       switch (this.style) {
         case "random":
           let array = [];
@@ -270,11 +309,21 @@
           play = getRandom(array);
           break;
         case "observe":
-          let allSort = getAllSort(allRock, allScissors, allPaper);
+          allSort = getAllSort(allRock, allScissors, allPaper);
           for (let i = 0; i < allSort.length; i++) {
             let arr = allSort[i].filter(index => this[["rock", "scissors", "paper"][(index-1+3)%3]] > 0);
             if (arr.length > 0) {
               play = (getRandom(arr) - 1 + 3) % 3;
+              break;
+            }
+          }
+          break;
+        case "peace":
+          allSort = getAllSort(allRock, allScissors, allPaper);
+          for (let i = 0; i < allSort.length; i++) {
+            let arr = allSort[i].filter(index => this[["rock", "scissors", "paper"][index]] > 0);
+            if (arr.length > 0) {
+              play = getRandom(arr);
               break;
             }
           }
@@ -292,7 +341,7 @@
       return {
         timeInterval: null,
         interval: 400,
-        scene: 1,
+        scene: 16,
         players: [],
         defaultPlayer: new Player(0, "player1"),
         logs: [],
@@ -361,7 +410,7 @@
               break;
             case 12:
               this.scene = 12;
-              this.defaultPlayer = new Player(0, "观察者1", "observe");
+              this.defaultPlayer = new Player(0, "观察者", "observe");
               break;
             case 14:
               this.scene = 14;
@@ -376,20 +425,40 @@
                 this.scene = 16;
               }
               break;
+            case 17:
+              this.scene = 17;
+              this.defaultPlayer = new Player(0, "和平者", "peace");
+              break;
+            case 18:
+              this.scene = 18;
+              this.generatePlayers(500, 0, 500);
+              break;
+            case 19:
+              this.scene = 19;
+              this.startGame();
+              break;
+            case 20:
+              if (this.playingPlayers.length === 0) {
+                this.scene = 20;
+              }
+              break;
             default:
               this.scene = scene;
               break;
           }
         }
       },
-      generatePlayers (random = 0, observe = 0) {
+      generatePlayers (random = 0, observe = 0, peace = 0) {
         let index = 0;
         this.players = [];
         for (let i = 0; i < random; i++) {
-          this.players.push(new Player(index++, "随机者" + (i + 1)));
+          this.players.push(new Player(index++, "随机者" + (i + 1), "random"));
         }
         for (let i = 0; i < observe; i++) {
           this.players.push(new Player(index++, "观察者" + (i + 1), "observe"));
+        }
+        for (let i = 0; i < peace; i++) {
+          this.players.push(new Player(index++, "和平者" + (i + 1), "peace"));
         }
       },
       startGame () {
@@ -402,7 +471,8 @@
             let randomSortPlayingPlayers = this.$u.shuffleArray(this.playingPlayers);
             let [indexA, indexB] = [randomSortPlayingPlayers[0].index, randomSortPlayingPlayers[1].index];
             let [playerA, playerB] = [this.players[indexA], this.players[indexB]];
-            let playA = playerA.play(), playB = playerB.play();
+            let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper);
+            let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper);
             switch ((playA - playB + 3) % 3) {
               case 0:
                 this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);
@@ -418,7 +488,7 @@
                 this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
                 break;
             }
-            this.toLogsBottom();
+            this.toBottom("logs");
             this.refreshPlayerStatus(playerA);
             this.refreshPlayerStatus(playerB);
           }
@@ -448,7 +518,7 @@
                   this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
                   break;
               }
-              this.toLogsBottom();
+              this.toBottom("logs");
               this.refreshPlayerStatus(playerA);
               this.refreshPlayerStatus(playerB);
               this.autoPlay();
@@ -471,9 +541,9 @@
           }
         }
       },
-      toLogsBottom () {
+      toBottom (className) {
         this.$nextTick(() => {
-          let el = document.getElementsByClassName("logs");
+          let el = document.getElementsByClassName(className);
           if(el.length > 0){
             el[0].scrollTop = el[0].scrollHeight;
           }

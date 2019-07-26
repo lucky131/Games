@@ -31,9 +31,14 @@
       line-height: 15px;
       border-right: 1px solid black;
       border-bottom: 1px solid black;
+      font-weight: bold;
       text-align: center;
+      white-space: nowrap;
       &.observe{
-        color: blue;
+        color: #00d;
+      }
+      &.peace{
+        color: #d0d;
       }
     }
     .card{
