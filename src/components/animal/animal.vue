@@ -189,6 +189,59 @@
       <div class="text center">和平者的胜率为53.60%，甚至比随机者还要低</div>
     </div>
 
+    <div v-else-if="scene === 21" class="scene flex" @click="changeScene(22)">
+      <div class="text center mb">至此为止我们已经有3种出牌策略的玩家，分别是随机者、观察者、和平者，目前为止他们三者的胜率几乎相同</div>
+      <div class="text center mb">接下来我们引进第四种玩家：欺诈者，用红色的名字来表示。</div>
+      <one-player style="margin-bottom: 20px" :player="defaultPlayer"></one-player>
+      <div class="text center mb">欺诈者在每一次出牌前会向对方宣布自己接下来要出的牌，比如欺诈者宣称自己将要出布，此时如果对阵的是一名观察者，那么他就会暂时无视数据板上的数字，出牌的优先级是剪刀>布>石头；同理，如果对阵的是和平者，和平者的出牌优先级是布>剪刀>石头。然而欺诈者将会打出的牌不是布而是剪刀</div>
+      <div class="text center bold">实际上，欺诈者的出牌策略和随机者完全相同，唯一不同的就是他会根据自己即将打出的牌，说一句欺诈对手的话，从而影响对手的出牌策略</div>
+    </div>
+
+    <div v-else-if="scene === 22" class="scene flex" @click="changeScene(23)">
+      <div class="text center mb">接下来我们要模拟一次大规模的战斗，20个随机者，10个观察者，10个和平者，10个欺诈者，群魔乱舞，看看结果如何</div>
+      <div class="players">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+    </div>
+
+    <div v-else-if="scene === 23" class="scene flex" @click="changeScene(24)">
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+      <speed-controller class="mb" :interval="interval" @changeInterval="changeInterval($event)"></speed-controller>
+      <board class="mb" :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
+      <div class="text center">随机者胜利{{winPlayers.filter(p => p.style === 'random').length}}人，淘汰{{losePlayers.filter(p => p.style === 'random').length}}人</div>
+      <div class="text center">观察者胜利{{winPlayers.filter(p => p.style === 'observe').length}}人，淘汰{{losePlayers.filter(p => p.style === 'observe').length}}人</div>
+      <div class="text center">和平者胜利{{winPlayers.filter(p => p.style === 'peace').length}}人，淘汰{{losePlayers.filter(p => p.style === 'peace').length}}人</div>
+      <div class="text center">欺诈者胜利{{winPlayers.filter(p => p.style === 'cheat').length}}人，淘汰{{losePlayers.filter(p => p.style === 'cheat').length}}人</div>
+    </div>
+
+    <div v-else-if="scene === 24" class="scene flex" @click="changeScene(25)">
+      <div class="text center mb">是不是看到了一些不同？老规矩，扩大实验人数，总1000人，400随机者，200观察者，200和平者，200欺诈者，10局游戏，结果如下：</div>
+      <table class="table">
+        <tr><td>次数</td><td>随机胜</td><td>观察胜</td><td>和平胜</td><td>欺诈胜</td></tr>
+        <tr><td>1</td><td>217</td><td>131</td><td>18</td><td>166</td></tr>
+        <tr><td>2</td><td>223</td><td>136</td><td>26</td><td>161</td></tr>
+        <tr><td>3</td><td>234</td><td>131</td><td>16</td><td>153</td></tr>
+        <tr><td>4</td><td>211</td><td>140</td><td>19</td><td>160</td></tr>
+        <tr><td>5</td><td>232</td><td>127</td><td>24</td><td>153</td></tr>
+        <tr><td>6</td><td>225</td><td>142</td><td>20</td><td>150</td></tr>
+        <tr><td>7</td><td>217</td><td>131</td><td>30</td><td>150</td></tr>
+        <tr><td>8</td><td>213</td><td>154</td><td>23</td><td>156</td></tr>
+        <tr><td>9</td><td>206</td><td>130</td><td>21</td><td>167</td></tr>
+        <tr><td>10</td><td>236</td><td>134</td><td>23</td><td>159</td></tr>
+        <tr><td>总计</td><td>2214</td><td>1356</td><td>220</td><td>1575</td></tr>
+        <tr><td>胜率</td><td>55.35%</td><td>67.80%</td><td>11.00%</td><td>78.75%</td></tr>
+      </table>
+    </div>
+
+    <div v-else-if="scene === 25" class="scene flex" @click="changeScene(26)">
+      <div class="text center mb">随机者的胜率几乎不受影响</div>
+      <div class="text center mb">观察者的胜率由之前的54%左右提升到了67.80%</div>
+      <div class="text center mb">和平者就很惨了，胜率仅有11.00%</div>
+      <div class="text center">最新加入的欺诈者以78.75%的胜率获得了胜率排行第一</div>
+    </div>
+
     <div v-else-if="scene === 666" class="scene flex">
     </div>
 
@@ -204,6 +257,11 @@
   }
   .bold{
     font-weight: bold;
+  }
+  /deep/ {
+    .observe{color: #00d}
+    .peace{color: #d0d}
+    .cheat{color: #f00}
   }
   .scene{
     width: 100vw;
@@ -292,12 +350,28 @@
       this.paper = paper;
       this.star = star;
       this.status = "playing";
+      this.nextPlay = null;
     }
 
     cardNumber () {
       return this.rock + this.scissors + this.paper;
     }
-    play (allRock = 0, allScissors = 0, allPaper = 0) {
+    promise () {
+      let p = null, nextPlay = null;
+      switch (this.style) {
+        case "cheat":
+          let array = [];
+          for (let i = 0; i < this.rock; i++) array.push(0);
+          for (let i = 0; i < this.scissors; i++) array.push(1);
+          for (let i = 0; i < this.paper; i++) array.push(2);
+          nextPlay = getRandom(array);
+          p = (nextPlay + 1) % 3;
+          break;
+      }
+      this.nextPlay = nextPlay;
+      return p;
+    }
+    play (allRock = 0, allScissors = 0, allPaper = 0, opponentPromise = null) {
       if (this.cardNumber() === 0) return null;
       let play, allSort;
       switch (this.style) {
@@ -309,7 +383,10 @@
           play = getRandom(array);
           break;
         case "observe":
-          allSort = getAllSort(allRock, allScissors, allPaper);
+          if (opponentPromise === 0) allSort = [[0],[1],[2]];
+          else if (opponentPromise === 1) allSort = [[1],[2],[0]];
+          else if (opponentPromise === 2) allSort = [[2],[0],[1]];
+          else allSort = getAllSort(allRock, allScissors, allPaper);
           for (let i = 0; i < allSort.length; i++) {
             let arr = allSort[i].filter(index => this[["rock", "scissors", "paper"][(index-1+3)%3]] > 0);
             if (arr.length > 0) {
@@ -319,7 +396,10 @@
           }
           break;
         case "peace":
-          allSort = getAllSort(allRock, allScissors, allPaper);
+          if (opponentPromise === 0) allSort = [[0],[2],[1]];
+          else if (opponentPromise === 1) allSort = [[1],[0],[2]];
+          else if (opponentPromise === 2) allSort = [[2],[1],[0]];
+          else allSort = getAllSort(allRock, allScissors, allPaper);
           for (let i = 0; i < allSort.length; i++) {
             let arr = allSort[i].filter(index => this[["rock", "scissors", "paper"][index]] > 0);
             if (arr.length > 0) {
@@ -327,6 +407,10 @@
               break;
             }
           }
+          break;
+        case "cheat":
+          play = this.nextPlay;
+          this.nextPlay = null;
           break;
       }
       this[["rock", "scissors", "paper"][play]]--;
@@ -341,7 +425,7 @@
       return {
         timeInterval: null,
         interval: 400,
-        scene: 16,
+        scene: 20,
         players: [],
         defaultPlayer: new Player(0, "player1"),
         logs: [],
@@ -431,7 +515,7 @@
               break;
             case 18:
               this.scene = 18;
-              this.generatePlayers(500, 0, 500);
+              this.generatePlayers(25, 0, 25);
               break;
             case 19:
               this.scene = 19;
@@ -442,13 +526,25 @@
                 this.scene = 20;
               }
               break;
+            case 21:
+              this.scene = 21;
+              this.defaultPlayer = new Player(0, "欺诈者", "cheat");
+              break;
+            case 22:
+              this.scene = 22;
+              this.generatePlayers(20, 10, 10, 10);
+              break;
+            case 23:
+              this.scene = 23;
+              this.startGame();
+              break;
             default:
               this.scene = scene;
               break;
           }
         }
       },
-      generatePlayers (random = 0, observe = 0, peace = 0) {
+      generatePlayers (random = 0, observe = 0, peace = 0, cheat = 0) {
         let index = 0;
         this.players = [];
         for (let i = 0; i < random; i++) {
@@ -459,6 +555,9 @@
         }
         for (let i = 0; i < peace; i++) {
           this.players.push(new Player(index++, "和平者" + (i + 1), "peace"));
+        }
+        for (let i = 0; i < cheat; i++) {
+          this.players.push(new Player(index++, "欺诈者" + (i + 1), "cheat"));
         }
       },
       startGame () {
@@ -471,8 +570,9 @@
             let randomSortPlayingPlayers = this.$u.shuffleArray(this.playingPlayers);
             let [indexA, indexB] = [randomSortPlayingPlayers[0].index, randomSortPlayingPlayers[1].index];
             let [playerA, playerB] = [this.players[indexA], this.players[indexB]];
-            let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper);
-            let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper);
+            let [promiseA, promiseB] = [playerA.promise(), playerB.promise()];
+            let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper, promiseB);
+            let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
             switch ((playA - playB + 3) % 3) {
               case 0:
                 this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);

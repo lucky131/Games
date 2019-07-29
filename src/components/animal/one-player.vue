@@ -34,12 +34,6 @@
       font-weight: bold;
       text-align: center;
       white-space: nowrap;
-      &.observe{
-        color: #00d;
-      }
-      &.peace{
-        color: #d0d;
-      }
     }
     .card{
       width: 100%;
