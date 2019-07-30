@@ -90,7 +90,7 @@
         <tr><td>10</td><td>537</td><td>463</td></tr>
         <tr><td>总计</td><td>5399</td><td>4601</td></tr>
       </table>
-      <div class="text center">实际上胜利者会比淘汰者要多一些，比例大约为53.99% : 46.01%</div>
+      <div class="text center">实际上胜利者会比淘汰者要多一些，胜率大约为53.99%</div>
     </div>
 
     <div v-else-if="scene === 11" class="scene flex" @click="changeScene(12)">
@@ -218,7 +218,7 @@
 
     <div v-else-if="scene === 24" class="scene flex" @click="changeScene(25)">
       <div class="text center mb">是不是看到了一些不同？老规矩，扩大实验人数，总1000人，400随机者，200观察者，200和平者，200欺诈者，10局游戏，结果如下：</div>
-      <table class="table">
+      <table class="table small-font">
         <tr><td>次数</td><td>随机胜</td><td>观察胜</td><td>和平胜</td><td>欺诈胜</td></tr>
         <tr><td>1</td><td>217</td><td>131</td><td>18</td><td>166</td></tr>
         <tr><td>2</td><td>223</td><td>136</td><td>26</td><td>161</td></tr>
@@ -242,6 +242,52 @@
       <div class="text center">最新加入的欺诈者以78.75%的胜率获得了胜率排行第一</div>
     </div>
 
+    <div v-else-if="scene === 26" class="scene flex" @click="changeScene(27)">
+      <div class="text center mb">为了平衡一下欺诈者的胜率，我们再引入一个角色：干扰者，名字用黄色表示</div>
+      <one-player style="margin-bottom: 20px" :player="defaultPlayer"></one-player>
+      <div class="text center mb bold">干扰者的本质是随机者，而且是一群追求快乐的随机者，干扰者的出牌策略与随机者相同，并且在出牌前会宣布一张牌，与欺诈者不同的是，过他宣布的牌与他要打的牌没有任何关系，是完全随机宣布，也完全随机出牌</div>
+      <div class="text center">接下来我们再模拟一场简单的游戏，5种角色各10人，看看结果如何</div>
+    </div>
+
+    <div v-else-if="scene === 27" class="scene flex" @click="changeScene(28)">
+      <div class="players mb">
+        <one-player v-for="(p, index) in players" :key="index" :player="p"></one-player>
+      </div>
+      <speed-controller class="mb" :interval="interval" @changeInterval="changeInterval($event)"></speed-controller>
+      <board class="mb" :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
+      <div class="text center">随机者胜利{{winPlayers.filter(p => p.style === 'random').length}}人，淘汰{{losePlayers.filter(p => p.style === 'random').length}}人</div>
+      <div class="text center">观察者胜利{{winPlayers.filter(p => p.style === 'observe').length}}人，淘汰{{losePlayers.filter(p => p.style === 'observe').length}}人</div>
+      <div class="text center">和平者胜利{{winPlayers.filter(p => p.style === 'peace').length}}人，淘汰{{losePlayers.filter(p => p.style === 'peace').length}}人</div>
+      <div class="text center">欺诈者胜利{{winPlayers.filter(p => p.style === 'cheat').length}}人，淘汰{{losePlayers.filter(p => p.style === 'cheat').length}}人</div>
+      <div class="text center">干扰者胜利{{winPlayers.filter(p => p.style === 'interfere').length}}人，淘汰{{losePlayers.filter(p => p.style === 'interfere').length}}人</div>
+    </div>
+
+    <div v-else-if="scene === 28" class="scene flex" @click="changeScene(29)">
+      <div class="text center mb">老规矩，扩大实验人数，总1000人，5种角色各200人，10局游戏，结果如下：</div>
+      <table class="table small-font">
+        <tr><td>次数</td><td>随机</td><td>观察</td><td>和平</td><td>欺诈</td><td>干扰</td></tr>
+        <tr><td>1</td><td>115</td><td>150</td><td>25</td><td>156</td><td>103</td></tr>
+        <tr><td>2</td><td>98</td><td>155</td><td>22</td><td>158</td><td>110</td></tr>
+        <tr><td>3</td><td>116</td><td>133</td><td>21</td><td>159</td><td>104</td></tr>
+        <tr><td>4</td><td>120</td><td>131</td><td>26</td><td>148</td><td>116</td></tr>
+        <tr><td>5</td><td>108</td><td>140</td><td>25</td><td>154</td><td>103</td></tr>
+        <tr><td>6</td><td>102</td><td>139</td><td>24</td><td>161</td><td>108</td></tr>
+        <tr><td>7</td><td>114</td><td>130</td><td>23</td><td>158</td><td>105</td></tr>
+        <tr><td>8</td><td>106</td><td>141</td><td>21</td><td>154</td><td>112</td></tr>
+        <tr><td>9</td><td>126</td><td>134</td><td>20</td><td>146</td><td>110</td></tr>
+        <tr><td>10</td><td>116</td><td>141</td><td>18</td><td>145</td><td>115</td></tr>
+        <tr><td>总计</td><td>1121</td><td>1394</td><td>225</td><td>1539</td><td>1086</td></tr>
+        <tr><td>胜率</td><td>56.05%</td><td>69.70%</td><td>11.25%</td><td>76.95%</td><td>54.30%</td></tr>
+      </table>
+    </div>
+
+    <div v-else-if="scene === 29" class="scene flex" @click="changeScene(30)">
+      <div class="text center mb">实验的结果与前一次差不太多</div>
+      <div class="text center mb">观察者的胜率由之前的54%左右提升到了67.80%</div>
+      <div class="text center mb">和平者就很惨了，胜率仅有11.00%</div>
+      <div class="text center">最新加入的欺诈者以78.75%的胜率获得了胜率排行第一</div>
+    </div>
+
     <div v-else-if="scene === 666" class="scene flex">
     </div>
 
@@ -255,13 +301,28 @@
   .mb{
     margin-bottom: 20px;
   }
+  .small-font{
+    font-size: 12px;
+  }
   .bold{
     font-weight: bold;
   }
   /deep/ {
-    .observe{color: #00d}
-    .peace{color: #d0d}
-    .cheat{color: #f00}
+    .random{
+      color: white;
+    }
+    .observe{
+      color: #007fff;
+    }
+    .peace{
+      color: #fa57ff;
+    }
+    .cheat{
+      color: #ff3831;
+    }
+    .interfere{
+      color: #e2e200;
+    }
   }
   .scene{
     width: 100vw;
@@ -313,7 +374,7 @@
     }
     .table{
       td{
-        padding: 0 10px;
+        padding: 0 6px;
       }
     }
   }
@@ -358,14 +419,18 @@
     }
     promise () {
       let p = null, nextPlay = null;
+      let cardArray = [];
+      for (let i = 0; i < this.rock; i++) cardArray.push(0);
+      for (let i = 0; i < this.scissors; i++) cardArray.push(1);
+      for (let i = 0; i < this.paper; i++) cardArray.push(2);
       switch (this.style) {
         case "cheat":
-          let array = [];
-          for (let i = 0; i < this.rock; i++) array.push(0);
-          for (let i = 0; i < this.scissors; i++) array.push(1);
-          for (let i = 0; i < this.paper; i++) array.push(2);
-          nextPlay = getRandom(array);
+          nextPlay = getRandom(cardArray);
           p = (nextPlay + 1) % 3;
+          break;
+        case "interfere":
+          nextPlay = getRandom(cardArray);
+          p = getRandom([0,1,2]);
           break;
       }
       this.nextPlay = nextPlay;
@@ -412,6 +477,10 @@
           play = this.nextPlay;
           this.nextPlay = null;
           break;
+        case "interfere":
+          play = this.nextPlay;
+          this.nextPlay = null;
+          break;
       }
       this[["rock", "scissors", "paper"][play]]--;
       return play;
@@ -425,7 +494,7 @@
       return {
         timeInterval: null,
         interval: 400,
-        scene: 20,
+        scene: 25,
         players: [],
         defaultPlayer: new Player(0, "player1"),
         logs: [],
@@ -538,13 +607,27 @@
               this.scene = 23;
               this.startGame();
               break;
+            case 26:
+              this.scene = 26;
+              this.defaultPlayer = new Player(0, "干扰者", "interfere");
+              break;
+            case 27:
+              this.scene = 27;
+              this.generatePlayers(10, 10, 10, 10, 10);
+              this.startGame();
+              break;
+            case 28:
+              if (this.playingPlayers.length === 0) {
+                this.scene = 28;
+              }
+              break;
             default:
               this.scene = scene;
               break;
           }
         }
       },
-      generatePlayers (random = 0, observe = 0, peace = 0, cheat = 0) {
+      generatePlayers (random = 0, observe = 0, peace = 0, cheat = 0, interfere = 0) {
         let index = 0;
         this.players = [];
         for (let i = 0; i < random; i++) {
@@ -558,6 +641,9 @@
         }
         for (let i = 0; i < cheat; i++) {
           this.players.push(new Player(index++, "欺诈者" + (i + 1), "cheat"));
+        }
+        for (let i = 0; i < interfere; i++) {
+          this.players.push(new Player(index++, "干扰者" + (i + 1), "interfere"));
         }
       },
       startGame () {

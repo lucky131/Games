@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" :class="player.status">
     <div class="name" :class="player.style">{{player.name}}</div>
     <div class="card">
       <div class="item">{{player.rock}}</div>
@@ -7,9 +7,6 @@
       <div class="item">{{player.paper}}</div>
     </div>
     <div class="star">星*{{player.star}}</div>
-
-    <div v-if="player.status === 'win'" class="mask win"></div>
-    <div v-if="player.status === 'lose'" class="mask lose"></div>
   </div>
 </template>
 
@@ -25,6 +22,12 @@
     border-left: 1px solid black;
     font-size: 12px;
     position: relative;
+    &.win{
+      background-color: rgb(179, 217, 179);
+    }
+    &.lose{
+      background-color: rgb(220, 179, 179);
+    }
     .name{
       width: 100%;
       height: 15px;
@@ -34,6 +37,10 @@
       font-weight: bold;
       text-align: center;
       white-space: nowrap;
+      text-shadow: 1.0px 1.0px 0 black,
+      -1.0px 1.0px 0 black,
+      1.0px -1.0px 0 black,
+      -1.0px -1.0px 0 black;
     }
     .card{
       width: 100%;
@@ -56,20 +63,6 @@
       border-right: 1px solid black;
       border-bottom: 1px solid black;
       text-align: center;
-    }
-    .mask{
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-      &.win{
-        background-color: rgba(0,128,0,0.3);
-      }
-      &.lose{
-        background-color: rgba(139,0,0,0.3);
-      }
     }
   }
 </style>
