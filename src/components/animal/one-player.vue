@@ -34,13 +34,16 @@
       line-height: 15px;
       border-right: 1px solid black;
       border-bottom: 1px solid black;
-      font-weight: bold;
       text-align: center;
       white-space: nowrap;
-      text-shadow: 1.0px 1.0px 0 black,
-      -1.0px 1.0px 0 black,
-      1.0px -1.0px 0 black,
-      -1.0px -1.0px 0 black;
+      text-shadow: 1px 1px 0 black,
+      -1px 1px 0 black,
+      1px -1px 0 black,
+      -1px -1px 0 black,
+      0px 1px 0 black,
+      0px -1px 0 black,
+      1px 0px 0 black,
+      -1px 0px 0 black;
     }
     .card{
       width: 100%;

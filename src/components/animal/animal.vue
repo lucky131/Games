@@ -1,5 +1,5 @@
 <template>
-  <div class="animal">
+  <div class="animal" :style="{height: height + 'px'}">
 
     <div v-if="scene === 1" class="scene flex">
       <div class="text center mb">你看过电影《动物世界》吗？</div>
@@ -281,14 +281,61 @@
       </table>
     </div>
 
-    <div v-else-if="scene === 29" class="scene flex" @click="changeScene(30)">
+    <div v-else-if="scene === 29" class="scene flex" @click="changeScene(100)">
       <div class="text center mb">实验的结果与前一次差不太多</div>
-      <div class="text center mb">观察者的胜率由之前的54%左右提升到了67.80%</div>
-      <div class="text center mb">和平者就很惨了，胜率仅有11.00%</div>
-      <div class="text center">最新加入的欺诈者以78.75%的胜率获得了胜率排行第一</div>
+      <div class="text center">值得注意的是除了欺诈者，随机者、观察者、和平者的胜率都比没有干扰者的时候高了一点点</div>
+    </div>
+
+    <div v-else-if="scene === 100" class="scene flex" @click="changeScene(101)">
+      <div class="text center">接下来你将亲自进入一场游戏的模拟，游戏一共由20名玩家组成，包括你和19个AI，AI是上述随机一种风格，你需要自己去判断他们是哪种类型，并且在一定时间内获胜，祝你好运</div>
+    </div>
+
+    <div v-else-if="scene === 101" class="game">
+      <board :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
+      <div class="player-list">
+        <one-player-simple v-for="(p, index) in players" :key="index" :player="p" :log="getLastLog(p)" @toBattle="toBattle(index)"></one-player-simple>
+      </div>
+      <div class="stat">
+        <div class="one">石头x{{me.rock}}</div>
+        <div class="one">剪刀x{{me.scissors}}</div>
+        <div class="one">布x{{me.paper}}</div>
+        <div class="one">星x{{me.star}}</div>
+      </div>
+    </div>
+
+    <div v-else-if="scene === 102" class="scene flex">
+      <div class="text center mb">{{me.isWin ? '恭喜胜利' : '失败'}}</div>
+      <div class="opes">
+        <div class="btn" @click="initGame(19)">重新开始</div>
+      </div>
     </div>
 
     <div v-else-if="scene === 666" class="scene flex">
+    </div>
+
+    <div v-if="battleIndex !== -1" class="mask">
+      <div class="dialog">
+        <div class="row">vs {{players[battleIndex].name}}</div>
+        <div v-if="me.opponentPromise" class="row">对方宣称即将打出{{["石头","剪刀","布"][me.opponentPromise]}}</div>
+        <el-form>
+          <el-form-item label="你宣称打出">
+            <el-select v-model="me.promise">
+              <el-option label="不宣称" value=""></el-option>
+              <el-option label="石头" value="0"></el-option>
+              <el-option label="剪刀" value="1"></el-option>
+              <el-option label="布" value="2"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="你实际打出">
+            <el-select v-model="me.willPlay" placeholder="请选择一张牌">
+              <el-option v-if="me.rock > 0" label="石头" value="0"></el-option>
+              <el-option v-if="me.scissors > 0" label="剪刀" value="1"></el-option>
+              <el-option v-if="me.paper > 0" label="布" value="2"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div v-if="players[battleIndex].status === 'playing' && me.willPlay !== ''" class="btn" @click="battle()">确定</div>
+      </div>
     </div>
 
   </div>
@@ -297,6 +344,7 @@
 <style scoped lang="scss">
   *{
     box-sizing: border-box;
+    font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
   }
   .mb{
     margin-bottom: 20px;
@@ -312,13 +360,13 @@
       color: white;
     }
     .observe{
-      color: #007fff;
+      color: #6ed1ff;
     }
     .peace{
-      color: #fa57ff;
+      color: #f3acff;
     }
     .cheat{
-      color: #ff3831;
+      color: #ff8b91;
     }
     .interfere{
       color: #e2e200;
@@ -326,8 +374,9 @@
   }
   .scene{
     width: 100vw;
-    min-height: 100vh;
+    min-height: 100%;
     overflow-y: auto;
+    padding: 20px 0;
     &.flex{
       display: flex;
       flex-flow: column nowrap;
@@ -378,12 +427,64 @@
       }
     }
   }
+  .game{
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    .player-list{
+      width: 100%;
+      border-top: 1px solid black;
+      flex: 1 0 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stat{
+      width: 100%;
+      border: 1px solid black;
+      display: flex;
+      flex-flow: row nowrap;
+      .one{
+        flex: 1 0 0;
+        height: 40px;
+        line-height: 40px;
+        border-left: 1px solid black;
+        &:first-child{border-left: none}
+        text-align: center;
+      }
+    }
+  }
+  .mask{
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .dialog{
+      width: 80%;
+      background-color: white;
+      padding: 20px;
+      .btn{
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        background-color: #ccc;
+        text-align: center;
+      }
+    }
+  }
 </style>
 
 <script>
   import onePlayer from "./one-player"
   import speedController from "./speed-controller"
   import board from "./board"
+  import onePlayerSimple from "./one-player-simple"
 
   function log(...arg) {
     console.log(...arg);
@@ -391,6 +492,11 @@
   function getRandom(arr) {
     if(arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)];
+  }
+  function getLast(arr) {
+    let length = arr.length;
+    if(length === 0) return null;
+    return arr[length - 1]
   }
   function getAllSort(n1, n2, n3) {
     let arr = [{value: n1, index: 0}, {value: n2, index: 1}, {value: n3, index: 2}];
@@ -489,18 +595,32 @@
 
   export default {
     name: 'animal',
-    components: {onePlayer, speedController, board},
+    components: {onePlayer, speedController, board, onePlayerSimple},
     data () {
       return {
+        height: 0,
         timeInterval: null,
         interval: 400,
-        scene: 25,
+        scene: 29,
         players: [],
         defaultPlayer: new Player(0, "player1"),
         logs: [],
+        me: {
+          play: false,
+          rock: 0,
+          scissors: 0,
+          paper: 0,
+          star: 0,
+          opponentPromise: null,
+          promise: "",
+          willPlay: "",
+          isWin: false,
+        },
+        battleIndex: -1,
       }
     },
     mounted () {
+      this.height = window.innerHeight;
     },
     computed: {
       playingPlayers () {
@@ -513,21 +633,21 @@
         return this.players.filter(p => p.status === "lose");
       },
       boardRock () {
-        let n = 0;
+        let n = this.me.play ? this.me.rock : 0;
         this.playingPlayers.forEach(p => {
           n += p.rock;
         });
         return n;
       },
       boardScissors () {
-        let n = 0;
+        let n = this.me.play ? this.me.scissors : 0;
         this.playingPlayers.forEach(p => {
           n += p.scissors;
         });
         return n;
       },
       boardPaper () {
-        let n = 0;
+        let n = this.me.play ? this.me.paper : 0;
         this.playingPlayers.forEach(p => {
           n += p.paper;
         });
@@ -621,6 +741,9 @@
                 this.scene = 28;
               }
               break;
+            case 101:
+              this.initGame(19);
+              break;
             default:
               this.scene = scene;
               break;
@@ -650,7 +773,7 @@
         this.logs = [];
         this.autoPlay();
       },
-      autoPlay (loop = true) {
+      autoPlay (loop = false) {
         if (loop) {
           while (this.playingPlayers.length >= 2) {
             let randomSortPlayingPlayers = this.$u.shuffleArray(this.playingPlayers);
@@ -661,17 +784,17 @@
             let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
             switch ((playA - playB + 3) % 3) {
               case 0:
-                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);
+                // this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);
                 break;
               case 1:
                 playerA.star--;
                 playerB.star++;
-                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`);
+                // this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`);
                 break;
               case 2:
                 playerA.star++;
                 playerB.star--;
-                this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
+                // this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
                 break;
             }
             this.toBottom("logs");
@@ -682,36 +805,47 @@
             this.refreshPlayerStatus(p, false);
           });
         } else {
-          setTimeout(() => {
+          this.timeInterval = setTimeout(() => {
             if (this.playingPlayers.length >= 2) {
               let randomSortPlayingPlayers = this.$u.shuffleArray(this.playingPlayers);
               let [indexA, indexB] = [randomSortPlayingPlayers[0].index, randomSortPlayingPlayers[1].index];
               let [playerA, playerB] = [this.players[indexA], this.players[indexB]];
-              let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper);
-              let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper);
+              let [promiseA, promiseB] = [playerA.promise(), playerB.promise()];
+              let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper, promiseB);
+              let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
+              let log = `${playerA.name} vs ${playerB.name}，`;
+              if (promiseA) {
+                log += `${playerA.name}宣称要打${["石头","剪刀","布"][promiseA]}，`;
+              }
+              if (promiseB) {
+                log += `${playerB.name}宣称要打${["石头","剪刀","布"][promiseB]}，`;
+              }
+              log += `对战结果：`;
               switch ((playA - playB + 3) % 3) {
                 case 0:
-                  this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`);
+                  log += `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`;
                   break;
                 case 1:
                   playerA.star--;
                   playerB.star++;
-                  this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`);
+                  log += `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`;
                   break;
                 case 2:
                   playerA.star++;
                   playerB.star--;
-                  this.logs.push(`${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`);
+                  log += `${playerA.name}出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerA.name}胜`;
                   break;
               }
+              this.logs.push(log);
               this.toBottom("logs");
               this.refreshPlayerStatus(playerA);
               this.refreshPlayerStatus(playerB);
-              this.autoPlay();
+              this.autoPlay(loop);
             } else {
               this.players.forEach(p => {
-                this.refreshPlayerStatus(p, false);
+                this.refreshPlayerStatus(p, !this.me.play);
               });
+              this.judge();
             }
           }, this.interval);
         }
@@ -737,6 +871,90 @@
       },
       changeInterval (i) {
         this.interval = i
+      },
+      initGame (numberOfAI) {
+        this.scene = 101;
+        this.players = [];
+        for (let i = 0; i < numberOfAI; i++) {
+          this.players.push(new Player(i, "第" + (i + 1) + "号电脑", getRandom(["random", "observe", "peace", "cheat", "interfere"])));
+        }
+        this.me.play = true;
+        this.me.rock = 4;
+        this.me.scissors = 4;
+        this.me.paper = 4;
+        this.me.star = 3;
+        this.interval = 1005000;
+        this.autoPlay();
+      },
+      getLastLog (player) {
+        return getLast(this.logs.filter(l => l.indexOf(player.name) > -1));
+      },
+      toBattle (index) {
+        this.battleIndex = index;
+        this.me.promise = "";
+        this.me.willPlay = "";
+        this.me.opponentPromise = this.players[index].promise();
+      },
+      battle () {
+        let playerB = this.players[this.battleIndex];
+        let promiseA;
+        if (this.me.promise === "") promiseA = null;
+        else if (this.me.promise === "0") promiseA = 0;
+        else if (this.me.promise === "1") promiseA = 1;
+        else if (this.me.promise === "2") promiseA = 2;
+        let promiseB = this.me.opponentPromise;
+        let playA;
+        if (this.me.willPlay === "0") {
+          playA = 0;
+          this.me.rock--;
+        } else if (this.me.willPlay === "1") {
+          playA = 1;
+          this.me.scissors--;
+        } else if (this.me.willPlay === "2") {
+          playA = 2;
+          this.me.paper--;
+        }
+        let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
+        let log = `你 vs ${playerB.name}，`;
+        if (promiseA) {
+          log += `你宣称要打${["石头","剪刀","布"][promiseA]}，`;
+        }
+        if (promiseB) {
+          log += `${playerB.name}宣称要打${["石头","剪刀","布"][promiseB]}，`;
+        }
+        log += `对战结果：`;
+        switch ((playA - playB + 3) % 3) {
+          case 0:
+            log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`;
+            break;
+          case 1:
+            this.me.star--;
+            playerB.star++;
+            log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`;
+            break;
+          case 2:
+            this.me.star++;
+            playerB.star--;
+            log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，你胜`;
+            break;
+        }
+        this.logs.push(log);
+        this.refreshPlayerStatus(playerB);
+        this.battleIndex = -1;
+        this.judge();
+      },
+      judge () {
+        if (this.me.rock + this.me.scissors + this.me.paper === 0 && this.me.star >= 3) {
+          // win
+          this.me.play = false;
+          this.me.isWin = true;
+          this.scene = 102;
+        } else if (this.me.star === 0 || this.me.rock + this.me.scissors + this.me.paper === 0 || this.playingPlayers.length === 0) {
+          // lose
+          this.me.play = false;
+          this.me.isWin = false;
+          this.scene = 102;
+        }
       }
     }
   }
