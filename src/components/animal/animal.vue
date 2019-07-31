@@ -19,8 +19,8 @@
 
     <div v-else-if="scene === 3" class="scene flex" @click="changeScene(4)">
       <div class="text">
-        大致游戏规则如下：<br>
-        在一个封闭空间内，若干名玩家同时进行一场游戏，游戏开始时，每个人手里有12张牌（4张石头、4张剪刀、4张布）和三颗星星。<br>
+        电影里的游戏规则大致如下：<br>
+        在一个封闭空间内，若干名玩家同时进行一场游戏，游戏开始时，每个人手里有12张牌（4张石头、4张剪刀、4张布）和3颗星星。<br>
         你可以找到任意一个人与你对决，每人各出一张牌，赢的那一方拿走对方身上的一颗星，同时打出去的牌也会被收走。<br>
         最后，在限定的时间内打光手里所有的牌，并且保住三颗及以上星星的人即可赢得比赛<br>
         如果时间到了，你还有手牌，或者星星少于三颗，则被淘汰
@@ -186,7 +186,7 @@
         <tr><td>10</td><td>261</td><td>239</td></tr>
         <tr><td>总计</td><td>2680</td><td>2320</td></tr>
       </table>
-      <div class="text center">和平者的胜率为53.60%，甚至比随机者还要低</div>
+      <div class="text center">和平者的胜率为53.60%，比随机者稍微低一点点</div>
     </div>
 
     <div v-else-if="scene === 21" class="scene flex" @click="changeScene(22)">
@@ -243,7 +243,7 @@
     </div>
 
     <div v-else-if="scene === 26" class="scene flex" @click="changeScene(27)">
-      <div class="text center mb">为了平衡一下欺诈者的胜率，我们再引入一个角色：干扰者，名字用黄色表示</div>
+      <div class="text center mb">我们再引入一个角色：干扰者，名字用黄色表示</div>
       <one-player style="margin-bottom: 20px" :player="defaultPlayer"></one-player>
       <div class="text center mb bold">干扰者的本质是随机者，而且是一群追求快乐的随机者，干扰者的出牌策略与随机者相同，并且在出牌前会宣布一张牌，与欺诈者不同的是，过他宣布的牌与他要打的牌没有任何关系，是完全随机宣布，也完全随机出牌</div>
       <div class="text center">接下来我们再模拟一场简单的游戏，5种角色各10人，看看结果如何</div>
@@ -291,7 +291,7 @@
     </div>
 
     <div v-else-if="scene === 101" class="game">
-      <board :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
+      <board class="mb" :rock="boardRock" :scissors="boardScissors" :paper="boardPaper"></board>
       <div class="player-list">
         <one-player-simple v-for="(p, index) in players" :key="index" :player="p" :log="getLastLog(p)" @toBattle="toBattle(index)"></one-player-simple>
       </div>
@@ -306,7 +306,7 @@
     <div v-else-if="scene === 102" class="scene flex">
       <div class="text center mb">{{me.isWin ? '恭喜胜利' : '失败'}}</div>
       <div class="opes">
-        <div class="btn" @click="initGame(19)">重新开始</div>
+        <div class="btn" @click="initGame(19, 5000)">重新开始</div>
       </div>
     </div>
 
@@ -316,7 +316,7 @@
     <div v-if="battleIndex !== -1" class="mask">
       <div class="dialog">
         <div class="row">vs {{players[battleIndex].name}}</div>
-        <div v-if="me.opponentPromise" class="row">对方宣称即将打出{{["石头","剪刀","布"][me.opponentPromise]}}</div>
+        <div v-if="me.opponentPromise !== null" class="row">对方宣称即将打出{{["石头","剪刀","布"][me.opponentPromise]}}</div>
         <el-form>
           <el-form-item label="你宣称打出">
             <el-select v-model="me.promise">
@@ -334,7 +334,8 @@
             </el-select>
           </el-form-item>
         </el-form>
-        <div v-if="players[battleIndex].status === 'playing' && me.willPlay !== ''" class="btn" @click="battle()">确定</div>
+        <div v-if="players[battleIndex].status === 'playing' && me.willPlay !== ''" class="btn" @click="battle()">出牌</div>
+        <div v-if="players[battleIndex].status !== 'playing'" class="btn" @click="battleIndex = -1">对手已离开游戏，关闭</div>
       </div>
     </div>
 
@@ -345,6 +346,15 @@
   *{
     box-sizing: border-box;
     font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
+  }
+  .pt{
+    padding-top: 20px;
+  }
+  .pb{
+    padding-bottom: 20px;
+  }
+  .mt{
+    margin-bottom: 20px;
   }
   .mb{
     margin-bottom: 20px;
@@ -419,6 +429,7 @@
       height: 200px;
       padding: 0 20px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       font-size: 12px;
     }
     .table{
@@ -430,6 +441,7 @@
   .game{
     width: 100vw;
     height: 100%;
+    padding-top: 20px;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -599,9 +611,10 @@
     data () {
       return {
         height: 0,
+        notifyPromise: Promise.resolve(),
         timeInterval: null,
         interval: 400,
-        scene: 29,
+        scene: 1,
         players: [],
         defaultPlayer: new Player(0, "player1"),
         logs: [],
@@ -655,6 +668,16 @@
       },
     },
     methods: {
+      notify(msg) {
+        this.notifyPromise = this.notifyPromise.then(this.$nextTick).then(()=>{
+          this.$notify({
+            message: msg,
+            showClose: false,
+            duration: 1500,
+            position: 'top-left'
+          });
+        });
+      },
       changeScene (scene) {
         if (this.scene !== scene) {
           switch (scene) {
@@ -727,6 +750,11 @@
               this.scene = 23;
               this.startGame();
               break;
+            case 24:
+              if (this.playingPlayers.length === 0) {
+                this.scene = 24;
+              }
+              break;
             case 26:
               this.scene = 26;
               this.defaultPlayer = new Player(0, "干扰者", "interfere");
@@ -742,7 +770,7 @@
               }
               break;
             case 101:
-              this.initGame(19);
+              this.initGame(19, 5000);
               break;
             default:
               this.scene = scene;
@@ -814,10 +842,10 @@
               let playA = playerA.play(this.boardRock, this.boardScissors, this.boardPaper, promiseB);
               let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
               let log = `${playerA.name} vs ${playerB.name}，`;
-              if (promiseA) {
+              if (promiseA !== null) {
                 log += `${playerA.name}宣称要打${["石头","剪刀","布"][promiseA]}，`;
               }
-              if (promiseB) {
+              if (promiseB !== null) {
                 log += `${playerB.name}宣称要打${["石头","剪刀","布"][promiseB]}，`;
               }
               log += `对战结果：`;
@@ -843,9 +871,11 @@
               this.autoPlay(loop);
             } else {
               this.players.forEach(p => {
-                this.refreshPlayerStatus(p, !this.me.play);
+                this.refreshPlayerStatus(p, this.me.play);
               });
-              this.judge();
+              if (this.me.play) {
+                this.judge();
+              }
             }
           }, this.interval);
         }
@@ -872,9 +902,10 @@
       changeInterval (i) {
         this.interval = i
       },
-      initGame (numberOfAI) {
+      initGame (numberOfAI, interval) {
         this.scene = 101;
         this.players = [];
+        this.logs= [];
         for (let i = 0; i < numberOfAI; i++) {
           this.players.push(new Player(i, "第" + (i + 1) + "号电脑", getRandom(["random", "observe", "peace", "cheat", "interfere"])));
         }
@@ -883,7 +914,7 @@
         this.me.scissors = 4;
         this.me.paper = 4;
         this.me.star = 3;
-        this.interval = 1005000;
+        this.interval = interval;
         this.autoPlay();
       },
       getLastLog (player) {
@@ -916,26 +947,29 @@
         }
         let playB = playerB.play(this.boardRock, this.boardScissors, this.boardPaper, promiseA);
         let log = `你 vs ${playerB.name}，`;
-        if (promiseA) {
+        if (promiseA !== null) {
           log += `你宣称要打${["石头","剪刀","布"][promiseA]}，`;
         }
-        if (promiseB) {
+        if (promiseB !== null) {
           log += `${playerB.name}宣称要打${["石头","剪刀","布"][promiseB]}，`;
         }
         log += `对战结果：`;
         switch ((playA - playB + 3) % 3) {
           case 0:
             log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，平手`;
+            this.notify("平手");
             break;
           case 1:
             this.me.star--;
             playerB.star++;
             log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，${playerB.name}胜`;
+            this.notify("失败，星-1");
             break;
           case 2:
             this.me.star++;
             playerB.star--;
             log += `你出${["石头","剪刀","布"][playA]}，${playerB.name}出${["石头","剪刀","布"][playB]}，你胜`;
+            this.notify("胜利，星+1");
             break;
         }
         this.logs.push(log);
@@ -946,11 +980,13 @@
       judge () {
         if (this.me.rock + this.me.scissors + this.me.paper === 0 && this.me.star >= 3) {
           // win
+          this.battleIndex = -1;
           this.me.play = false;
           this.me.isWin = true;
           this.scene = 102;
         } else if (this.me.star === 0 || this.me.rock + this.me.scissors + this.me.paper === 0 || this.playingPlayers.length === 0) {
           // lose
+          this.battleIndex = -1;
           this.me.play = false;
           this.me.isWin = false;
           this.scene = 102;

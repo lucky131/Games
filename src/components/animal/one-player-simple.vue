@@ -16,7 +16,8 @@
 
 <style scoped lang="scss">
   .one-player-simple{
-    border-bottom: 2px solid black;
+    border-top: 2px solid black;
+    &:first-child{border-top: none}
     &.win{
       background-color: rgb(179, 217, 179);
     }
