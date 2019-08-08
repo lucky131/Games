@@ -237,6 +237,14 @@ export default {
           loading: false,
           mobile: true,
         },
+        {
+          name: "黑暗森林",
+          path: "/darkForest",
+          desc: "黑暗森林法则游戏",
+          color: ["135deg", "#56ff7b", "#439f89"],
+          loading: false,
+          mobile: false,
+        },
       ]
     }
   },

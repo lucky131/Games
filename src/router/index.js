@@ -115,6 +115,12 @@ const router = new Router({
       component: () => import('../components/animal/animal'),
       meta: {mouseRightMenu: false, mouseSelect: false}
     },
+    {
+      path: "/darkForest",
+      name: "darkForest",
+      component: () => import('../components/darkForest/darkForest'),
+      meta: {mouseRightMenu: false, mouseSelect: false}
+    },
   ]
 })
 
