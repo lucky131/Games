@@ -26,7 +26,6 @@
 </style>
 
 <script>
-  import * as THREE from 'three'
   import * as Stats from 'stats-js'
   import * as dat from 'dat.gui'
 
