@@ -1,7 +1,9 @@
 export default {
   data(){
     return{
-      oriCityData: `安徽	合肥
+      oriCityData: `新疆生产建设兵团	新疆生产建设兵团
+新疆生产建设兵团	新疆兵团
+安徽	合肥
 安徽	淮北
 安徽	亳州
 安徽	宿州
