@@ -1,12 +1,17 @@
 <template>
   <div class="darkForest">
-    <div class="game"></div>
+    <div class="main">
+      <div class="wrapper" :style="{left: -screenWidth*tabIndex+'px'}">
+        <div class="screen">鸡</div>
+        <div class="screen">你</div>
+        <div class="screen">太</div>
+        <div class="screen">美</div>
+      </div>
+    </div>
     <div class="tabs">
-      <div class="tab" :style="{width: screenWidth/5*[2,1,1,1][tabIndex]+'px'}" @click="tabIndex = 0">1</div>
-      <div class="tab" :style="{width: screenWidth/5*[1,2,1,1][tabIndex]+'px'}" @click="tabIndex = 1">2</div>
-      <div class="tab" :style="{width: screenWidth/5*[1,1,2,1][tabIndex]+'px'}" @click="tabIndex = 2">3</div>
-      <div class="tab" :style="{width: screenWidth/5*[1,1,1,2][tabIndex]+'px'}" @click="tabIndex = 3">4</div>
+      <div v-for="(tab, index) in tabs" :key="index" class="tab" :style="{width: screenWidth/5*(tabIndex === index ? 2 : 1)+'px'}" @click="tabIndex = index">{{tab}}</div>
       <div class="bg" :style="{width: screenWidth/5*2+'px', left: screenWidth/5*tabIndex+'px'}"></div>
+      <div class="light-bar"></div>
     </div>
   </div>
 </template>
@@ -15,12 +20,31 @@
   .darkForest{
     width: 100vw;
     height: 100vh;
-    background-color: black;
     display: flex;
     flex-flow: column nowrap;
-    .game{
+    .main{
       width: 100%;
       flex: 1 0 0;
+      position: relative;
+      .wrapper{
+        height: 100%;
+        display: flex;
+        position: absolute;
+        top: 0;
+        transition: left 300ms;
+        .screen{
+          width: 100vw;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 64px;
+          &:nth-child(1){background-color: lightblue}
+          &:nth-child(2){background-color: lightgoldenrodyellow}
+          &:nth-child(3){background-color: lightgreen}
+          &:nth-child(4){background-color: lightpink}
+        }
+      }
     }
     .tabs{
       width: 100%;
@@ -42,6 +66,15 @@
         top: 0;
         transition: left 300ms;
       }
+      .light-bar{
+        width: 100%;
+        height: 6px;
+        background-color: rgba(255,255,255,.5);
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+      }
     }
   }
 </style>
@@ -52,6 +85,7 @@ export default {
   data () {
     return {
       screenWidth: 0,
+      tabs: ["唱", "跳", "rap", "篮球"],
       tabIndex: 0
     }
   },
