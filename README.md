@@ -5,7 +5,7 @@ npm install
 npm run dev
 ```
 ## Game Menu
-名称Name | 描述Description | 链接Link
+名称Name | 描述Description | 在线链接Link
 --- | --- | ---
 Minesweeper     | 扫雷 | [Click Me](https://lucky131.github.io/GamesPage/#/minesweeper)
 Snake           | 贪吃蛇 | [Click Me](https://lucky131.github.io/GamesPage/#/snake)
