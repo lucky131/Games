@@ -116,9 +116,9 @@ const router = new Router({
       meta: {mouseRightMenu: false, mouseSelect: false}
     },
     {
-      path: "/darkForest",
-      name: "darkForest",
-      component: () => import('../components/darkForest/darkForest'),
+      path: "/road2CTO",
+      name: "road2CTO",
+      component: () => import('../components/road2CTO/road2CTO'),
       meta: {mouseRightMenu: false, mouseSelect: false}
     },
   ]
