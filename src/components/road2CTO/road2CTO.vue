@@ -1,28 +1,31 @@
 <template>
   <div class="road2CTO" :style="{width: screenWidth + 'px', height: screenHeight + 'px'}">
     <div v-if="UIController === 'loading'" class="scene loading">
-      <div v-if="flag" id="preload" class="preload">
-        <img src="https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMly12QiCCIS6DuAAQhxqWjoJQAAX54wDzQJQABCHe297.jpg" alt="">
-        <img src="https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMlzF2QiDyIVB9DAAK-H5jEcGQAAX54wOpDR0AAr43321.jpg" alt="">
-        <img src="https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEGIZCakAALHR09h2BAAAX55AAOX0wAAsdf536.jpg" alt="">
-        <img src="https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEaIbQ5cAAesIaPBKPQAAX55ABd5KkAB6w5925.jpg" alt="">
+      <div v-if="false" class="preload">
+        <img v-for="(img, index) in preloads" :key="index" :src="img">
       </div>
-      <div @click="flag = !flag">{{flag}}</div>
-      <div v-if="preloadNumber < preloads.length">{{preloadNumber}} / {{preloads.length}}</div>
+      <div v-if="preloadNumber < preloads.length">加载中 {{preloadNumber}} / {{preloads.length}}</div>
       <div v-else>加载完毕</div>
     </div>
     <div v-else-if="UIController === 'main'" class="scene main">
-      <div class="game">
-        <div class="wrapper" :style="{left: -screenWidth*tabIndex+'px'}">
-          <div class="screen">鸡</div>
-          <div class="screen">你</div>
-          <div class="screen">太</div>
-          <div class="screen">美</div>
+      <div class="main-top">
+        <div class="main-top-wrapper" :style="{left: -screenWidth*tabIndex+'px'}">
+          <div class="main-top-screen screen1" :style="{width: screenWidth + 'px'}">
+            <div class="center-wrapper">
+              <role class="center-role"></role>
+              <div class="map" :style="{top: -player.y * 40 + 'px', left: -player.x * 40 + 'px'}">
+                <img src="./img/map0.png">
+              </div>
+            </div>
+          </div>
+          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">2</div>
+          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">3</div>
+          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">4</div>
         </div>
       </div>
       <div class="tabs">
-        <div v-for="(tab, index) in tabs" :key="index" class="tab" :style="{width: screenWidth/5*(tabIndex === index ? 2 : 1)+'px'}" @click="tabIndex = index">{{tab}}</div>
-        <div class="bg" :style="{width: screenWidth/5*2+'px', left: screenWidth/5*tabIndex+'px'}"></div>
+        <div v-for="(tab, index) in tabs" :key="index" class="tab" @click="tabIndex = index">{{tab}}</div>
+        <div class="bg" :style="{width: screenWidth / tabs.length + 'px', left: screenWidth / tabs.length * tabIndex + 'px'}"></div>
         <div class="light-bar"></div>
       </div>
     </div>
@@ -44,46 +47,59 @@
       .preload{
         width: 100%;
         img{
-          width: 50%;
+          width: 100%;
           display: block;
         }
       }
     }
     /*main*/
     .main{
-      .game{
+      .main-top{
         width: 100%;
         flex: 1 0 0;
         position: relative;
-        .wrapper{
+        .main-top-wrapper{
           height: 100%;
           display: flex;
           position: absolute;
           top: 0;
           transition: left 300ms;
-          .screen{
-            width: 100vw;
+          .main-top-screen{
             height: 100%;
+          }
+          .screen1{
+            background-color: black;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 64px;
-            &:nth-child(1){background-color: lightblue}
-            &:nth-child(2){background-color: lightgoldenrodyellow}
-            &:nth-child(3){background-color: lightgreen}
-            &:nth-child(4){background-color: lightpink}
+            .center-wrapper{
+              width: 40px;
+              height: 40px;
+              position: relative;
+              .center-role{
+                position: absolute;
+                z-index: 1;
+              }
+              .map{
+                position: absolute;
+                transition: top 300ms linear, left 300ms linear;
+              }
+            }
           }
+          .screen2{}
+          .screen3{}
+          .screen4{}
         }
       }
       .tabs{
         width: 100%;
-        height: 100px;
         display: flex;
         background-color: #2e7bff;
         position: relative;
         .tab{
-          height: 100px;
-          line-height: 100px;
+          flex: 1 0 0;
+          height: 60px;
+          line-height: 60px;
           text-align: center;
           transition: width 300ms;
           z-index: 1;
@@ -97,7 +113,7 @@
         }
         .light-bar{
           width: 100%;
-          height: 6px;
+          height: 5px;
           background-color: rgba(255,255,255,.5);
           position: absolute;
           top: 0;
@@ -110,8 +126,12 @@
 </style>
 
 <script>
+  import role from './components/role'
   export default {
     name: 'road2CTO',
+    components: {
+      role
+    },
     data () {
       return {
         screenWidth: 0,
@@ -120,13 +140,18 @@
           "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMly12QiCCIS6DuAAQhxqWjoJQAAX54wDzQJQABCHe297.jpg",
           "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMlzF2QiDyIVB9DAAK-H5jEcGQAAX54wOpDR0AAr43321.jpg",
           "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEGIZCakAALHR09h2BAAAX55AAOX0wAAsdf536.jpg",
-          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEaIbQ5cAAesIaPBKPQAAX55ABd5KkAB6w5925.jpg"
+          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEaIbQ5cAAesIaPBKPQAAX55ABd5KkAB6w5925.jpg",
+          require("./img/role.png")
         ],
         preloadNumber: 0,
         UIController: "loading",
-        tabs: ["唱", "跳", "rap", "篮球"],
+        tabs: ["主界面", "技能", "背包", "设置"],
         tabIndex: 0,
-        flag: false
+        player: {
+          map: "",
+          x: 0,
+          y: 0,
+        }
       }
     },
     created () {
