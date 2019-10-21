@@ -276,6 +276,26 @@
           }
         }, { passive: false })
       })();
+
+      //键盘事件
+      document.onkeydown = (event) => {
+        if(event.keyCode === 32 || event.keyCode === 13){
+          //空格或回车
+          //阻止空格滚动
+          event.preventDefault();
+        } else if(event.keyCode === 87 || event.keyCode === 38){
+          this.touchstart("up");
+        } else if(event.keyCode === 83 || event.keyCode === 40){
+          this.touchstart("down");
+        } else if(event.keyCode === 65 || event.keyCode === 37){
+          this.touchstart("left");
+        } else if(event.keyCode === 68 || event.keyCode === 39){
+          this.touchstart("right");
+        }
+      };
+      document.onkeyup = (event) => {
+        this.touchend();
+      };
     },
     methods: {
       addPreload(type, name, maxIndex){
