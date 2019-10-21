@@ -243,7 +243,7 @@ export default {
           desc: "传统rpg类型游戏",
           color: ["135deg", "#56ff7b", "#439f89"],
           loading: false,
-          mobile: false,
+          mobile: true,
         },
       ]
     }

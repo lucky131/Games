@@ -1,6 +1,6 @@
 <template>
   <div class="role">
-    <img class="role-img" src="../img/role.png" alt="">
+    <img class="role-img" :src="src" alt="">
   </div>
 </template>
 
@@ -18,7 +18,12 @@
   export default {
     name: "role",
     props: {
-
+      direction: String
+    },
+    computed: {
+      src(){
+        return require(`../img/role-${this.direction}.png`)
+      }
     },
     data(){
       return{
