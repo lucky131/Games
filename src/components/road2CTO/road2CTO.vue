@@ -9,12 +9,14 @@
     </div>
     <div v-else-if="UIController === 'main'" class="scene main">
       <div class="main-top">
-        <div class="main-top-wrapper" :style="{left: -screenWidth*tabIndex+'px'}">
+        <div class="main-top-wrapper" :style="{left: -screenWidth * tabIndex + 'px'}">
           <div class="main-top-screen screen1" :style="{width: screenWidth + 'px'}">
             <div class="center-wrapper">
               <role class="center-role" :direction="player.direction"></role>
-              <div class="map" :style="{top: -player.y * 40 + 'px', left: -player.x * 40 + 'px'}">
-                <img src="./img/map0.png">
+              <div class="map" :style="{top: -player.x * 40 + 'px', left: -player.y * 40 + 'px'}">
+                <div class="cell-row" v-for="(row, index1) in allMaps[player.map]" :key="index1">
+                  <img class="cell" v-for="(cell, index2) in row" :key="index2" :src="require(`./img/cell/${cell}.png`)">
+                </div>
               </div>
             </div>
             <div class="ope-wrapper">
@@ -42,6 +44,9 @@
 </template>
 
 <style scoped lang="scss">
+  *{
+    box-sizing: border-box;
+  }
   .road2CTO{
     /*禁止移动端长按选择*/
     -webkit-touch-callout:none;
@@ -101,51 +106,56 @@
               .map{
                 position: absolute;
                 transition: top 300ms linear, left 300ms linear;
+                .cell-row{
+                  display: flex;
+                  .cell{
+                    width: 40px;
+                    height: 40px;
+                  }
+                }
               }
             }
             .ope-wrapper{
               width: 100%;
+              padding: 10px 20px;
               display: flex;
               justify-content: space-between;
               position: absolute;
               bottom: 0;
               .ope-move{
-                width: 120px;
-                height: 120px;
+                width: 150px;
+                height: 150px;
                 position: relative;
                 .ope-move-btn{
-                  background-color: rgba(255,255,255,.5);
+                  width: 60px;
+                  height: 60px;
+                  background-color: #aeaeae;
                   &:active{
-                    background-color: rgba(255,255,255,.75);
+                    background-color: #dbdbdb;
                   }
+                  border-radius: 50%;
+                  border: 2px solid black;
+                  font-size: 32px;
                   position: absolute;
                   display: flex;
                   justify-content: center;
                   align-items: center;
                 }
                 .ope-move-up{
-                  width: 60px;
-                  height: 30px;
                   top: 0;
-                  left: 30px;
+                  left: 45px;
                 }
                 .ope-move-down{
-                  width: 60px;
-                  height: 30px;
                   bottom: 0;
-                  left: 30px;
+                  left: 45px;
                 }
                 .ope-move-left{
-                  width: 30px;
-                  height: 60px;
                   left: 0;
-                  top: 30px;
+                  top: 45px;
                 }
                 .ope-move-right{
-                  width: 30px;
-                  height: 60px;
                   right: 0;
-                  top: 30px;
+                  top: 45px;
                 }
               }
               .ope-interact{}
@@ -191,34 +201,36 @@
 </style>
 
 <script>
-  import role from './components/role'
+  import role from "./components/role"
+
+  import cells from "./db/cells"
+  import maps from "./db/maps"
+
   export default {
     name: 'road2CTO',
     components: {
       role
     },
+    mixins: [cells, maps],
     data () {
       return {
         screenWidth: 0,
         screenHeight: 0,
         preloads: [
-          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMly12QiCCIS6DuAAQhxqWjoJQAAX54wDzQJQABCHe297.jpg",
-          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0A/0A/0E/ChMlzF2QiDyIVB9DAAK-H5jEcGQAAX54wOpDR0AAr43321.jpg",
-          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEGIZCakAALHR09h2BAAAX55AAOX0wAAsdf536.jpg",
-          "https://desk-fd.zol-img.com.cn/t_s4096x2160c5/g4/M0B/0A/0E/ChMlzF2QiEaIbQ5cAAesIaPBKPQAAX55ABd5KkAB6w5925.jpg",
           require("./img/role-up.png"),
           require("./img/role-down.png"),
           require("./img/role-left.png"),
           require("./img/role-right.png"),
+          require("./img/map0.png")
         ],
         preloadNumber: 0,
         UIController: "loading",
         tabs: ["主界面", "技能", "背包", "设置"],
         tabIndex: 0,
         player: {
-          map: "",
-          x: 5,
-          y: 5,
+          map: "test",
+          x: 0,
+          y: 0,
           direction: "down",
           willDirection: "",
           moving: false,
@@ -226,10 +238,18 @@
         }
       }
     },
+    computed: {
+      nowMap(){
+        return this.allMaps[this.player.map];
+      }
+    },
     created () {
       this.screenWidth = window.innerWidth;
       this.screenHeight = window.innerHeight;
 
+      //预加载
+      this.addPreload("cell", "floor", 0);
+      this.addPreload("cell", "wall", 15);
       let promiseAll = [], imgs = [];
       for (let index in this.preloads) {
         promiseAll[index] = new Promise((res, rej) => {
@@ -258,6 +278,11 @@
       })();
     },
     methods: {
+      addPreload(type, name, maxIndex){
+        for(let i = 0; i <= maxIndex; i++){
+          this.preloads.push(require(`./img/${type}/${name}${i}.png`));
+        }
+      },
       touchstart(d){
         this.player.touching = true;
         this.player.willDirection = d;
@@ -271,20 +296,25 @@
       oneStep(){
         if(this.player.touching){
           this.player.direction = this.player.willDirection;
+
           //根据direction判断是否可以走
-          if(this.player.y === 0 && this.player.direction === "up") return
+          if(this.player.direction === "up" && !this.allCells[this.nowMap[this.player.x - 1][this.player.y]].canMove) return
+          if(this.player.direction === "down" && !this.allCells[this.nowMap[this.player.x + 1][this.player.y]].canMove) return
+          if(this.player.direction === "left" && !this.allCells[this.nowMap[this.player.x][this.player.y - 1]].canMove) return
+          if(this.player.direction === "right" && !this.allCells[this.nowMap[this.player.x][this.player.y + 1]].canMove) return
+
           switch (this.player.direction){
             case "up":
-              this.player.y--;
-              break;
-            case "down":
-              this.player.y++;
-              break;
-            case "left":
               this.player.x--;
               break;
-            case "right":
+            case "down":
               this.player.x++;
+              break;
+            case "left":
+              this.player.y--;
+              break;
+            case "right":
+              this.player.y++;
               break;
           }
           this.player.moving = true;
