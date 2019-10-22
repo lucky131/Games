@@ -1,6 +1,8 @@
 <template>
   <div class="role">
-    <img class="role-img" :src="src" alt="">
+    <img class="skin" :src="skinSrc">
+    <img class="clothes" :src="clothesSrc">
+    <img class="hair" :src="hairSrc" :style="{filter: `hue-rotate(${role.hair.hue}deg)`}">
   </div>
 </template>
 
@@ -8,7 +10,9 @@
   .role{
     width: 40px;
     height: 40px;
-    .role-img{
+    position: relative;
+    img{
+      position: absolute;
       display: block;
     }
   }
@@ -18,11 +22,20 @@
   export default {
     name: "role",
     props: {
-      direction: String
+      role: Object
     },
     computed: {
-      src(){
-        return require(`../img/role-${this.direction}.png`)
+      direction(){
+        return this.role.direction;
+      },
+      skinSrc(){
+        return require(`../img/role/skin${this.role.skin.index}-${this.direction}.png`);
+      },
+      clothesSrc(){
+        return require(`../img/role/clothes${this.role.clothes.index}-${this.direction}.png`);
+      },
+      hairSrc(){
+        return require(`../img/role/hair${this.role.hair.index}-${this.direction}.png`);
       }
     },
     data(){

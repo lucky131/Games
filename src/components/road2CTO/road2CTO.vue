@@ -12,7 +12,7 @@
         <div class="main-top-wrapper" :style="{left: -screenWidth * tabIndex + 'px'}">
           <div class="main-top-screen screen1" :style="{width: screenWidth + 'px'}">
             <div class="center-wrapper">
-              <role class="center-role" :direction="player.direction"></role>
+              <role class="center-role" :role="player"></role>
               <div class="map" :style="{top: -player.x * 40 + 'px', left: -player.y * 40 + 'px'}">
                 <div class="cell-row" v-for="(row, index1) in allMaps[player.map]" :key="index1">
                   <img class="cell" v-for="(cell, index2) in row" :key="index2" :src="require(`./img/cell/${cell}.png`)">
@@ -220,8 +220,7 @@
           require("./img/role-up.png"),
           require("./img/role-down.png"),
           require("./img/role-left.png"),
-          require("./img/role-right.png"),
-          require("./img/map0.png")
+          require("./img/role-right.png")
         ],
         preloadNumber: 0,
         UIController: "loading",
@@ -231,6 +230,16 @@
           map: "test",
           x: 0,
           y: 0,
+          skin: {
+            index: 0
+          },
+          clothes: {
+            index: 0
+          },
+          hair: {
+            index: 0,
+            hue: 0,
+          },
           direction: "down",
           willDirection: "",
           moving: false,
@@ -250,6 +259,10 @@
       //预加载
       this.addPreload("cell", "floor", 0);
       this.addPreload("cell", "wall", 15);
+      this.addPreload("role", "skin", 0, true);
+      this.addPreload("role", "hair", 0, true);
+      this.addPreload("role", "clothes", 0, true);
+
       let promiseAll = [], imgs = [];
       for (let index in this.preloads) {
         promiseAll[index] = new Promise((res, rej) => {
@@ -298,9 +311,16 @@
       };
     },
     methods: {
-      addPreload(type, name, maxIndex){
+      addPreload(type, name, maxIndex, needsDirection = false){
         for(let i = 0; i <= maxIndex; i++){
-          this.preloads.push(require(`./img/${type}/${name}${i}.png`));
+          if(needsDirection){
+            this.preloads.push(require(`./img/${type}/${name}${i}-down.png`));
+            this.preloads.push(require(`./img/${type}/${name}${i}-up.png`));
+            this.preloads.push(require(`./img/${type}/${name}${i}-left.png`));
+            this.preloads.push(require(`./img/${type}/${name}${i}-right.png`));
+          } else {
+            this.preloads.push(require(`./img/${type}/${name}${i}.png`));
+          }
         }
       },
       touchstart(d){
