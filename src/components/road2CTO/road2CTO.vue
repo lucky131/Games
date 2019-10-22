@@ -1,8 +1,8 @@
 <template>
   <div class="road2CTO" :style="{width: screenWidth + 'px', height: screenHeight + 'px'}">
     <div v-if="UIController === 'loading'" class="scene loading">
-      <div v-if="false" class="preload">
-        <img v-for="(img, index) in preloads" :key="index" :src="img">
+      <div class="progress-wrapper">
+        <div class="progress-bar" :style="{width: preloadNumber / preloads.length * 100 + '%', filter: `hue-rotate(${preloadNumber / preloads.length * 100}deg)`}"></div>
       </div>
       <div v-if="preloadNumber < preloads.length">加载中 {{preloadNumber}} / {{preloads.length}}</div>
       <div v-else>加载完毕</div>
@@ -46,6 +46,7 @@
 <style scoped lang="scss">
   *{
     box-sizing: border-box;
+    font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
   }
   .road2CTO{
     /*禁止移动端长按选择*/
@@ -64,12 +65,26 @@
     }
     /*loading*/
     .loading{
-      background-color: lightgoldenrodyellow;
-      .preload{
-        width: 100%;
-        img{
-          width: 100%;
-          display: block;
+      background-color: black;
+      color: white;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+      .progress-wrapper{
+        width: 80%;
+        height: 40px;
+        margin-bottom: 20px;
+        background-image: linear-gradient(#9c9c9c, #656565);
+        border-radius: 20px;
+        border: 3px solid #4f4f4f;
+        position: relative;
+        overflow: hidden;
+        .progress-bar{
+          height: 100%;
+          background-image: linear-gradient(#eb5800, #9b3b00);
+          position: absolute;
+          transition: width 500ms;
         }
       }
     }
