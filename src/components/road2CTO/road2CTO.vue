@@ -1,13 +1,82 @@
 <template>
   <div class="road2CTO" :style="{width: screenWidth + 'px', height: screenHeight + 'px'}">
-    <div v-if="UIController === 'loading'" class="scene loading">
+    <div v-show="isMaskShow" class="mask"></div>
+    <div v-if="sceneController === 'loading'" class="scene loading">
       <div class="progress-wrapper">
         <div class="progress-bar" :style="{width: preloadNumber / preloads.length * 100 + '%', filter: `hue-rotate(${preloadNumber / preloads.length * 100}deg)`}"></div>
       </div>
       <div v-if="preloadNumber < preloads.length">加载中 {{preloadNumber}} / {{preloads.length}}</div>
       <div v-else>加载完毕</div>
     </div>
-    <div v-else-if="UIController === 'main'" class="scene main">
+    <div v-else-if="sceneController === 'menu'" class="scene menu">
+      <save save-name="存档一" @newSave="newSave(0)"></save>
+      <save save-name="存档二" @newSave="newSave(1)"></save>
+      <save save-name="存档三" @newSave="newSave(2)"></save>
+    </div>
+    <div v-else-if="sceneController === 'new'" class="scene new">
+      <div class="title">新建角色</div>
+      <div class="name-row">
+        <div class="left-wrapper">
+          <role :role="tempPlayer"></role>
+        </div>
+        <input class="right" type="text" maxlength="10" placeholder="请输入名字">
+      </div>
+      <div class="outlook-wrapper">
+        <div class="head">发型{{tempPlayer.hair.index + 1}}
+          <i v-show="tempPlayer.hair.index > 0" class="el-icon-caret-left left-arrow" @click="tempPlayer.hair.index--"></i>
+          <i v-show="tempPlayer.hair.index < hairNumber - 1" class="el-icon-caret-right right-arrow" @click="tempPlayer.hair.index++"></i>
+        </div>
+        <div class="row">
+          <div class="left">色调</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.hair.hue" :show-tooltip="false" :min="0" :max="360"></el-slider>
+          </div>
+        </div>
+        <div class="row">
+          <div class="left">亮度</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.hair.brightness" :show-tooltip="false" :min="0" :max="3" :step="0.01"></el-slider>
+          </div>
+        </div>
+      </div>
+      <div class="outlook-wrapper">
+        <div class="head">皮肤{{tempPlayer.skin.index + 1}}
+          <i v-show="tempPlayer.skin.index > 0" class="el-icon-caret-left left-arrow" @click="tempPlayer.skin.index--"></i>
+          <i v-show="tempPlayer.skin.index < skinNumber - 1" class="el-icon-caret-right right-arrow" @click="tempPlayer.skin.index++"></i>
+        </div>
+        <div class="row">
+          <div class="left">色调</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.skin.hue" :show-tooltip="false" :min="0" :max="360"></el-slider>
+          </div>
+        </div>
+        <div class="row">
+          <div class="left">亮度</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.skin.brightness" :show-tooltip="false" :min="0.2" :max="2" :step="0.01"></el-slider>
+          </div>
+        </div>
+      </div>
+      <div class="outlook-wrapper">
+        <div class="head">衣服{{tempPlayer.clothes.index + 1}}
+          <i v-show="tempPlayer.clothes.index > 0" class="el-icon-caret-left left-arrow" @click="tempPlayer.clothes.index--"></i>
+          <i v-show="tempPlayer.clothes.index < clothesNumber - 1" class="el-icon-caret-right right-arrow" @click="tempPlayer.clothes.index++"></i>
+        </div>
+        <div class="row">
+          <div class="left">色调</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.clothes.hue" :show-tooltip="false" :min="0" :max="360"></el-slider>
+          </div>
+        </div>
+        <div class="row">
+          <div class="left">亮度</div>
+          <div class="right">
+            <el-slider v-model="tempPlayer.clothes.brightness" :show-tooltip="false" :min="0" :max="3" :step="0.01"></el-slider>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else-if="sceneController === 'main'" class="scene main">
       <div class="main-top">
         <div class="main-top-wrapper" :style="{left: -screenWidth * tabIndex + 'px'}">
           <div class="main-top-screen screen1" :style="{width: screenWidth + 'px'}">
@@ -56,6 +125,20 @@
     -moz-user-select:none;
     -ms-user-select:none;
     user-select:none;
+    .mask{
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      background-color: black;
+      opacity: 0;
+      z-index: 999;
+      animation: a-mask 600ms linear;
+      @keyframes a-mask {
+        0%{opacity: 0}
+        50%{opacity: 1}
+        100%{opacity: 0}
+      }
+    }
     .scene{
       width: 100%;
       height: 100%;
@@ -63,7 +146,7 @@
       flex-flow: column nowrap;
       overflow: hidden;
     }
-    /*loading*/
+    /*====loading====*/
     .loading{
       background-color: black;
       color: white;
@@ -88,7 +171,94 @@
         }
       }
     }
-    /*main*/
+    /*====menu====*/
+    .menu{
+      justify-content: center;
+      align-items: center;
+      background-image: linear-gradient(180deg, #ffe5ed, #f5a2b8);
+      padding: 0 40px;
+    }
+    /*====new====*/
+    .new{
+      background-image: linear-gradient(180deg, #ffe5ed, #f5a2b8);
+      justify-content: center;
+      align-items: center;
+      padding: 0 40px;
+      .title{
+        width: 100%;
+        margin-bottom: 20px;
+        border-bottom: 1px solid black;
+        font-size: 20px;
+        text-align: center;
+      }
+      .name-row{
+        width: 100%;
+        height: 44px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .left-wrapper{
+          width: 44px;
+          height: 44px;
+          margin-right: 20px;
+          background-color: white;
+          border: 2px solid black;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        .right{
+          width: 180px;
+          height: 32px;
+          line-height: 32px;
+          padding: 0 10px;
+          border: none;
+          border-radius: 4px;
+          font-size: 20px;
+        }
+      }
+      .outlook-wrapper{
+        width: 100%;
+        background-color: #d77fb1;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        overflow: hidden;
+        .head{
+          width: 100%;
+          height: 32px;
+          line-height: 32px;
+          padding: 0 10px;
+          border-bottom: 1px solid black;
+          font-size: 20px;
+          text-align: center;
+          position: relative;
+          .left-arrow{
+            position: absolute;
+            top: 6px;
+            left: 10px;
+          }
+          .right-arrow{
+            position: absolute;
+            top: 6px;
+            right: 10px;
+          }
+        }
+        .row{
+          width: 100%;
+          height: 40px;
+          padding: 0 20px;
+          display: flex;
+          align-items: center;
+          .left{
+            width: 60px;
+          }
+          .right{
+            flex: 1 0 0;
+          }
+        }
+      }
+    }
+    /*====main====*/
     .main{
       .main-top{
         width: 100%;
@@ -216,44 +386,77 @@
 </style>
 
 <script>
+  // components
   import role from "./components/role"
+  import save from "./components/save"
 
+  // db
   import cells from "./db/cells"
   import maps from "./db/maps"
+
+  function log(...arg) {
+    console.log(...arg);
+  }
 
   export default {
     name: 'road2CTO',
     components: {
-      role
+      role,
+      save
     },
     mixins: [cells, maps],
     data () {
       return {
         screenWidth: 0,
         screenHeight: 0,
-        preloads: [
-          require("./img/role-up.png"),
-          require("./img/role-down.png"),
-          require("./img/role-left.png"),
-          require("./img/role-right.png")
-        ],
+        preloads: [],
         preloadNumber: 0,
-        UIController: "loading",
+        sceneController: "loading",
         tabs: ["主界面", "技能", "背包", "设置"],
         tabIndex: 0,
-        player: {
-          map: "test",
-          x: 0,
-          y: 0,
+        isMaskShow: false,
+        skinNumber: 1,
+        hairNumber: 2,
+        clothesNumber: 1,
+        saveIndex: 0,
+        tempPlayer: {
+          name: "",
           skin: {
-            index: 0
+            index: 0,
+            hue: 0,
+            brightness: 1,
           },
           clothes: {
-            index: 0
+            index: 0,
+            hue: 0,
+            brightness: 1,
           },
           hair: {
             index: 0,
             hue: 0,
+            brightness: 1,
+          },
+          direction: "down",
+        },
+        player: {
+          name: "",
+          map: "test",
+          x: 0,
+          y: 0,
+          skin: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
+          },
+          clothes: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
+          },
+          hair: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
           },
           direction: "down",
           willDirection: "",
@@ -272,11 +475,11 @@
       this.screenHeight = window.innerHeight;
 
       //预加载
-      this.addPreload("cell", "floor", 0);
-      this.addPreload("cell", "wall", 15);
-      this.addPreload("role", "skin", 0, true);
-      this.addPreload("role", "hair", 0, true);
-      this.addPreload("role", "clothes", 0, true);
+      this.addPreload("cell", "floor", 1);
+      this.addPreload("cell", "wall", 16);
+      this.addPreload("role", "skin", this.skinNumber, true);
+      this.addPreload("role", "hair", this.hairNumber, true);
+      this.addPreload("role", "clothes", this.clothesNumber, true);
 
       let promiseAll = [], imgs = [];
       for (let index in this.preloads) {
@@ -291,7 +494,7 @@
       }
       Promise.all(promiseAll).then(() => {
         setTimeout(() => {
-          this.UIController = "main";
+          this.changeScene("menu", true);
         }, 1000)
       })
     },
@@ -326,8 +529,8 @@
       };
     },
     methods: {
-      addPreload(type, name, maxIndex, needsDirection = false){
-        for(let i = 0; i <= maxIndex; i++){
+      addPreload(type, name, number, needsDirection = false){
+        for(let i = 0; i < number; i++){
           if(needsDirection){
             this.preloads.push(require(`./img/${type}/${name}${i}-down.png`));
             this.preloads.push(require(`./img/${type}/${name}${i}-up.png`));
@@ -337,6 +540,23 @@
             this.preloads.push(require(`./img/${type}/${name}${i}.png`));
           }
         }
+      },
+      changeScene(scene, needsFade = false){
+        if(needsFade){
+          this.isMaskShow = true;
+          setTimeout(() => {
+            this.sceneController = scene;
+          }, 300);
+          setTimeout(() => {
+            this.isMaskShow = false;
+          }, 600);
+        } else {
+          this.sceneController = scene;
+        }
+      },
+      newSave(saveIndex){
+        this.saveIndex = saveIndex;
+        this.changeScene("new");
       },
       touchstart(d){
         this.player.touching = true;

@@ -1,8 +1,8 @@
 <template>
   <div class="role">
-    <img class="skin" :src="skinSrc">
-    <img class="clothes" :src="clothesSrc">
-    <img class="hair" :src="hairSrc" :style="{filter: `hue-rotate(${role.hair.hue}deg)`}">
+    <img class="skin" :src="skinSrc" :style="{filter: `hue-rotate(${role.skin.hue}deg) brightness(${role.skin.brightness})`}">
+    <img class="clothes" :src="clothesSrc" :style="{filter: `hue-rotate(${role.clothes.hue}deg) brightness(${role.clothes.brightness})`}">
+    <img class="hair" :src="hairSrc" :style="{filter: `hue-rotate(${role.hair.hue}deg) brightness(${role.hair.brightness})`}">
   </div>
 </template>
 
