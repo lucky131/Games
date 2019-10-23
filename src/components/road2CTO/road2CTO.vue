@@ -19,7 +19,8 @@
         <div class="left-wrapper">
           <role :role="tempPlayer"></role>
         </div>
-        <input class="right" type="text" maxlength="10" placeholder="请输入名字">
+        <input class="right" type="text" v-model="tempPlayer.name" maxlength="10" placeholder="请输入名字">
+        <div v-if="tempPlayer.name.indexOf('三杠') > -1" class="tips">名字里不能带有三杠！</div>
       </div>
       <div class="outlook-wrapper">
         <div class="head">发型{{tempPlayer.hair.index + 1}}
@@ -74,6 +75,10 @@
             <el-slider v-model="tempPlayer.clothes.brightness" :show-tooltip="false" :min="0" :max="3" :step="0.01"></el-slider>
           </div>
         </div>
+      </div>
+      <div class="ope-row">
+        <c-button @click="changeScene('menu')"><i class="el-icon-arrow-left"></i> 返回</c-button>
+        <c-button background-color="#67C23A" :disabled="tempPlayer.name === '' || tempPlayer.name.indexOf('三杠') > -1"><i class="el-icon-check"></i> 创建</c-button>
       </div>
     </div>
     <div v-else-if="sceneController === 'main'" class="scene main">
@@ -192,12 +197,12 @@
         text-align: center;
       }
       .name-row{
-        width: 100%;
         height: 44px;
         margin-bottom: 20px;
         display: flex;
         justify-content: center;
         align-items: center;
+        position: relative;
         .left-wrapper{
           width: 44px;
           height: 44px;
@@ -216,12 +221,19 @@
           border-radius: 4px;
           font-size: 20px;
         }
+        .tips{
+          position: absolute;
+          top: 40px;
+          left: 70px;
+          font-size: 14px;
+          color: red;
+        }
       }
       .outlook-wrapper{
         width: 100%;
-        background-color: #d77fb1;
+        background-color: rgba(245, 150, 175, 0.82);
         margin-bottom: 10px;
-        border-radius: 4px;
+        border-radius: 10px;
         overflow: hidden;
         .head{
           width: 100%;
@@ -229,7 +241,7 @@
           line-height: 32px;
           padding: 0 10px;
           border-bottom: 1px solid black;
-          font-size: 20px;
+          font-size: 16px;
           text-align: center;
           position: relative;
           .left-arrow{
@@ -245,7 +257,7 @@
         }
         .row{
           width: 100%;
-          height: 40px;
+          height: 30px;
           padding: 0 20px;
           display: flex;
           align-items: center;
@@ -255,6 +267,16 @@
           .right{
             flex: 1 0 0;
           }
+        }
+      }
+      .ope-row{
+        width: 100%;
+        margin-top: 20px;
+        display: flex;
+        .c-button{
+          flex: 1 0 0;
+          margin-left: 20px;
+          &:first-child{margin-left: 0}
         }
       }
     }
@@ -387,6 +409,7 @@
 
 <script>
   // components
+  import cButton from "./components/c-button"
   import role from "./components/role"
   import save from "./components/save"
 
@@ -401,6 +424,7 @@
   export default {
     name: 'road2CTO',
     components: {
+      cButton,
       role,
       save
     },
@@ -419,25 +443,7 @@
         hairNumber: 2,
         clothesNumber: 1,
         saveIndex: 0,
-        tempPlayer: {
-          name: "",
-          skin: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          clothes: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          hair: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          direction: "down",
-        },
+        tempPlayer: {},
         player: {
           name: "",
           map: "test",
@@ -556,6 +562,25 @@
       },
       newSave(saveIndex){
         this.saveIndex = saveIndex;
+        this.tempPlayer = {
+          name: "",
+          skin: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
+          },
+          clothes: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
+          },
+          hair: {
+            index: 0,
+            hue: 0,
+            brightness: 1,
+          },
+          direction: "down",
+        };
         this.changeScene("new");
       },
       touchstart(d){
