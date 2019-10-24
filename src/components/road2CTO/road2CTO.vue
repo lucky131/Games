@@ -93,14 +93,15 @@
                 </div>
               </div>
             </div>
-            <div class="ope-wrapper">
+            <div class="ope-wrapper" :style="{opacity: settings.opeOpacity}">
+              <div v-if="settings.movePosition === 'right'" class="ope-interact"><i class="el-icon-chat-dot-round"></i></div>
               <div class="ope-move">
                 <div class="ope-move-btn ope-move-up" @touchstart="touchstart('up')" @touchend="touchend"><i class="el-icon-arrow-up"></i></div>
                 <div class="ope-move-btn ope-move-down" @touchstart="touchstart('down')" @touchend="touchend"><i class="el-icon-arrow-down"></i></div>
                 <div class="ope-move-btn ope-move-left" @touchstart="touchstart('left')" @touchend="touchend"><i class="el-icon-arrow-left"></i></div>
                 <div class="ope-move-btn ope-move-right" @touchstart="touchstart('right')" @touchend="touchend"><i class="el-icon-arrow-right"></i></div>
               </div>
-              <div class="ope-interact"><i class="el-icon-chat-dot-round"></i></div>
+              <div v-if="settings.movePosition === 'left'" class="ope-interact"><i class="el-icon-chat-dot-round"></i></div>
             </div>
           </div>
           <div class="main-top-screen screen2" :style="{width: screenWidth + 'px'}">2</div>
@@ -108,6 +109,13 @@
           <div class="main-top-screen screen4" :style="{width: screenWidth + 'px'}">
             <div class="setting-title">当前存档：{{["存档一", "存档二", "存档三"][saveIndex]}}</div>
             <c-button padding="0 20px" @click="save()">保存并退出</c-button>
+            <div class="setting-title">操作风格</div>
+            <el-radio-group v-model="settings.movePosition" @change="saveSettings()">
+              <el-radio label="left">移动 互动</el-radio>
+              <el-radio label="right">互动 移动</el-radio>
+            </el-radio-group>
+            <div class="setting-title">操作栏不透明度</div>
+            <el-slider style="width: 200px" v-model="settings.opeOpacity" :show-tooltip="false" :min="0" :max="1" :step="0.01" @change="saveSettings()"></el-slider>
           </div>
         </div>
       </div>
@@ -396,13 +404,13 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             background-color: lightpink;
-            padding: 20px;
+            padding: 0 20px;
             display: flex;
             flex-flow: column nowrap;
             align-items: center;
             .setting-title{
               font-size: 14px;
-              margin-bottom: 10px;
+              margin: 30px 0 10px;
             }
           }
         }
@@ -482,6 +490,10 @@
         player: {
           moving: false,
           touching: false,
+        },
+        settings: {
+          movePosition: "left",
+          opeOpacity: 1
         }
       }
     },
@@ -494,12 +506,15 @@
       this.screenWidth = window.innerWidth;
       this.screenHeight = window.innerHeight;
 
-      //加载存档
+      //加载存档与设置
       this.saves = [
         localStorage.getItem("save0") ? JSON.parse(localStorage.getItem("save0")) : null,
         localStorage.getItem("save1") ? JSON.parse(localStorage.getItem("save1")) : null,
         localStorage.getItem("save2") ? JSON.parse(localStorage.getItem("save2")) : null
       ];
+      if(localStorage.getItem("road2CTO_settings")){
+        this.settings = JSON.parse(localStorage.getItem("road2CTO_settings"));
+      }
 
       //预加载
       this.addPreload("cell", "floor", 1);
@@ -621,11 +636,6 @@
         this.$set(this.saves, saveIndex, null)
         localStorage.removeItem(`save${saveIndex}`);
       },
-      save(){
-        this.saves[this.saveIndex] = this.player;
-        localStorage.setItem(`save${this.saveIndex}`, JSON.stringify(this.player));
-        this.changeScene("menu", true);
-      },
       confirmNewSave(){
         let stringSave = JSON.stringify(this.tempPlayer);
         this.saves[this.saveIndex] = JSON.parse(stringSave);
@@ -672,6 +682,14 @@
             this.oneStep();
           }, 300);
         }
+      },
+      save(){
+        this.saves[this.saveIndex] = this.player;
+        localStorage.setItem(`save${this.saveIndex}`, JSON.stringify(this.player));
+        this.changeScene("menu", true);
+      },
+      saveSettings(){
+        localStorage.setItem("road2CTO_settings", JSON.stringify(this.settings));
       }
     }
   }
