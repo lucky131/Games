@@ -9,9 +9,9 @@
       <div v-else>加载完毕</div>
     </div>
     <div v-else-if="sceneController === 'menu'" class="scene menu">
-      <save save-name="存档一" @newSave="newSave(0)"></save>
-      <save save-name="存档二" @newSave="newSave(1)"></save>
-      <save save-name="存档三" @newSave="newSave(2)"></save>
+      <save save-name="存档一" :save-data="saves[0]" @newSave="newSave(0)" @startGame="startGame(0)" @deleteSave="deleteSave(0)"></save>
+      <save save-name="存档二" :save-data="saves[1]" @newSave="newSave(1)" @startGame="startGame(1)" @deleteSave="deleteSave(1)"></save>
+      <save save-name="存档三" :save-data="saves[2]" @newSave="newSave(2)" @startGame="startGame(2)" @deleteSave="deleteSave(2)"></save>
     </div>
     <div v-else-if="sceneController === 'new'" class="scene new">
       <div class="title">新建角色</div>
@@ -78,7 +78,7 @@
       </div>
       <div class="ope-row">
         <c-button @click="changeScene('menu')"><i class="el-icon-arrow-left"></i> 返回</c-button>
-        <c-button background-color="#67C23A" :disabled="tempPlayer.name === '' || tempPlayer.name.indexOf('三杠') > -1"><i class="el-icon-check"></i> 创建</c-button>
+        <c-button @click="confirmNewSave()" background-color="#67C23A" :disabled="tempPlayer.name === '' || tempPlayer.name.indexOf('三杠') > -1"><i class="el-icon-check"></i> 创建</c-button>
       </div>
     </div>
     <div v-else-if="sceneController === 'main'" class="scene main">
@@ -118,7 +118,7 @@
 </template>
 
 <style scoped lang="scss">
-  *{
+  /deep/ *{
     box-sizing: border-box;
     font-family: -apple-system,SF UI Text,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
   }
@@ -443,28 +443,12 @@
         hairNumber: 2,
         clothesNumber: 1,
         saveIndex: 0,
+        saves: [null, null, null],
         tempPlayer: {},
         player: {
-          name: "",
           map: "test",
           x: 0,
           y: 0,
-          skin: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          clothes: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          hair: {
-            index: 0,
-            hue: 0,
-            brightness: 1,
-          },
-          direction: "down",
           willDirection: "",
           moving: false,
           touching: false,
@@ -479,6 +463,13 @@
     created () {
       this.screenWidth = window.innerWidth;
       this.screenHeight = window.innerHeight;
+
+      //加载存档
+      this.saves = [
+        localStorage.getItem("save0") ? JSON.parse(localStorage.getItem("save0")) : null,
+        localStorage.getItem("save1") ? JSON.parse(localStorage.getItem("save1")) : null,
+        localStorage.getItem("save2") ? JSON.parse(localStorage.getItem("save2")) : null
+      ];
 
       //预加载
       this.addPreload("cell", "floor", 1);
@@ -582,6 +573,24 @@
           direction: "down",
         };
         this.changeScene("new");
+      },
+      startGame(saveIndex){
+        this.player = {
+          ...this.player,
+          ...this.saves[saveIndex]
+        };
+        this.changeScene("main", true);
+      },
+      deleteSave(saveIndex){
+        this.$set(this.saves, saveIndex, null)
+        // this.saves[saveIndex] = null;
+        localStorage.removeItem(`save${saveIndex}`);
+      },
+      confirmNewSave(){
+        let stringSave = JSON.stringify(this.tempPlayer);
+        this.saves[this.saveIndex] = JSON.parse(stringSave);
+        localStorage.setItem(`save${this.saveIndex}`, stringSave);
+        this.changeScene("menu");
       },
       touchstart(d){
         this.player.touching = true;

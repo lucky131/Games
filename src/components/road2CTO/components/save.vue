@@ -3,6 +3,11 @@
     <div v-if="!saveData" class="no-save" @click="newSave()">
       <i class="el-icon-circle-plus"></i> {{saveName}}
     </div>
+    <div v-else class="one-save" @click="startGame()">
+      <role :role="saveData"></role>
+      <div class="content">{{saveData.name}}</div>
+      <i class="el-icon-delete-solid" @click.stop="deleteSave()"></i>
+    </div>
   </div>
 </template>
 
@@ -23,12 +28,28 @@
       text-align: center;
       font-size: 20px;
     }
+    .one-save{
+      width: 100%;
+      height: 60px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      .content{
+        flex: 1 0 0;
+        margin-left: 10px;
+      }
+      i{
+        font-size: 24px;
+      }
+    }
   }
 </style>
 
 <script>
+  import role from "./role"
   export default {
     name: "save",
+    components: {role},
     props: {
       saveName: String,
       saveData: Object
@@ -44,6 +65,12 @@
     methods: {
       newSave(){
         this.$emit("newSave");
+      },
+      startGame(){
+        this.$emit("startGame");
+      },
+      deleteSave(){
+        this.$emit("deleteSave");
       }
     }
   }
