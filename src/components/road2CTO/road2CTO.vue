@@ -100,12 +100,15 @@
                 <div class="ope-move-btn ope-move-left" @touchstart="touchstart('left')" @touchend="touchend"><i class="el-icon-arrow-left"></i></div>
                 <div class="ope-move-btn ope-move-right" @touchstart="touchstart('right')" @touchend="touchend"><i class="el-icon-arrow-right"></i></div>
               </div>
-              <div class="ope-interact"></div>
+              <div class="ope-interact"><i class="el-icon-chat-dot-round"></i></div>
             </div>
           </div>
-          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">2</div>
-          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">3</div>
-          <div class="main-top-screen" :style="{width: screenWidth + 'px'}">4</div>
+          <div class="main-top-screen screen2" :style="{width: screenWidth + 'px'}">2</div>
+          <div class="main-top-screen screen3" :style="{width: screenWidth + 'px'}">3</div>
+          <div class="main-top-screen screen4" :style="{width: screenWidth + 'px'}">
+            <div class="setting-title">当前存档：{{["存档一", "存档二", "存档三"][saveIndex]}}</div>
+            <c-button padding="0 20px" @click="save()">保存并退出</c-button>
+          </div>
         </div>
       </div>
       <div class="tabs">
@@ -294,10 +297,10 @@
           transition: left 300ms;
           .main-top-screen{
             height: 100%;
-            overflow: hidden;
           }
           .screen1{
-            background-color: black;
+            overflow: hidden;
+            background-color: #383838;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -327,6 +330,7 @@
               padding: 10px 20px;
               display: flex;
               justify-content: space-between;
+              align-items: center;
               position: absolute;
               bottom: 0;
               .ope-move{
@@ -341,7 +345,6 @@
                     background-color: #dbdbdb;
                   }
                   border-radius: 50%;
-                  border: 2px solid black;
                   font-size: 32px;
                   position: absolute;
                   display: flex;
@@ -365,12 +368,43 @@
                   top: 45px;
                 }
               }
-              .ope-interact{}
+              .ope-interact{
+                width: 120px;
+                height: 80px;
+                line-height: 80px;
+                background-color: #aeaeae;
+                &:active{
+                  background-color: #dbdbdb;
+                }
+                border-radius: 40px;
+                font-size: 32px;
+                text-align: center;
+              }
             }
           }
-          .screen2{}
-          .screen3{}
-          .screen4{}
+          .screen2{
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background-color: lightblue;
+          }
+          .screen3{
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background-color: lightgoldenrodyellow;
+          }
+          .screen4{
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background-color: lightpink;
+            padding: 20px;
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            .setting-title{
+              font-size: 14px;
+              margin-bottom: 10px;
+            }
+          }
         }
       }
       .tabs{
@@ -446,10 +480,6 @@
         saves: [null, null, null],
         tempPlayer: {},
         player: {
-          map: "test",
-          x: 0,
-          y: 0,
-          willDirection: "",
           moving: false,
           touching: false,
         }
@@ -571,20 +601,30 @@
             brightness: 1,
           },
           direction: "down",
+          willDirection: "",
+          map: "test",
+          x: 0,
+          y: 0,
         };
         this.changeScene("new");
       },
       startGame(saveIndex){
+        this.saveIndex = saveIndex;
         this.player = {
           ...this.player,
           ...this.saves[saveIndex]
         };
+        this.tabIndex = 0;
         this.changeScene("main", true);
       },
       deleteSave(saveIndex){
         this.$set(this.saves, saveIndex, null)
-        // this.saves[saveIndex] = null;
         localStorage.removeItem(`save${saveIndex}`);
+      },
+      save(){
+        this.saves[this.saveIndex] = this.player;
+        localStorage.setItem(`save${this.saveIndex}`, JSON.stringify(this.player));
+        this.changeScene("menu", true);
       },
       confirmNewSave(){
         let stringSave = JSON.stringify(this.tempPlayer);

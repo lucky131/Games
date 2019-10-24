@@ -23,6 +23,10 @@
         type: String,
         default: "#4796e5"
       },
+      padding: {
+        type: String,
+        default: "0"
+      },
       disabled: {
         type: Boolean,
         default: false
@@ -36,7 +40,8 @@
     computed: {
       styleCal(){
         return {
-          backgroundColor: this.disabled ? "#a6a6a6" : this.backgroundColor
+          backgroundColor: this.disabled ? "#a6a6a6" : this.backgroundColor,
+          padding: this.padding
         }
       }
     },

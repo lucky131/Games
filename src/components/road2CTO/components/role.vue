@@ -22,20 +22,21 @@
   export default {
     name: "role",
     props: {
-      role: Object
+      role: Object,
+      direction: String
     },
     computed: {
-      direction(){
-        return this.role.direction;
+      directionCal(){
+        return this.direction ? this.direction : this.role.direction;
       },
       skinSrc(){
-        return require(`../img/role/skin${this.role.skin.index}-${this.direction}.png`);
+        return require(`../img/role/skin${this.role.skin.index}-${this.directionCal}.png`);
       },
       clothesSrc(){
-        return require(`../img/role/clothes${this.role.clothes.index}-${this.direction}.png`);
+        return require(`../img/role/clothes${this.role.clothes.index}-${this.directionCal}.png`);
       },
       hairSrc(){
-        return require(`../img/role/hair${this.role.hair.index}-${this.direction}.png`);
+        return require(`../img/role/hair${this.role.hair.index}-${this.directionCal}.png`);
       }
     },
     data(){

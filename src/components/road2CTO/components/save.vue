@@ -4,7 +4,7 @@
       <i class="el-icon-circle-plus"></i> {{saveName}}
     </div>
     <div v-else class="one-save" @click="startGame()">
-      <role :role="saveData"></role>
+      <role :role="saveData" direction="down"></role>
       <div class="content">{{saveData.name}}</div>
       <i class="el-icon-delete-solid" @click.stop="deleteSave()"></i>
     </div>
