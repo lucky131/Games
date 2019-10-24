@@ -508,9 +508,9 @@
 
       //加载存档与设置
       this.saves = [
-        localStorage.getItem("save0") ? JSON.parse(localStorage.getItem("save0")) : null,
-        localStorage.getItem("save1") ? JSON.parse(localStorage.getItem("save1")) : null,
-        localStorage.getItem("save2") ? JSON.parse(localStorage.getItem("save2")) : null
+        localStorage.getItem("road2CTO_save0") ? JSON.parse(localStorage.getItem("road2CTO_save0")) : null,
+        localStorage.getItem("road2CTO_save1") ? JSON.parse(localStorage.getItem("road2CTO_save1")) : null,
+        localStorage.getItem("road2CTO_save2") ? JSON.parse(localStorage.getItem("road2CTO_save2")) : null
       ];
       if(localStorage.getItem("road2CTO_settings")){
         this.settings = JSON.parse(localStorage.getItem("road2CTO_settings"));
@@ -634,12 +634,12 @@
       },
       deleteSave(saveIndex){
         this.$set(this.saves, saveIndex, null)
-        localStorage.removeItem(`save${saveIndex}`);
+        localStorage.removeItem(`road2CTO_save${saveIndex}`);
       },
       confirmNewSave(){
         let stringSave = JSON.stringify(this.tempPlayer);
         this.saves[this.saveIndex] = JSON.parse(stringSave);
-        localStorage.setItem(`save${this.saveIndex}`, stringSave);
+        localStorage.setItem(`road2CTO_save${this.saveIndex}`, stringSave);
         this.changeScene("menu");
       },
       touchstart(d){
@@ -685,7 +685,7 @@
       },
       save(){
         this.saves[this.saveIndex] = this.player;
-        localStorage.setItem(`save${this.saveIndex}`, JSON.stringify(this.player));
+        localStorage.setItem(`road2CTO_save${this.saveIndex}`, JSON.stringify(this.player));
         this.changeScene("menu", true);
       },
       saveSettings(){
