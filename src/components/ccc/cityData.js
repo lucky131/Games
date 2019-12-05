@@ -1,7 +1,8 @@
 export default {
   data(){
     return{
-      oriCityData: `新疆生产建设兵团	新疆生产建设兵团
+      oriCityData: `解放军	八一
+新疆生产建设兵团	新疆生产建设兵团
 新疆生产建设兵团	新疆兵团
 安徽	合肥
 安徽	淮北
