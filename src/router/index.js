@@ -121,6 +121,12 @@ const router = new Router({
       component: () => import('../components/road2CTO/road2CTO'),
       meta: {mouseRightMenu: false, mouseSelect: false}
     },
+    {
+      path: "/coc",
+      name: "coc",
+      component: () => import('../components/coc/coc'),
+      meta: {mouseRightMenu: true, mouseSelect: true}
+    },
   ]
 })
 
