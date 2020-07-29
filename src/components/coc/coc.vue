@@ -1,9 +1,10 @@
 <template>
   <div class="wrapper">
+    <div class="title">杠三杠的coc工具 v1.0</div>
     <el-tabs type="border-card">
-      <el-tab-pane label="roll骰子">
+      <el-tab-pane label="快速骰子">
         <div class="pane">
-          <el-table :data="rollData" border style="width: 100%">
+          <el-table :data="diceData" border style="width: 100%">
             <el-table-column prop="d2" label="D2" :resizable="false"></el-table-column>
             <el-table-column prop="d4" label="D4" :resizable="false"></el-table-column>
             <el-table-column prop="d6" label="D6" :resizable="false"></el-table-column>
@@ -13,6 +14,22 @@
             <el-table-column prop="d100" label="D100" :resizable="false"></el-table-column>
           </el-table>
           <div class="rollBtn" @click="rollDice()">R-O-L-L-!</div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="自定义骰子">
+        <div class="pane diy">
+          <div v-for="(row, index) in diyDiceData" :key="index" class="attrRow">
+            <div style="width: 12px"><span v-if="index>0">+</span></div>
+            <el-input-number size="small" v-model="row.n" :min="1"></el-input-number>
+            <div>* D</div>
+            <el-input-number size="small" v-model="row.d" :min="2" :step="2"></el-input-number>
+            <el-button type="danger" size="small" round @click="deleteDice(index)">删除骰子</el-button>
+          </div>
+          <el-button style="margin-top: 10px" type="success" round @click="addDice()">增加骰子</el-button>
+          <div style="margin-top: 30px">投掷结果</div>
+          <div class="result">{{diyDice}}</div>
+          <div class="rollBtn" @click="rollDice2()">R-O-L-L-!</div>
         </div>
       </el-tab-pane>
 
@@ -84,7 +101,13 @@
 <style scoped lang="scss">
   .wrapper{
     max-width: 800px;
-    margin: 20px auto 0;
+    margin: 0 auto;
+    .title{
+      margin-top: 20px;
+      margin-bottom: 20px;
+      font-size: 24px;
+      text-align: center;
+    }
     .pane{
       padding: 20px;
       .rollBtn{
@@ -113,20 +136,34 @@
           margin: 0 10px;
         }
       }
+      .result{
+        margin-top: 10px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+    }
+    .diy{
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
     }
   }
 </style>
 
 <script>
-  function random(n){
-    return Math.ceil(Math.random()*n);
+  function random(n, m = 1){
+    let r = 0;
+    for(let i = 0; i < m; i++){
+      r += Math.ceil(Math.random() * n);
+    }
+    return r;
   }
 
   export default {
     name: "coc",
     data(){
       return{
-        rollData:[{
+        diceData:[{
           d2: 1,
           d4: 1,
           d6: 1,
@@ -135,6 +172,8 @@
           d20: 1,
           d100: 1,
         }],
+        diyDiceData:[],
+        diyDice: "0",
         nSTR: 3, pSTR: 0, STR: 0,
         nCON: 3, pCON: 0, CON: 0,
         nSIZ: 2, pSIZ: 6, SIZ: 0,
@@ -151,23 +190,48 @@
     },
     methods: {
       rollDice(){
-        this.rollData[0].d2 = random(2);
-        this.rollData[0].d4 = random(4);
-        this.rollData[0].d6 = random(6);
-        this.rollData[0].d8 = random(8);
-        this.rollData[0].d10 = random(10);
-        this.rollData[0].d20 = random(20);
-        this.rollData[0].d100 = random(100);
+        this.diceData[0].d2 = random(2);
+        this.diceData[0].d4 = random(4);
+        this.diceData[0].d6 = random(6);
+        this.diceData[0].d8 = random(8);
+        this.diceData[0].d10 = random(10);
+        this.diceData[0].d20 = random(20);
+        this.diceData[0].d100 = random(100);
+      },
+      addDice(){
+        this.diyDiceData.push({
+          n: 1,
+          d: 6
+        });
+      },
+      deleteDice(index){
+        this.diyDiceData.splice(index, 1);
+      },
+      rollDice2(){
+        let r = 0, d = 0, num = 0;
+        this.diyDice = "";
+        for(let index in this.diyDiceData){
+          for(let j = 0; j < this.diyDiceData[index].n; j++){
+            if(num > 0)
+              this.diyDice += " + ";
+            num++;
+            d = random(this.diyDiceData[index].d);
+            this.diyDice += d;
+            r += d;
+          }
+        }
+        if(num > 1)
+          this.diyDice += " = " + r;
       },
       rollAttr(){
-        this.STR = (this.nSTR * random(6) + this.pSTR) * 5;
-        this.CON = (this.nCON * random(6) + this.pCON) * 5;
-        this.SIZ = (this.nSIZ * random(6) + this.pSIZ) * 5;
-        this.DEX = (this.nDEX * random(6) + this.pDEX) * 5;
-        this.APP = (this.nAPP * random(6) + this.pAPP) * 5;
-        this.INT = (this.nINT * random(6) + this.pINT) * 5;
-        this.POW = (this.nPOW * random(6) + this.pPOW) * 5;
-        this.EDU = (this.nEDU * random(6) + this.pEDU) * 5;
+        this.STR = (random(6, this.nSTR) + this.pSTR) * 5;
+        this.CON = (random(6, this.nCON) + this.pCON) * 5;
+        this.SIZ = (random(6, this.nSIZ) + this.pSIZ) * 5;
+        this.DEX = (random(6, this.nDEX) + this.pDEX) * 5;
+        this.APP = (random(6, this.nAPP) + this.pAPP) * 5;
+        this.INT = (random(6, this.nINT) + this.pINT) * 5;
+        this.POW = (random(6, this.nPOW) + this.pPOW) * 5;
+        this.EDU = (random(6, this.nEDU) + this.pEDU) * 5;
       }
     }
   }
