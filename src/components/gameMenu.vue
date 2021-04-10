@@ -245,6 +245,14 @@ export default {
           loading: false,
           mobile: true,
         },
+        {
+          name: "里该隐合成表",
+          path: "/cain",
+          desc: "以撒的结合里该隐合成表",
+          color: ["135deg", "#F7B3FF", "#FF25E9"],
+          loading: false,
+          mobile: true,
+        },
       ]
     }
   },

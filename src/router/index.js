@@ -133,6 +133,12 @@ const router = new Router({
       component: () => import('../components/light/light'),
       meta: {mouseRightMenu: false, mouseSelect: false}
     },
+    {
+      path: "/cain",
+      name: "cain",
+      component: () => import('../components/cain/cain'),
+      meta: {mouseRightMenu: true, mouseSelect: true}
+    },
   ]
 })
 
