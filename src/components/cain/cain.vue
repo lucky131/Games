@@ -13,19 +13,26 @@
       <div style="flex: 1">配方</div>
     </div>
     <div class="recipe">
-      <div v-show="ans[index][0] || ans[index][1] || ans[index][2] || ans[index][3]" v-for="(item, index) in data" :key="index" class="row">
+      <div v-for="(item, index1) in filtedData" :key="index1" class="row">
         <div class="name">
           <img :src="item.icon" alt="">
           <span>{{item.name}}</span>
         </div>
         <div class="id">{{item.ID}}</div>
         <div class="right">
-          <div :class="{'hide': !ans[index][0]}" class="block"><img v-for="(i, index) in item.list1" :key="index" :src="imgs[i]"></div>
-          <div :class="{'hide': !ans[index][1]}" class="block"><img v-for="(i, index) in item.list2" :key="index" :src="imgs[i]"></div>
-          <div :class="{'hide': !ans[index][2]}" class="block"><img v-for="(i, index) in item.list3" :key="index" :src="imgs[i]"></div>
-          <div :class="{'hide': !ans[index][3]}" class="block"><img v-for="(i, index) in item.list4" :key="index" :src="imgs[i]"></div>
+          <div v-for="(list, index2) in item.lists" :key="index2" class="block">
+            <img v-for="(i, index) in list" :key="index" :src="imgs[i]">
+          </div>
         </div>
       </div>
+    </div>
+    <div class="page">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="filtedData.length"
+        :page-size="pageSize">
+      </el-pagination>
     </div>
   </div>
 </template>
@@ -102,23 +109,23 @@
           flex: 1;
           height: 100%;
           display: flex;
-          justify-content: space-around;
           .block{
             width: 120px;
             height: 100%;
+            margin: 0 20px;
             display: flex;
             flex-flow: row wrap;
             justify-content: center;
             align-content: center;
-            &.hide{
-              opacity: 0;
-            }
             img{
               width: 30px;
             }
           }
         }
       }
+    }
+    .page{
+      margin: 20px 0;
     }
   }
 </style>
@@ -130,93 +137,90 @@
     mixins: [data],
     data(){
       return{
-        filter: [0,0,0,0,0,0,0,0]
+        filter: [0,0,0,0,0,0,0,0],
+        pageSize: 20,
       }
     },
-    computed: {
+    computed: { 
       imgs(){
-        return [
-          require(`./0.png`),
-          require(`./1.png`),
-          require(`./2.png`),
-          require(`./3.png`),
-          require(`./4.png`),
-          require(`./5.png`),
-          require(`./6.png`),
-          require(`./7.png`),
-          require(`./8.png`),
-          require(`./9.png`),
-          require(`./10.png`),
-          require(`./11.png`),
-          require(`./12.png`),
-          require(`./13.png`),
-          require(`./14.png`),
-          require(`./15.png`),
-          require(`./16.png`),
-          require(`./17.png`),
-          require(`./18.png`),
-          require(`./19.png`),
-          require(`./20.png`),
-          require(`./21.png`),
-          require(`./22.png`),
-          require(`./23.png`),
-          require(`./24.png`),
-          require(`./25.png`),
-        ]
+        let list = [];
+        for(let i = 0; i <= 25; i++)
+          list.push(require(`./${i}.png`));
+        return list;
       },
-      ans(){
+      filtedData(){
         let ans = [];
-        for(let index in this.data){
-          ans.push([true, true, true, true]);
-        }
         for(let i1 in this.data){
-          let temp = [...this.data[i1].list1];
+          let temp, lists, flag;
+          lists = [];
+
+          temp = [...this.data[i1].list1];
+          flag = true;
           for(let i2 in this.filter){
             if(this.filter[i2] !== 0){
               let index = temp.indexOf(this.filter[i2])
               if(index !== -1){
                 temp.splice(index, 1);
               } else {
-                ans[i1][0] = false;
+                flag = false;
                 break;
               }
             }
           }
+          if(flag) lists.push(this.data[i1].list1);
+
           temp = [...this.data[i1].list2];
+          flag = true;
           for(let i2 in this.filter){
             if(this.filter[i2] !== 0){
               let index = temp.indexOf(this.filter[i2])
               if(index !== -1){
                 temp.splice(index, 1);
               } else {
-                ans[i1][1] = false;
+                flag = false;
                 break;
               }
             }
           }
+          if(flag) lists.push(this.data[i1].list2);
+
           temp = [...this.data[i1].list3];
+          flag = true;
           for(let i2 in this.filter){
             if(this.filter[i2] !== 0){
               let index = temp.indexOf(this.filter[i2])
               if(index !== -1){
                 temp.splice(index, 1);
               } else {
-                ans[i1][2] = false;
+                flag = false;
                 break;
               }
             }
           }
+          if(flag) lists.push(this.data[i1].list3);
+
           temp = [...this.data[i1].list4];
+          flag = true;
           for(let i2 in this.filter){
             if(this.filter[i2] !== 0){
               let index = temp.indexOf(this.filter[i2])
               if(index !== -1){
                 temp.splice(index, 1);
               } else {
-                ans[i1][3] = false;
+                flag = false;
                 break;
               }
             }
+          }
+          if(flag) lists.push(this.data[i1].list4);
+
+          if(lists.length > 0) {
+            ans.push({
+              icon: this.data[i1].icon,
+              name: this.data[i1].name,
+              ID: this.data[i1].ID,
+              lists: lists
+            });
           }
         }
         return ans;
