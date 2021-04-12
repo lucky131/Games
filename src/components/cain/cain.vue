@@ -1,6 +1,12 @@
 <template>
   <div class="wrapper">
-    <div class="title">里该隐合成表 <a href="https://space.bilibili.com/1503710" target="_blank">by杠三杠</a> <el-button type="primary" @click="resetFilter">重置</el-button></div>
+    <div class="title">
+      <div class="inner">
+        <div class="logo">里该隐合成表 <a href="https://space.bilibili.com/1503710" target="_blank"> by杠三杠</a></div>
+        <el-input v-model="input" clearable placeholder="输入道具英文名 / ID" @input="search"></el-input>
+        <el-button type="primary" icon="el-icon-refresh-left" @click="reset">重置</el-button>
+      </div>
+    </div>
     <div class="ope">
       <div v-for="(item1, index1) in filter" :key="index1" class="row">
         <span>{{index1+1}}</span>
@@ -13,7 +19,7 @@
       <div style="flex: 1">配方</div>
     </div>
     <div class="recipe">
-      <div v-for="(item, index1) in filtedData" :key="index1" class="row">
+      <div v-for="(item, index1) in pageData(page)" :key="index1" class="row">
         <div class="name">
           <img :src="item.icon" alt="">
           <span>{{item.name}}</span>
@@ -29,9 +35,13 @@
     <div class="page">
       <el-pagination
         background
-        layout="prev, pager, next"
+        layout="total, prev, pager, next, sizes"
+        :current-page.sync="page"
         :total="filtedData.length"
-        :page-size="pageSize">
+        :page-size="pageSize"
+        :page-sizes="[10,25,50,1000]"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange">
       </el-pagination>
     </div>
   </div>
@@ -41,13 +51,33 @@
   .wrapper{
     max-width: 1000px;
     margin: 0 auto;
-    padding-bottom: 40px;
+    padding: 100px 0 70px;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     .title{
-      font-size: 24px;
-      margin: 20px 0;
+      width: 100%;
+      height: 80px;
+      background-color: white;
+      position: fixed;
+      top: 0;
+      box-shadow: rgba(0,0,0,.2) 0px 0px 5px;
+      .inner{
+        width: 1000px;
+        height: 100%;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .logo{
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .el-input{
+          width: 250px;
+          margin: 0 20px;
+        }
+      }
     }
     .ope{
       margin-bottom: 20px;
@@ -125,20 +155,42 @@
       }
     }
     .page{
-      margin: 20px 0;
+      width: 100%;
+      padding: 20px 0;
+      background-color: white;
+      box-shadow: rgba(0,0,0,.2) 0px 0px 5px;
+      position: fixed;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
     }
   }
 </style>
 
 <script>
+  function isSubStr(arr1, arr2){
+    let n1 = 0, n2 = 0;
+    while(n1 < arr1.length && n2 < arr2.length){
+      if(arr1[n1] < arr2[n2]) break;
+      else if(arr1[n1] === arr2[n2]) {
+        n1++;
+        n2++;
+      } else n2++;
+    }
+    return n1 === arr1.length;
+  }
+
   import data from "./db"
   export default {
     name: "cain",
     mixins: [data],
     data(){
       return{
+        input: "",
+        realInput: "",
         filter: [0,0,0,0,0,0,0,0],
-        pageSize: 20,
+        page: 1,
+        pageSize: 10,
       }
     },
     computed: { 
@@ -148,95 +200,80 @@
           list.push(require(`./${i}.png`));
         return list;
       },
+      maxPage(){
+        return Math.ceil(this.filtedData.length / this.pageSize);
+      },
+      namedData(){
+        return this.data.filter(i => i.name.toLowerCase().indexOf(this.realInput.toLowerCase()) > -1 || i.ID == this.realInput);
+      },
       filtedData(){
-        let ans = [];
-        for(let i1 in this.data){
-          let temp, lists, flag;
+        let ans = [], lists, temp = [...this.filter].filter(i => i > 0);
+        temp.sort((x, y) => x - y);
+
+        for(let i in this.namedData){
           lists = [];
+          if(isSubStr(temp, this.namedData[i].list1)) lists.push(this.namedData[i].list1);
+          if(isSubStr(temp, this.namedData[i].list2)) lists.push(this.namedData[i].list2);
+          if(isSubStr(temp, this.namedData[i].list3)) lists.push(this.namedData[i].list3);
+          if(isSubStr(temp, this.namedData[i].list4)) lists.push(this.namedData[i].list4);
 
-          temp = [...this.data[i1].list1];
-          flag = true;
-          for(let i2 in this.filter){
-            if(this.filter[i2] !== 0){
-              let index = temp.indexOf(this.filter[i2])
-              if(index !== -1){
-                temp.splice(index, 1);
-              } else {
-                flag = false;
-                break;
-              }
-            }
-          }
-          if(flag) lists.push(this.data[i1].list1);
-
-          temp = [...this.data[i1].list2];
-          flag = true;
-          for(let i2 in this.filter){
-            if(this.filter[i2] !== 0){
-              let index = temp.indexOf(this.filter[i2])
-              if(index !== -1){
-                temp.splice(index, 1);
-              } else {
-                flag = false;
-                break;
-              }
-            }
-          }
-          if(flag) lists.push(this.data[i1].list2);
-
-          temp = [...this.data[i1].list3];
-          flag = true;
-          for(let i2 in this.filter){
-            if(this.filter[i2] !== 0){
-              let index = temp.indexOf(this.filter[i2])
-              if(index !== -1){
-                temp.splice(index, 1);
-              } else {
-                flag = false;
-                break;
-              }
-            }
-          }
-          if(flag) lists.push(this.data[i1].list3);
-
-          temp = [...this.data[i1].list4];
-          flag = true;
-          for(let i2 in this.filter){
-            if(this.filter[i2] !== 0){
-              let index = temp.indexOf(this.filter[i2])
-              if(index !== -1){
-                temp.splice(index, 1);
-              } else {
-                flag = false;
-                break;
-              }
-            }
-          }
-          if(flag) lists.push(this.data[i1].list4);
-
-          if(lists.length > 0) {
+          if(lists.length > 0){
             ans.push({
-              icon: this.data[i1].icon,
-              name: this.data[i1].name,
-              ID: this.data[i1].ID,
+              icon: this.namedData[i].icon,
+              name: this.namedData[i].name,
+              ID: this.namedData[i].ID,
               lists: lists
             });
           }
         }
         return ans;
       },
+      pageData(){
+        return (page) => {
+          let startIndex = (page - 1) * this.pageSize;
+          let endIndex = startIndex + this.pageSize;
+          let ans = [];
+          for(let i = startIndex; i < endIndex && i < this.filtedData.length; i++)
+            ans.push(this.filtedData[i]);
+          return ans;
+        }
+      },
     },
     mounted(){
-
+      //键盘左右翻页
+      document.onkeydown = (event) => {
+        if(event.keyCode === 37 || event.keyCode === 65){
+          if(this.page > 1) this.page--;
+        } else if(event.keyCode === 39 || event.keyCode === 68){
+          if(this.page < this.maxPage) this.page++;
+        }
+      }
     },
     methods: {
-      resetFilter(){
+      toTop(h = 0){
+        document.body.scrollTop = h;
+        document.documentElement.scrollTop = h;
+      },
+      search(){
+        this.realInput = this.input;
+      },
+      reset(){
+        this.input = "";
+        this.realInput = "";
         for(let i = 0; i < 8; i++){
           this.$set(this.filter, i, 0);
         }
       },
       clickFilterBtn(index1, index2){
         this.$set(this.filter, index1, index2);
+      },
+      handleSizeChange(pageSize){
+        this.pageSize = pageSize;
+        this.page = 1;
+      },
+      handleCurrentChange(page){
+        this.page = page;
+        // this.toTop(400);
       }
     }
   }

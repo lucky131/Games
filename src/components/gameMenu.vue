@@ -1,5 +1,6 @@
 <template>
-  <div id="content">
+  <div style="display: none" id="content">
+    <!-- 暂时隐藏 -->
     <div :class="{block: true, mobileBlock: isMobile}"
          v-if="!isMobile || item.mobile"
          v-for="(item, index) in gameList"
