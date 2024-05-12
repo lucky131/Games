@@ -24,6 +24,8 @@ GangCompany     | 三杠公司，移动端模拟经营类游戏 | [Click Me](htt
 
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
+出于某种原因我将页面隐藏了，f12中找到div#app下的div#content，去掉"display: none"属性就可显示原页面
+
 ## Author
 Name: -3-（杠三杠）  
 BLive: [咕咕咕](https://live.bilibili.com/38115)  
