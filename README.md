@@ -26,6 +26,4 @@ GangCompany     | 三杠公司，移动端模拟经营类游戏 | [Click Me](htt
 [Click Me](https://lucky131.github.io/GamesPage/)
 ## Author
 Name: -3-（杠三杠）  
-QQ: 542723049  
-Email: QQMail  
 BLive: [咕咕咕](https://live.bilibili.com/38115)  
