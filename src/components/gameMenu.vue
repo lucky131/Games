@@ -1,5 +1,5 @@
 <template>
-  <div style="display: none" id="content">
+  <div id="content">
     <!-- 暂时隐藏 -->
     <div :class="{block: true, mobileBlock: isMobile}"
          v-if="!isMobile || item.mobile"
