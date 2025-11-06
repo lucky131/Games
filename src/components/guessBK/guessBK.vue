@@ -5,7 +5,7 @@
       <div class="ope">
         <el-input v-model="input" placeholder="请输入要猜的字" :disabled="isWin" @keyup.enter.native="guess()"></el-input>
         <el-button type="primary" class="btn" :disabled="input.length !== 1" @click="guess()">猜</el-button>
-        <el-button class="btn" @click="isDialogShow = true">自定义</el-button>
+        <el-button class="btn" @click="dialogMode = 2">自定义</el-button>
       </div>
       <div class="content">
         <div v-for="(p, index) in ans" :key="index" class="paragraph">
@@ -18,14 +18,19 @@
         <div v-for="(h, index) in his" :key="index" class="block" :class="h.status ? 'green' : 'red'">{{ h.character }}</div>
       </div>
 
-      <el-dialog
-      title="自定义新游戏"
-      center
-      :visible.sync="isDialogShow"
-      width="800px">
-      <el-input type="textarea" :rows="10" placeholder="至少两行，第一行为标题" v-model="textarea"></el-input>
+      <el-dialog title="选择游戏模式" center :visible.sync="dialog1" width="300px" :show-close="false">
+        <div class="out">
+          <el-button type="success" :disabled="isAIThinking" @click="ai()">
+            <span v-if="isAIThinking"><i class="el-icon-loading"></i>生成中，大约10秒</span>
+            <span v-else>AI出题</span>
+          </el-button>
+          <el-button type="info" @click="dialogMode=2">自定义</el-button>
+        </div>
+      </el-dialog>
+      <el-dialog title="自定义新游戏" center :visible.sync="dialog2" width="75%" @close="dialogMode = (isAIThinking ? 0 : 1)">
+        <el-input type="textarea" :rows="10" placeholder="至少两行，第一行为要猜的标题" v-model="textarea"></el-input>
         <span slot="footer" class="">
-          <el-button type="primary" @click="customize()">生成</el-button>
+          <el-button type="primary" :disabled="textarea.length===0" @click="customize()">生成</el-button>
         </span>
       </el-dialog>
     </div>
@@ -35,6 +40,7 @@
     .wrapper{
       max-width: 800px;
       margin: 0 auto;
+      padding: 0 20px;
       .title{
         margin-top: 20px;
         margin-bottom: 20px;
@@ -73,7 +79,7 @@
 
           }
           .black{
-            background-color: black;
+            background-color: #333;
           }
           .green{
             background-color: rgb(28,156,155);
@@ -101,11 +107,18 @@
         .green{background-color: rgb(28,156,155);}
         .red{background-color: rgb(244, 182, 120);}
       }
+
+      .out{
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+      }
     }
   </style>
   
   <script>
-    import Clipboard from "clipboard/dist/clipboard.min"
+    const { Configuration, OpenAIApi } = require("openai");
     import {Base64} from "js-base64"
 
     export default {
@@ -113,21 +126,34 @@
       data(){
         return{
           classes: ["white", "black", "green", "out"],
-          punctuationMarks: `，。、：·“”（）《》！`,
+          punctuationMarks: `,，.。\\/、:：;；\`~·'‘’"“”()（）<>《》!！?？+-_—%×√`,
           count: 0,
           ans: [],
           his: [],
           input: "",
           isWin: false,
-          isDialogShow: false,
+          dialogMode: 0,
           textarea: "",
+          isAIThinking: false,
         }
+      },
+      computed: {
+        dialog1(){return this.dialogMode === 1},
+        dialog2(){return this.dialogMode === 2}
       },
       mounted(){
         if(this.$route.query.k){
           let code = this.$route.query.k;
           let decode = Base64.decode(decodeURIComponent(code));
-          let paragraphs = decode.split("##");
+          this.generate(decode);
+          this.isAIThinking = true;
+        } else {
+          this.dialogMode = 1;
+        }
+      },
+      methods: {
+        generate(article){
+          let paragraphs = article.split("##").map(e => e.trim());
           for(let p of paragraphs){
             let temp = [];
             for(let c of p){
@@ -138,11 +164,24 @@
             }
             this.ans.push(temp);
           }
-        } else {
-          this.isDialogShow = true;
-        }
-      },
-      methods: {
+        },
+        async ai(){
+          const configuration = new Configuration({
+            basePath: 'https://api.deepseek.com',
+            apiKey: "sk-30653396b0084fa18136b6a2f8da6f2e",
+          });
+          delete configuration.baseOptions.headers['User-Agent'];
+          const openai = new OpenAIApi(configuration);
+          this.isAIThinking = true;
+          const completion = await openai.createChatCompletion({
+            messages: [{ role: "user", content: "当前时间戳为：" + Date.now() + "。以下是我的要求：你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，输出一个常见的中文词汇的百科说明，这个词汇可以是人物、地名、生物、日常用品等等。以纯文本格式输出，第一行是这个词汇本身，只允许有中文，之后可以跟2至3段内容，包括中文数字和标点符号，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域，段落前不需要加序号。总字数大约在100-200字之间。" }],
+            model: "deepseek-chat",
+          });
+          let rawAns = completion.data.choices[0].message.content;
+          rawAns = rawAns.replaceAll("**", "").replaceAll("\n\n", "\n").replaceAll("\n", "##");
+          this.generate(rawAns);
+          this.dialogMode = 0;
+        },
         guess(){
           if(this.input.length !== 1) {
             this.$message('只能输入一个字');
@@ -199,7 +238,7 @@
         },
         customize(){
           let temp = this.textarea;
-          temp = temp.replace(/\n/g, "##");
+          temp = temp.replaceAll(/\n/g, "##");
           let fullurl = window.location.href;
           if(fullurl.includes("?")){
             fullurl = fullurl.substring(0, fullurl.indexOf("?"));

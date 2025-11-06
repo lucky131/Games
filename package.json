@@ -18,6 +18,7 @@
     "element-ui": "^2.13.2",
     "jquery": "^3.5.0",
     "js-base64": "^2.5.1",
+    "openai": "^3.3.0",
     "stats-js": "^1.0.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"

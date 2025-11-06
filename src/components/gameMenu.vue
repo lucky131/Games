@@ -212,7 +212,6 @@ export default {
           desc: "用three.js创建的魔方游戏，支持3-5阶，自由旋转视角",
           color: ["135deg", "#fbff00", "#ff6625"],
           loading: false,
-          newTab: true,
         },
         {
           name: "杠·地图编辑器",
@@ -220,7 +219,6 @@ export default {
           desc: "用three.js创建的地图编辑器",
           color: ["135deg", "#eaff00", "#00d220"],
           loading: false,
-          newTab: true,
         },
         {
           name: "杭州三杠科技有限公司",
@@ -238,19 +236,43 @@ export default {
           loading: false,
           mobile: true,
         },
+        // {
+        //   name: "CTO之路",
+        //   path: "/road2CTO",
+        //   desc: "传统rpg类型游戏",
+        //   color: ["135deg", "#56ff7b", "#439f89"],
+        //   loading: false,
+        //   mobile: true,
+        // },
         {
-          name: "CTO之路",
-          path: "/road2CTO",
-          desc: "传统rpg类型游戏",
+          name: "里该隐合成表（已废弃）",
+          path: "/cain",
+          desc: "以撒的结合里该隐合成表",
+          color: ["135deg", "#F7B3FF", "#FF25E9"],
+          loading: false,
+          mobile: true,
+        },
+        {
+          name: "猜文章",
+          path: "/guessBK",
+          desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
           color: ["135deg", "#56ff7b", "#439f89"],
           loading: false,
           mobile: true,
         },
         {
-          name: "里该隐合成表",
-          path: "/cain",
-          desc: "以撒的结合里该隐合成表",
-          color: ["135deg", "#F7B3FF", "#FF25E9"],
+          name: "coc工具",
+          path: "/coc",
+          desc: "我也不知道为啥写这个",
+          color: ["135deg", "#fff", "#fff"],
+          loading: false,
+          mobile: true,
+        },
+        {
+          name: "点灯游戏解密器",
+          path: "/light",
+          desc: "让人红温的解谜游戏",
+          color: ["135deg", "#ccc", "#fff"],
           loading: false,
           mobile: true,
         },
@@ -270,19 +292,24 @@ export default {
     },
     goto(index){
       if(!this.loading){
-        if(this.gameList[index].newTab){
-          let page = this.$router.resolve({
-            path: this.gameList[index].path
-          });
-          window.open(page.href, '_blank');
-        } else {
-          this.gameList[index].loading = true;
-          this.loading = true;
-          this.$router.push(this.gameList[index].path, () => {
-            this.gameList[index].loading = false;
-            this.loading = false;
-          });
-        }
+        let page = this.$router.resolve({
+          path: this.gameList[index].path
+        });
+        window.open(page.href, '_blank');
+        // 2025年11月6日 10:42:53 改为无论什么情况都新窗口打开
+        // if(this.gameList[index].newTab){
+        //   let page = this.$router.resolve({
+        //     path: this.gameList[index].path
+        //   });
+        //   window.open(page.href, '_blank');
+        // } else {
+        //   this.gameList[index].loading = true;
+        //   this.loading = true;
+        //   this.$router.push(this.gameList[index].path, () => {
+        //     this.gameList[index].loading = false;
+        //     this.loading = false;
+        //   });
+        // }
       }
     }
   }
