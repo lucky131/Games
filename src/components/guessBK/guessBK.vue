@@ -27,8 +27,8 @@
           <el-button type="info" @click="dialogMode=2">自定义</el-button>
         </div>
       </el-dialog>
-      <el-dialog title="自定义新游戏" center :visible.sync="dialog2" width="75%" @close="dialogMode = (isAIThinking ? 0 : 1)">
-        <el-input type="textarea" :rows="10" placeholder="至少两行，第一行为要猜的标题" v-model="textarea"></el-input>
+      <el-dialog title="自定义文章内容" center :visible.sync="dialog2" width="75%" @close="dialogMode = (isAIThinking ? 0 : 1)">
+        <el-input type="textarea" :rows="10" placeholder="至少输入两行内容，第一行是要猜的标题，第二行开始是正文部分" v-model="textarea"></el-input>
         <span slot="footer" class="">
           <el-button type="primary" :disabled="textarea.length===0" @click="customize()">生成</el-button>
         </span>
@@ -152,6 +152,23 @@
         }
       },
       methods: {
+        getRandomBKCategory(){
+          let arr = [
+            //从【xxx】这个大类中随机选择一样
+            "动物", "植物", "天文", "自然现象",//自然
+            "国家", "中国省份", "中国城市", //地理
+            "文学作品", "传统习俗", "电影", "旅游景点", "电子游戏", //文化
+            "历史事件", "中国朝代", "典故", //历史
+            "日用品", "日常现象", //生活
+            "法学", "医学", "小吃", "疾病", //社会
+            "艺术形式", //艺术
+            "中国古代名人", "中国现当代名人", "外国名人", //人物
+            "经济", //经济
+            "自然科学", "科技产品", //科技
+            "体育活动", //体育
+          ];
+          return arr[Math.floor(Math.random() * arr.length)];
+        },
         generate(article){
           let paragraphs = article.split("##").map(e => e.trim());
           for(let p of paragraphs){
@@ -174,7 +191,7 @@
           const openai = new OpenAIApi(configuration);
           this.isAIThinking = true;
           const completion = await openai.createChatCompletion({
-            messages: [{ role: "user", content: "当前时间戳为：" + Date.now() + "。以下是我的要求：你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，输出一个常见的中文词汇的百科说明，这个词汇可以是人物、地名、生物、日常用品等等。以纯文本格式输出，第一行是这个词汇本身，只允许有中文，之后可以跟2至3段内容，包括中文数字和标点符号，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域，段落前不需要加序号。总字数大约在100-200字之间。" }],
+            messages: [{ role: "user", content: Date.now().toString().split("").reverse().join("").repeat(2) + "以上是随机编码，请无视。以下是我的要求：你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】和【" + this.getRandomBKCategory() + "】这几个大类中随机选择一样，再随机选择一个属于该类的词条，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，如果是某作品或电影名，不要加书名号，之后可以跟2至3段内容，可以包括中文、英文、数字和标点符号，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域等，段落前不需要加序号。总字数大约在200字之间。" }],
             model: "deepseek-chat",
           });
           let rawAns = completion.data.choices[0].message.content;
