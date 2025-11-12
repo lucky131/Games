@@ -1,14 +1,21 @@
 <template>
     <div class="wrapper">
-      <div class="title">猜文章v2.0 by -3-</div>
-      <div class="count">
+      <div class="title">
+        <span>猜文章v2.2</span>
+        <el-button size="mini" round @click="isDialogShow=true">我要出题</el-button></div>
+      <div v-if="ans.length > 0" class="count">
         {{ rightCount }}/{{ totalCount }}({{ rightRate }}%)
       </div>
-      <div class="ope">
+      <div v-if="ans.length > 0" class="ope">
         <el-input v-model="input" placeholder="请输入要猜的字" :disabled="isWin" @keyup.enter.native="guess()"></el-input>
         <el-button type="primary" class="btn" :disabled="input.length !== 1" @click="guess()">猜</el-button>
         <el-button type="warning" class="btn" :disabled="isWin" @click="giveUp()">弃</el-button>
-        <el-button class="btn" @click="dialogMode = 2">自</el-button>
+      </div>
+      <div v-if="ans.length === 0 || isWin" class="aiWrapper">
+        <el-button type="success" :disabled="isAIThinking" @click="ai()">
+          <span v-if="isAIThinking"><i class="el-icon-loading"></i>生成中，大约10秒</span>
+          <span v-else>AI随机生成文章</span>
+        </el-button>
       </div>
       <div class="content">
         <div v-for="(p, index) in ans" :key="index" class="paragraph">
@@ -24,7 +31,7 @@
           </div>
         </div>
       </div>
-      <div class="history">
+      <div v-if="ans.length > 0" class="history">
         <div class="top">猜测记录：</div>
         <div class="bot">
           <div v-for="(h, index) in his" :key="index" class="block" @click="clickHis(index)" 
@@ -36,19 +43,14 @@
         </div>
       </div>
 
-      <el-dialog title="选择游戏模式" center :visible.sync="dialog1" width="300px" :show-close="false">
-        <div class="out">
-          <el-button type="success" :disabled="isAIThinking" @click="ai()">
-            <span v-if="isAIThinking"><i class="el-icon-loading"></i>生成中，大约10秒</span>
-            <span v-else>AI出题</span>
-          </el-button>
-          <el-button type="info" @click="dialogMode=2">自定义</el-button>
-        </div>
-      </el-dialog>
-      <el-dialog title="自定义文章内容" center :visible.sync="dialog2" width="75%" @close="dialogMode = (isAIThinking ? 0 : 1)">
+      <el-dialog title="自定义文章" center :visible.sync="isDialogShow" width="75%" @close="isDialogShow=false">
         <el-input type="textarea" :rows="10" placeholder="至少输入两行内容，第一行是要猜的标题，第二行开始是正文部分" v-model="textarea"></el-input>
         <span slot="footer" class="">
-          <el-button type="primary" :disabled="textarea.length===0" @click="customize()">生成</el-button>
+          <el-button type="success" :disabled="isAIThinking2" @click="aiCustomize()">
+            <span v-if="isAIThinking2"><i class="el-icon-loading"></i>生成中</span>
+            <span v-else>AI代写</span>
+          </el-button>
+          <el-button type="primary" :disabled="textarea.length===0 || isAIThinking2" @click="customize()">生成链接</el-button>
         </span>
       </el-dialog>
     </div>
@@ -81,6 +83,11 @@
           width: 100px;
           margin-left: 10px;
         }
+      }
+      .aiWrapper{
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
       }
       .content{
         margin-top: 10px;
@@ -118,7 +125,7 @@
         }
       }
       .history{
-        margin: 20px 0;
+        margin: 10px 0;
         border-top: 1px solid #ccc;
         .top{
           color: #666;
@@ -171,15 +178,14 @@
           his: [],
           input: "",
           isWin: false,
-          dialogMode: 0,
+          isDialogShow: false,
           textarea: "",
           isAIThinking: false,
+          isAIThinking2: false,
           lastC: ""
         }
       },
       computed: {
-        dialog1(){return this.dialogMode === 1},
-        dialog2(){return this.dialogMode === 2},
         rightRate(){
           if(this.rightCount === 0 && this.totalCount === 0) return 0;
           return Math.floor(this.rightCount / this.totalCount * 100 * 100) / 100;
@@ -191,8 +197,6 @@
           let decode = Base64.decode(decodeURIComponent(code));
           this.generate(decode);
           this.isAIThinking = true;
-        } else {
-          this.dialogMode = 1;
         }
       },
       methods: {
@@ -215,13 +219,20 @@
           return arr[Math.floor(Math.random() * arr.length)];
         },
         generate(article){
+          this.rightCount = 0;
+          this.totalCount = 0;
+          this.ans = [];
+          this.his = [];
+          this.input = "";
+          this.isWin = false;
+          this.lastC = "";
           let paragraphs = article.split("##").map(e => e.trim());
           for(let p of paragraphs){
             let temp = [];
             for(let c of p){
               temp.push({
                 character: c,
-                status: this.punctuationMarks.includes(c) ? 0 : 1 //0标点符号 1未猜出 2猜出 3被揭示 4上一次被猜出
+                status: this.punctuationMarks.includes(c) ? 0 : 1 //0标点符号 1未猜出 2猜出 3被揭示
               });
             }
             this.ans.push(temp);
@@ -235,23 +246,34 @@
           delete configuration.baseOptions.headers['User-Agent'];
           const openai = new OpenAIApi(configuration);
           this.isAIThinking = true;
-          const completion = await openai.createChatCompletion({
-            messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，可以分成2至3段，包括中文、英文、数字和标点符号，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域等内容，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
-            model: "deepseek-chat",
-            temperature: 2
-          });
-          let rawAns = completion.data.choices[0].message.content;
-          rawAns = rawAns.replaceAll("**", "").replaceAll("\n\n", "\n").replaceAll("\n", "##");
-          this.generate(rawAns);
-          this.dialogMode = 0;
+          try {
+            const completion = await openai.createChatCompletion({
+              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，可以分成2至3段，包括中文、数字和标点符号，尽量不要使用英文，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域等内容，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
+              model: "deepseek-chat",
+              temperature: 2
+            });
+            let rawAns = completion.data.choices[0].message.content;
+            rawAns = rawAns.replaceAll("**", "").replaceAll("\n\n", "\n").replaceAll("\n", "##");
+            this.generate(rawAns);
+            this.isAIThinking = false;
+          } catch (error) {
+            this.$message.error('发生错误');
+            this.isAIThinking = false;
+          }
         },
         guess(){
           if(this.input.length !== 1) {
-            this.$message.warning('只能输入一个字');
+            this.$message.warning({
+              message: "只能输入一个字",
+              duration: 1000
+            });
             return;
           }
           if(this.punctuationMarks.includes(this.input)) {
-            this.$message.waring('不能输入标点符号');
+            this.$message.warning({
+              message: "不能输入标点符号",
+              duration: 1000
+            });
             return;
           }
 
@@ -259,7 +281,10 @@
 
           //判断是否已经猜过
           if(this.his.some(h => h.character === this.input)){
-            this.$message('你已经猜过这个字');
+            this.$message({
+              message: "你已经猜过这个字",
+              duration: 1000
+            });
             this.input = "";
             return;
           }
@@ -278,7 +303,10 @@
           if(flag){
             this.rightCount++;
           } else {
-            this.$message.error('这个字不在文章中');
+            this.$message.error({
+              message: "这个字不在文章中",
+              duration: 1000
+            });
           }
           this.totalCount++;
 
@@ -305,10 +333,57 @@
             }
             this.isWin = true;
             this.lastC = "";
-            this.$message.success('猜对了');
+            this.$message.success({
+              message: "猜对了",
+              duration: 1000
+            });
+          }
+        },
+        async aiCustomize(){
+          if(this.textarea.length === 0){
+            this.$message.warning({
+              message: "请指定一个标题",
+              duration: 1000
+            });
+            return;
+          }
+          if(this.textarea.includes("\n")){
+            this.$message.warning({
+              message: "只能输入一行标题",
+              duration: 1000
+            });
+            return;
+          }
+          const configuration = new Configuration({
+            basePath: 'https://api.deepseek.com',
+            apiKey: "sk-30653396b0084fa18136b6a2f8da6f2e",
+          });
+          delete configuration.baseOptions.headers['User-Agent'];
+          const openai = new OpenAIApi(configuration);
+          this.isAIThinking2 = true;
+          try {
+            const completion = await openai.createChatCompletion({
+              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，生成一篇关于【" + this.textarea + "】的百科说明，以纯文本格式输出，可以分成2至3段，包括中文、数字和标点符号，尽量不要使用英文，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域等内容，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
+              model: "deepseek-chat",
+              temperature: 2
+            });
+            let rawAns = completion.data.choices[0].message.content;
+            rawAns = rawAns.replaceAll("**", "").replaceAll("\n\n", "\n");
+            this.textarea = this.textarea + "\n" + rawAns;
+            this.isAIThinking2 = false;
+          } catch (error) {
+            this.$message.error('发生错误');
+            this.isAIThinking2 = false;
           }
         },
         customize(){
+          if(!this.textarea.includes("\n")){
+            this.$message.warning({
+              message: "至少输入两行",
+              duration: 1000
+            });
+            return;
+          }
           let temp = this.textarea;
           temp = temp.replaceAll(/\n/g, "##");
           let fullurl = window.location.href;
@@ -318,7 +393,10 @@
           let url = fullurl + "?k=" + encodeURIComponent(Base64.encode(temp));
           navigator.clipboard.writeText(url);
           console.log(url);
-          this.$message.success('链接已复制');
+          this.$message.success({
+              message: "链接已复制",
+              duration: 1000
+            });
         },
         giveUp(){
           if (confirm("确定要放弃并显示答案吗？")) {
