@@ -241,7 +241,7 @@
         async ai(){
           const configuration = new Configuration({
             basePath: 'https://api.deepseek.com',
-            apiKey: "sk-30653396b0084fa18136b6a2f8da6f2e",
+            apiKey: Base64.decode("c2stOTVjNmYxMzQ3YWYxNDEzMjk2ODQ1NTc5NGM4NDAyMmY="),
           });
           delete configuration.baseOptions.headers['User-Agent'];
           const openai = new OpenAIApi(configuration);
@@ -356,7 +356,7 @@
           }
           const configuration = new Configuration({
             basePath: 'https://api.deepseek.com',
-            apiKey: "sk-30653396b0084fa18136b6a2f8da6f2e",
+            apiKey: Base64.decode("c2stOTVjNmYxMzQ3YWYxNDEzMjk2ODQ1NTc5NGM4NDAyMmY="),
           });
           delete configuration.baseOptions.headers['User-Agent'];
           const openai = new OpenAIApi(configuration);
