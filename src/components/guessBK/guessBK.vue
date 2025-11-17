@@ -1,8 +1,9 @@
 <template>
     <div class="wrapper">
       <div class="title">
-        <span>猜文章v2.2</span>
-        <el-button size="mini" round @click="isDialogShow=true">我要出题</el-button></div>
+        <span>猜文章v3.0</span>
+        <el-button size="mini" plain type="info" icon="el-icon-setting" circle @click="isSettingShow=true"></el-button>
+        <el-button size="mini" plain type="success" icon="el-icon-edit" circle @click="isDialogShow=true"></el-button></div>
       <div v-if="ans.length > 0" class="count">
         {{ rightCount }}/{{ totalCount }}({{ rightRate }}%)
       </div>
@@ -34,7 +35,7 @@
       <div v-if="ans.length > 0" class="history">
         <div class="top">猜测记录：</div>
         <div class="bot">
-          <div v-for="(h, index) in his" :key="index" class="block" @click="clickHis(index)" 
+          <div v-for="(h, index) in his" :key="index" class="block" @click="clickHis(index)"
           :class="{
             right: h.status,
             wrong: !h.status,
@@ -53,9 +54,20 @@
           <el-button type="primary" :disabled="textarea.length===0 || isAIThinking2" @click="customize()">生成链接</el-button>
         </span>
       </el-dialog>
+
+      <el-dialog title="设置" center :visible.sync="isSettingShow" width="75%" @close="isSettingShow=false">
+        <div class="settingRow">
+          <span>便捷开局</span>
+          <el-switch v-model="settings.isQuick" @change="saveSettings"></el-switch>
+        </div>
+        <el-input type="textarea" :disabled="!settings.isQuick" :rows="3" placeholder="连续输入文字，如：一个的有和" v-model="settings.quickChars" @input="saveSettings"></el-input>
+        <span slot="footer" class="">
+          <el-button type="" @click="isSettingShow=false">关闭</el-button>
+        </span>
+      </el-dialog>
     </div>
   </template>
-  
+
   <style scoped lang="scss">
     .wrapper{
       max-width: 800px;
@@ -65,7 +77,14 @@
         margin-top: 20px;
         margin-bottom: 20px;
         font-size: 24px;
-        text-align: center;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+        button{
+          font-size: 16px;
+          margin-left: 6px;
+        }
       }
       .count{
         text-align: center;
@@ -154,15 +173,19 @@
         }
       }
 
-      .out{
+      .settingRow{
+        margin-bottom: 20px;
         display: flex;
         flex-flow: row nowrap;
-        justify-content: center;
+        justify-content: left;
         align-items: center;
+        span{
+          margin-right: 5px;
+        }
       }
     }
   </style>
-  
+
   <script>
     const { Configuration, OpenAIApi } = require("openai");
     import {Base64} from "js-base64"
@@ -171,7 +194,7 @@
       name: "guessBK",
       data(){
         return{
-          punctuationMarks: `,，.。\\/、:：;；\`~·'‘’"“”()（）<>《》!！?？+-_—%×√`,
+          punctuationMarks: `,，.。\\/、:：;；!！?？\`~·'‘’"“”()（）<>《》[]【】「」『』+-*_—%…`,
           rightCount: 0,
           totalCount: 0,
           ans: [],
@@ -179,10 +202,15 @@
           input: "",
           isWin: false,
           isDialogShow: false,
+          isSettingShow: false,
           textarea: "",
           isAIThinking: false,
           isAIThinking2: false,
-          lastC: ""
+          lastC: "",
+          settings: {
+            isQuick: false,
+            quickChars: "",
+          },
         }
       },
       computed: {
@@ -192,11 +220,22 @@
         }
       },
       mounted(){
+        //读取配置
+        if(localStorage.getItem("isQuick")){
+          this.settings.isQuick = localStorage.getItem("isQuick") === "1";
+        } else {
+          localStorage.setItem("isQuick", 0);
+        }
+        if(localStorage.getItem("quickChars")){
+          this.settings.quickChars = localStorage.getItem("quickChars");
+        } else {
+          localStorage.setItem("quickChars", "");
+        }
+
         if(this.$route.query.k){
           let code = this.$route.query.k;
           let decode = Base64.decode(decodeURIComponent(code));
           this.generate(decode);
-          this.isAIThinking = true;
         }
       },
       methods: {
@@ -218,7 +257,7 @@
           ];
           return arr[Math.floor(Math.random() * arr.length)];
         },
-        generate(article){
+        async generate(article){
           this.rightCount = 0;
           this.totalCount = 0;
           this.ans = [];
@@ -237,6 +276,13 @@
             }
             this.ans.push(temp);
           }
+          if(this.settings.isQuick){
+            for(let c of this.settings.quickChars){
+              this.input = c;
+              await new Promise(resolve => setTimeout(resolve, 200));
+              this.guess(false);
+            }
+          }
         },
         async ai(){
           const configuration = new Configuration({
@@ -248,7 +294,7 @@
           this.isAIThinking = true;
           try {
             const completion = await openai.createChatCompletion({
-              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，可以分成2至3段，包括中文、数字和标点符号，尽量不要使用英文，第一段介绍主要概念，后面几段可以介绍历史、发展、影响力、涉及其他相关领域等内容，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
+              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，包括中文、数字和标点符号，尽量不要使用英文，数字可以使用阿拉伯数字。正文可以分成2至3段，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
               model: "deepseek-chat",
               temperature: 2
             });
@@ -261,19 +307,23 @@
             this.isAIThinking = false;
           }
         },
-        guess(){
+        guess(showMessage = true){
           if(this.input.length !== 1) {
-            this.$message.warning({
-              message: "只能输入一个字",
-              duration: 1000
-            });
+            if(showMessage){
+              this.$message.warning({
+                message: "只能输入一个字",
+                duration: 1000
+              });
+            }
             return;
           }
           if(this.punctuationMarks.includes(this.input)) {
-            this.$message.warning({
-              message: "不能输入标点符号",
-              duration: 1000
-            });
+            if(showMessage) {
+              this.$message.warning({
+                message: "不能输入标点符号",
+                duration: 1000
+              });
+            }
             return;
           }
 
@@ -281,10 +331,12 @@
 
           //判断是否已经猜过
           if(this.his.some(h => h.character === this.input)){
-            this.$message({
-              message: "你已经猜过这个字",
-              duration: 1000
-            });
+            if(showMessage){
+              this.$message({
+                message: "你已经猜过这个字",
+                duration: 1000
+              });
+            }
             this.input = "";
             return;
           }
@@ -303,10 +355,12 @@
           if(flag){
             this.rightCount++;
           } else {
-            this.$message.error({
-              message: "这个字不在文章中",
-              duration: 1000
-            });
+            if(showMessage){
+              this.$message.error({
+                message: "这个字不在文章中",
+                duration: 1000
+              });
+            }
           }
           this.totalCount++;
 
@@ -420,8 +474,11 @@
           if(this.his[index].status && !this.isWin){
             this.lastC = this.his[index].character;
           }
+        },
+        saveSettings(){
+          localStorage.setItem("isQuick", this.settings.isQuick ? 1 : 0);
+          localStorage.setItem("quickChars", this.settings.quickChars);
         }
       }
     }
   </script>
-  
