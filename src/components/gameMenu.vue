@@ -1,5 +1,5 @@
 <template>
-  <div id="content">
+  <div style="display: none" id="content">
     <!-- 暂时隐藏 -->
     <div :class="{block: true, mobileBlock: isMobile}"
          v-if="!isMobile || item.mobile"
@@ -252,14 +252,14 @@ export default {
           loading: false,
           mobile: true,
         },
-        {
-          name: "猜文章",
-          path: "/guessBK",
-          desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
-          color: ["135deg", "#56ff7b", "#439f89"],
-          loading: false,
-          mobile: true,
-        },
+        // {
+        //   name: "猜文章",
+        //   path: "/guessBK",
+        //   desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
+        //   color: ["135deg", "#56ff7b", "#439f89"],
+        //   loading: false,
+        //   mobile: true,
+        // },
         {
           name: "coc工具",
           path: "/coc",
