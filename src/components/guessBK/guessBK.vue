@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
       <div class="title">
-        <span>猜文章v3.0</span>
+        <span>猜文章v3.1</span>
         <el-button size="mini" plain type="info" icon="el-icon-setting" circle @click="isSettingShow=true"></el-button>
         <el-button size="mini" plain type="success" icon="el-icon-edit" circle @click="isDialogShow=true"></el-button></div>
       <div v-if="ans.length > 0" class="count">
@@ -13,8 +13,9 @@
         <el-button type="warning" class="btn" :disabled="isWin" @click="giveUp()">弃</el-button>
       </div>
       <div v-if="ans.length === 0 || isWin" class="aiWrapper">
-        <el-button type="success" :disabled="isAIThinking" @click="ai()">
+        <el-button type="success" :disabled="isAIThinking || settings.category.length===0" @click="ai()">
           <span v-if="isAIThinking"><i class="el-icon-loading"></i>生成中，大约10秒</span>
+          <span v-else-if="settings.category.length===0">至少选择一项题库</span>
           <span v-else>AI随机生成文章</span>
         </el-button>
       </div>
@@ -27,7 +28,8 @@
             green: c.status === 2,
             out: c.status === 3,
             last: c.character === lastC && c.status === 2
-          }">
+          }"
+          :style="blockStyle">
             <span v-if="c.status !== 1">{{ c.character }}</span>
           </div>
         </div>
@@ -40,11 +42,12 @@
             right: h.status,
             wrong: !h.status,
             last: h.character === lastC && h.status
-          }">{{ h.character }}</div>
+          }"
+          :style="blockStyle">{{ h.character }}</div>
         </div>
       </div>
 
-      <el-dialog title="自定义文章" center :visible.sync="isDialogShow" width="75%" @close="isDialogShow=false">
+      <el-dialog title="自定义文章" center :visible.sync="isDialogShow" width="90%" @close="isDialogShow=false">
         <el-input type="textarea" :rows="10" placeholder="至少输入两行内容，第一行是要猜的标题，第二行开始是正文部分" v-model="textarea"></el-input>
         <span slot="footer" class="">
           <el-button type="success" :disabled="isAIThinking2" @click="aiCustomize()">
@@ -55,7 +58,30 @@
         </span>
       </el-dialog>
 
-      <el-dialog title="设置" center :visible.sync="isSettingShow" width="75%" @close="isSettingShow=false">
+      <el-dialog title="设置" center :visible.sync="isSettingShow" width="360px" @close="isSettingShow=false">
+        <div class="settingRow">
+          <span>格子大小</span>
+          <el-radio-group v-model="settings.size" @input="saveSettings">
+            <el-radio :label="0">大</el-radio>
+            <el-radio :label="1">中</el-radio>
+            <el-radio :label="2">小</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="settingRow">
+          <span>题库分类</span>
+          <el-button size="mini" @click="settingsCategorySelectAll">全选</el-button>
+          <el-button size="mini" @click="settingsCategoryClear">清空</el-button>
+        </div>
+        <div class="settingRow">
+          <el-select v-model="settings.category" multiple filterable allow-create default-first-option placeholder="请选择题库范围，也可自定义" @change="saveSettings">
+            <el-option
+              v-for="(c, index) in defaultCategories"
+              :key="index"
+              :label="c"
+              :value="c">
+            </el-option>
+          </el-select>
+        </div>
         <div class="settingRow">
           <span>便捷开局</span>
           <el-switch v-model="settings.isQuick" @change="saveSettings"></el-switch>
@@ -69,6 +95,11 @@
   </template>
 
   <style scoped lang="scss">
+    //消除el-radio console bug
+    /deep/ input[aria-hidden="true"] {
+      display: none !important;
+    }
+
     .wrapper{
       max-width: 800px;
       margin: 0 auto;
@@ -115,12 +146,7 @@
           display: flex;
           flex-flow: row wrap;
           .block{
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            font-size: 20px;
             text-align: center;
-            margin: 0 5px 5px 0;
             border: 1px solid rgba(255, 255, 255, 0);
             cursor: default;
           }
@@ -156,12 +182,7 @@
           display: flex;
           flex-flow: row wrap;
           .block{
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            font-size: 20px;
             text-align: center;
-            margin: 0 5px 5px 0;
             cursor: default;
           }
           .right{background-color: rgb(51,103,209);}
@@ -173,6 +194,10 @@
         }
       }
 
+      .el-dialog__wrapper /deep/ .el-dialog{
+        max-height: 70vh;
+        overflow-y: auto;
+      }
       .settingRow{
         margin-bottom: 20px;
         display: flex;
@@ -180,7 +205,10 @@
         justify-content: left;
         align-items: center;
         span{
-          margin-right: 5px;
+          margin-right: 20px;
+        }
+        .el-select{
+          width: 100%;
         }
       }
     }
@@ -189,6 +217,10 @@
   <script>
     const { Configuration, OpenAIApi } = require("openai");
     import {Base64} from "js-base64"
+
+    function log(...arr){
+      console.log(...arr)
+    }
 
     export default {
       name: "guessBK",
@@ -208,39 +240,12 @@
           isAIThinking2: false,
           lastC: "",
           settings: {
+            size: 0,
+            category: [],
             isQuick: false,
             quickChars: "",
           },
-        }
-      },
-      computed: {
-        rightRate(){
-          if(this.rightCount === 0 && this.totalCount === 0) return 0;
-          return Math.floor(this.rightCount / this.totalCount * 100 * 100) / 100;
-        }
-      },
-      mounted(){
-        //读取配置
-        if(localStorage.getItem("isQuick")){
-          this.settings.isQuick = localStorage.getItem("isQuick") === "1";
-        } else {
-          localStorage.setItem("isQuick", 0);
-        }
-        if(localStorage.getItem("quickChars")){
-          this.settings.quickChars = localStorage.getItem("quickChars");
-        } else {
-          localStorage.setItem("quickChars", "");
-        }
-
-        if(this.$route.query.k){
-          let code = this.$route.query.k;
-          let decode = Base64.decode(decodeURIComponent(code));
-          this.generate(decode);
-        }
-      },
-      methods: {
-        getRandomBKCategory(){
-          let arr = [
+          defaultCategories: [
             //从【xxx】这个大类中随机选择一样
             "动物", "植物", "天文", "自然现象",//自然
             "国家", "中国省份", "中国城市", //地理
@@ -254,7 +259,37 @@
             "自然科学", "科技产品", //科技
             "体育活动", //体育
             "电子游戏", "B站知名up主", "动漫", //娱乐
-          ];
+          ],
+        }
+      },
+      computed: {
+        rightRate(){
+          if(this.rightCount === 0 && this.totalCount === 0) return 0;
+          return Math.floor(this.rightCount / this.totalCount * 100 * 100) / 100;
+        },
+        blockStyle(){
+          return {
+            width: ['24px', '20px', '16px'][this.settings.size],
+            height: ['24px', '20px', '16px'][this.settings.size],
+            lineHeight: ['24px', '20px', '16px'][this.settings.size],
+            fontSize: ['20px', '18px', '16px'][this.settings.size],
+            margin: ['0 5px 5px 0', '0 4px 4px 0', '0 3px 3px 0'][this.settings.size],
+          }
+        }
+      },
+      mounted(){
+        //读取配置
+        this.readSettings();
+
+        if(this.$route.query.k){
+          let code = this.$route.query.k;
+          let decode = Base64.decode(decodeURIComponent(code));
+          this.generate(decode);
+        }
+      },
+      methods: {
+        getRandomBKCategory(){
+          let arr = this.settings.category;
           return arr[Math.floor(Math.random() * arr.length)];
         },
         async generate(article){
@@ -294,7 +329,7 @@
           this.isAIThinking = true;
           try {
             const completion = await openai.createChatCompletion({
-              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，包括中文、数字和标点符号，尽量不要使用英文，数字可以使用阿拉伯数字。正文可以分成2至3段，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
+              messages: [{ role: "user", content: "你是一位全能博学者，通晓世间万物，现在请你模仿百度百科的文本格式，从【" + this.getRandomBKCategory() + "】这个大类中随机选择一个，生成一篇关于它的百科说明，内容必须真实可靠，不能包含虚假信息，以纯文本格式输出，第一行是这个词汇本身，只允许有中文，最多七个字，如果是某作品或电影名，不要加书名号，之后是正文部分，包括中文、数字和标点符号，尽量不要使用英文，数字尽量使用阿拉伯数字。正文可以分成2至3段，段落前不需要加序号。总字数大约在200字左右，但不要超过250字。" }],
               model: "deepseek-chat",
               temperature: 2
             });
@@ -475,10 +510,46 @@
             this.lastC = this.his[index].character;
           }
         },
+        readSettings(){
+          if(localStorage.getItem("size")){ //int
+            this.settings.size = parseInt(localStorage.getItem("size"));
+          } else {
+            this.settings.size = 0;
+            localStorage.setItem("size", 0);
+          }
+          if(localStorage.getItem("category")){ //arr
+            this.settings.category = localStorage.getItem("category").split(",");
+          } else {
+            this.settings.category = this.defaultCategories;
+            localStorage.setItem("category", this.defaultCategories);
+          }
+          if(localStorage.getItem("isQuick")){ //bool
+            this.settings.isQuick = localStorage.getItem("isQuick") === "1";
+          } else {
+            this.settings.isQuick = false;
+            localStorage.setItem("isQuick", 0);
+          }
+          if(localStorage.getItem("quickChars")){ //Str
+            this.settings.quickChars = localStorage.getItem("quickChars");
+          } else {
+            this.settings.quickChars = "";
+            localStorage.setItem("quickChars", "");
+          }
+        },
         saveSettings(){
+          localStorage.setItem("size", this.settings.size);
+          localStorage.setItem("category", this.settings.category);
           localStorage.setItem("isQuick", this.settings.isQuick ? 1 : 0);
           localStorage.setItem("quickChars", this.settings.quickChars);
-        }
+        },
+        settingsCategorySelectAll(){
+          this.settings.category = this.defaultCategories;
+          this.saveSettings();
+        },
+        settingsCategoryClear(){
+          this.settings.category = [];
+          this.saveSettings();
+        },
       }
     }
   </script>
