@@ -4,24 +4,6 @@
 npm install
 npm run dev
 ```
-## Game Menu
-名称Name | 描述Description | 在线链接Link
---- | --- | ---
-Minesweeper     | 扫雷 | [Click Me](https://lucky131.github.io/GamesPage/#/minesweeper)
-Snake           | 贪吃蛇 | [Click Me](https://lucky131.github.io/GamesPage/#/snake)
-Color           | 填色，使图成渐变状 | [Click Me](https://lucky131.github.io/GamesPage/#/color)
-Link            | 连连看，无洗牌功能 | [Click Me](https://lucky131.github.io/GamesPage/#/link)
-Jump            | 横版跳跃游戏，已搁浅 | [Click Me](https://lucky131.github.io/GamesPage/#/jump)
-Picross         | 填图游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/picross)
-Bulls and Cows  | 经典猜数字 | [Click Me](https://lucky131.github.io/GamesPage/#/digital)
-Wolf            | 狼人kill专用发牌器 | [Click Me](https://lucky131.github.io/GamesPage/#/wolf)
-Eco             | 地形生成器，已搁浅 | [Click Me](https://lucky131.github.io/GamesPage/#/eco)
-CssDraw         | 纯CSS绘制的一些图形 | [Click Me](https://lucky131.github.io/GamesPage/#/cssDraw)
-TripleDisaster  | 三灾，移动端文字冒险游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/tripleDisaster)
-MagicCube       | 3D魔方 | [Click Me](https://lucky131.github.io/GamesPage/#/magicCube)
-GangEditor      | 杠·地图编辑器 | [Click Me](https://lucky131.github.io/GamesPage/#/gangEditor)
-GangCompany     | 三杠公司，移动端模拟经营类游戏 | [Click Me](https://lucky131.github.io/GamesPage/#/GangCompany)
-
 ## Build Page
 [Click Me](https://lucky131.github.io/GamesPage/)
 出于某种原因我将页面隐藏了，f12中找到div#app下的div#content，去掉"display: none"属性就可显示原页面
