@@ -1,15 +1,15 @@
 <template>
     <div class="wrapper">
       <div class="title">
-        <span>猜文章v3.1</span>
+        <span>猜文章v3.3</span>
         <el-button size="mini" plain type="info" icon="el-icon-setting" circle @click="isSettingShow=true"></el-button>
         <el-button size="mini" plain type="success" icon="el-icon-edit" circle @click="isDialogShow=true"></el-button></div>
-      <div v-if="ans.length > 0" class="count">
-        {{ rightCount }}/{{ totalCount }}({{ rightRate }}%)
+      <div class="currentCategories" @click="isSettingShow=true">
+        当前题库：{{currentCategories}}
       </div>
       <div v-if="ans.length > 0" class="ope">
-        <el-input v-model="input" placeholder="请输入要猜的字" :disabled="isWin" @keyup.enter.native="guess()"></el-input>
-        <el-button type="primary" class="btn" :disabled="input.length !== 1" @click="guess()">猜</el-button>
+        <el-input v-model="input" ref="input" placeholder="请输入要猜的字" :disabled="isWin" @keyup.enter.native="guessAll(input)"></el-input>
+        <el-button type="primary" class="btn" :disabled="input.length === 0" @click="guessAll(input)">猜</el-button>
         <el-button type="warning" class="btn" :disabled="isWin" @click="giveUp()">弃</el-button>
       </div>
       <div v-if="ans.length === 0 || isWin" class="aiWrapper">
@@ -35,7 +35,7 @@
         </div>
       </div>
       <div v-if="ans.length > 0" class="history">
-        <div class="top">猜测记录：</div>
+        <div class="top">猜测记录：{{ rightCount }}/{{ totalCount }}({{ rightRate }}%)</div>
         <div class="bot">
           <div v-for="(h, index) in his" :key="index" class="block" @click="clickHis(index)"
           :class="{
@@ -86,10 +86,13 @@
           <span>便捷开局</span>
           <el-switch v-model="settings.isQuick" @change="saveSettings"></el-switch>
         </div>
-        <el-input type="textarea" :disabled="!settings.isQuick" :rows="3" placeholder="连续输入文字，如：一个的有和" v-model="settings.quickChars" @input="saveSettings"></el-input>
-        <span slot="footer" class="">
-          <el-button type="" @click="isSettingShow=false">关闭</el-button>
-        </span>
+        <div class="settingRow">
+          <el-input type="textarea" :disabled="!settings.isQuick" :rows="3" placeholder="连续输入文字，如：一个的有和" v-model="settings.quickChars" @input="saveSettings"></el-input>
+        </div>
+        <div class="settingRow">
+          <span>连续猜字</span>
+          <el-switch v-model="settings.continuousGuess" @change="saveSettings"></el-switch>
+        </div>
       </el-dialog>
     </div>
   </template>
@@ -106,7 +109,7 @@
       padding: 0 20px;
       .title{
         margin-top: 20px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         font-size: 24px;
         display: flex;
         flex-flow: row nowrap;
@@ -117,8 +120,14 @@
           margin-left: 6px;
         }
       }
-      .count{
+      .currentCategories{
+        color: #666;
+        font-size: 14px;
         text-align: center;
+        cursor: pointer;
+        &:hover{
+          text-decoration: underline;
+        }
       }
       .ope{
         margin-top: 20px;
@@ -215,6 +224,8 @@
   </style>
 
   <script>
+    import ca from "element-ui/src/locale/lang/ca";
+
     const { Configuration, OpenAIApi } = require("openai");
     import {Base64} from "js-base64"
 
@@ -244,10 +255,11 @@
             category: [],
             isQuick: false,
             quickChars: "",
+            continuousGuess: false,
           },
           defaultCategories: [
             //从【xxx】这个大类中随机选择一样
-            "动物", "植物", "天文", "自然现象",//自然
+            "动物", "植物", "自然现象", "天文",//自然
             "国家", "中国省份", "中国城市", //地理
             "文学作品", "传统习俗", "电影", "旅游景点", //文化
             "历史事件", "中国朝代", "历史典故", //历史
@@ -263,6 +275,14 @@
         }
       },
       computed: {
+        currentCategories(){
+          let cates = this.settings.category;
+          if(cates.length > 3){
+            return `${cates[0]}、${cates[1]}、${cates[2]}...共${cates.length}类`;
+          } else if(cates.length > 0) {
+            return cates.join("、");
+          } else return '空'
+        },
         rightRate(){
           if(this.rightCount === 0 && this.totalCount === 0) return 0;
           return Math.floor(this.rightCount / this.totalCount * 100 * 100) / 100;
@@ -311,13 +331,18 @@
             }
             this.ans.push(temp);
           }
+
+          //快速开局
           if(this.settings.isQuick){
             for(let c of this.settings.quickChars){
               this.input = c;
-              await new Promise(resolve => setTimeout(resolve, 200));
-              this.guess(false);
+              await new Promise(resolve => setTimeout(resolve, 100));
+              this.guessOne(c, false);
             }
+            this.input = "";
           }
+
+          this.$refs.input.focus();
         },
         async ai(){
           const configuration = new Configuration({
@@ -342,45 +367,82 @@
             this.isAIThinking = false;
           }
         },
-        guess(showMessage = true){
-          if(this.input.length !== 1) {
-            if(showMessage){
+        results2Msg(results){
+          let ans = [];
+          if(results[1]) ans.push(`猜对${results[1]}个`);
+          if(results[2]) ans.push(`猜错${results[2]}个`);
+          if(results[3]) ans.push(`重复${results[3]}个`);
+          if(results[0]) ans.push(`无效${results[0]}个`);
+          return ans.join("，");
+        },
+        guessAll(input){
+          if(this.settings.continuousGuess){
+            if(input.length === 0){
+              this.$message.warning({
+                message: "至少输入一个字",
+                duration: 1000
+              });
+              return;
+            }
+            let results = [0,0,0,0];
+            for(let c of input){
+              let res = this.guessOne(c, false);
+              results[res]++;
+              if(this.isWin) break;
+            }
+            this.input = "";
+            if(!this.isWin){
+              this.$message({
+                type: results[1] > 0 ? 'success' : 'error',
+                message: this.results2Msg(results),
+                duration: 2000
+              });
+            }
+          } else {
+            if(this.input.length !== 1) {
               this.$message.warning({
                 message: "只能输入一个字",
                 duration: 1000
               });
+              return;
             }
-            return;
+            this.guessOne(input, true);
+            this.input = "";
           }
-          if(this.punctuationMarks.includes(this.input)) {
+        },
+        guessOne(char, showMessage = true){
+          // return
+          // 0无效猜测 1猜中 2不中 3重复
+          if(this.isWin) return 0;
+
+          if(this.punctuationMarks.includes(char)) {
             if(showMessage) {
               this.$message.warning({
                 message: "不能输入标点符号",
                 duration: 1000
               });
             }
-            return;
+            return 0;
           }
 
-          this.lastC = this.input;
+          this.lastC = char;
 
           //判断是否已经猜过
-          if(this.his.some(h => h.character === this.input)){
+          if(this.his.some(h => h.character === char)){
             if(showMessage){
               this.$message({
                 message: "你已经猜过这个字",
                 duration: 1000
               });
             }
-            this.input = "";
-            return;
+            return 3;
           }
 
           //开始遍历
           let flag = false;
           for(let p of this.ans){
             for(let c of p){
-              if(c.character === this.input){
+              if(c.character === char){
                 c.status = 2;
                 flag = true;
               }
@@ -401,15 +463,14 @@
 
           //加入历史
           this.his.push({
-            character: this.input,
+            character: char,
             status: flag
           });
 
-          //清空
-          this.input = "";
-
           //判赢
           this.judgeWin();
+
+          return flag ? 1 : 2;
         },
         judgeWin(){
           if(this.ans[0].every(c => c.status === 2)){
@@ -535,12 +596,19 @@
             this.settings.quickChars = "";
             localStorage.setItem("quickChars", "");
           }
+          if(localStorage.getItem("continuousGuess")){ //bool
+            this.settings.continuousGuess = localStorage.getItem("continuousGuess") === "1";
+          } else {
+            this.settings.continuousGuess = false;
+            localStorage.setItem("continuousGuess", 0);
+          }
         },
         saveSettings(){
           localStorage.setItem("size", this.settings.size);
           localStorage.setItem("category", this.settings.category);
           localStorage.setItem("isQuick", this.settings.isQuick ? 1 : 0);
           localStorage.setItem("quickChars", this.settings.quickChars);
+          localStorage.setItem("continuousGuess", this.settings.continuousGuess ? 1 : 0);
         },
         settingsCategorySelectAll(){
           this.settings.category = this.defaultCategories;
