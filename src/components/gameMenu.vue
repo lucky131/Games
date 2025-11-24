@@ -1,110 +1,33 @@
 <template>
-  <div style="display: none" id="content">
+  <div id="content">
     <!-- 暂时隐藏 -->
-    <div :class="{block: true, mobileBlock: isMobile}"
+    <div class="block"
          v-if="!isMobile || item.mobile"
          v-for="(item, index) in gameList"
-         :key="index"
-         :style="color2Style(item.color)">
-      <div class="innerBlock" @click="goto(index)">
-        <div class="name"><span>{{item.name}}</span></div>
-        <div v-if="!isMobile" class="desc">{{item.desc}}</div>
-      </div>
-      <div v-if="item.loading" class="loading">
-        <i class="el-icon-loading"></i>
-      </div>
+         :key="index" @click="goto(index)">
+      <div class="name">{{item.name}}</div>
+      <div class="desc">{{item.desc}}</div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
   #content {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: stretch;
-    align-content: stretch;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 0 20px;
     .block{
-      min-width: 20%;
-      flex: 1;
-      position: relative;
+      padding: 0 10px;
+      margin-bottom: 5px;
+      transition: background-color 200ms;
       cursor: pointer;
-      &.mobileBlock{
-        min-width: 50%;
-        .innerBlock{
-          background-color: rgba(0,0,0,0);
-          .name{
-            color: rgba(0,0,0,.75);
-          }
-        }
+      &:hover{
+        background-color: #eee;
       }
-      .innerBlock{
-        width: 100%;
-        height: 100%;
-        padding: 0 20px;
-        box-sizing: border-box;
-        border: 8px solid transparent;
-        background-color: rgba(0,0,0,0.5);
-        transition: background-color 300ms, border-color 300ms;
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
-        .name{
-          color: rgba(255,255,255,.5);
-          transition: color 500ms;
-          font-size: 20px;
-          font-weight: bold;
-          text-align: center;
-        }
-        .desc{
-          margin-top: 20px;
-          color: rgba(255,255,255,.25);
-          transition: color 500ms;
-          font-size: 12px;
-        }
-        &:hover{
-          border-top-color: rgba(255,255,255,0.5);
-          border-left-color: rgba(255,255,255,0.3);
-          border-right-color: rgba(0,0,0,0.3);
-          border-bottom-color: rgba(0,0,0,0.5);
-          background-color: rgba(0,0,0,0);
-          .name{
-            color: rgba(0,0,0,.75);
-          }
-          .desc{
-            color: rgba(0,0,0,.5);
-          }
-        }
-        &:active{
-          border-top-color: rgba(0,0,0,0.5);
-          border-left-color: rgba(0,0,0,0.3);
-          border-right-color: rgba(255,255,255,0.3);
-          border-bottom-color: rgba(255,255,255,0.5);
-          background-color: rgba(0,0,0,0.3);
-          .name{
-            color: rgba(0,0,0,.75);
-          }
-          .desc{
-            color: rgba(0,0,0,.5);
-          }
-        }
-      }
-      .loading{
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: rgba(255,255,255,.5);
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 64px;
-        cursor: no-drop;
+      & .name{}
+      & .desc{
+        color: #aaa;
+        font-size: 12px;
       }
     }
   }
@@ -122,59 +45,47 @@ export default {
           name: "扫雷",
           path: "/minesweeper",
           desc: "经典扫雷，左键打开，右键插旗",
-          color: "#b0b0b0",
-          loading: false,
+          mobile: true,
         },
         {
           name: "贪吃蛇",
           path: "/snake",
           desc: "贪吃蛇，WASD或方向键操控",
-          color: "#707070",
-          loading: false,
         },
         {
           name: "填色",
           path: "/color",
           desc: "填色使之成渐变状",
-          color: "#ff5e52",
-          loading: false,
+          mobile: true,
         },
         {
           name: "连连看",
           path: "/link",
           desc: "经典连连看，左键操作，无解需要刷新重来",
-          color: "#ffef6e",
-          loading: false,
+          mobile: true,
         },
         {
           name: "跳一跳",
           path: "/jump",
           desc: "横版跳跃游戏，WASD或方向键操控，开发中...",
-          color: "#6df8ff",
-          loading: false,
         },
         {
           name: "Picross",
           path: "/picross",
           desc: "经典Picross",
-          color: "#5dffbd",
-          loading: false,
+          mobile: true,
         },
         {
           name: "猜数字",
           path: "/digital",
           desc: "经典猜数字游戏 - Bulls and Cows",
-          color: "#e19bff",
-          loading: false,
-        },
-        {
-          name: "狼人杀上帝助手",
-          path: "/wolf",
-          desc: "狼人kill专用发牌器",
-          color: "#ffbc64",
-          loading: false,
           mobile: true,
         },
+        // {
+        //   name: "狼人杀上帝助手",
+        //   path: "/wolf",
+        //   desc: "狼人kill专用发牌器",
+        // },
         // {
         //   name: "12班去向图",
         //   path: "/graduate",
@@ -187,95 +98,70 @@ export default {
           name: "地形生成器",
           path: "/eco",
           desc: "自主研发，已搁浅",
-          color: "#6285ff",
-          loading: false,
         },
         {
           name: "css画板",
           path: "/cssDraw",
           desc: "纯css画一些东西",
-          color: "#a6ff5d",
-          loading: false,
           mobile: true,
         },
         {
           name: "三灾",
           path: "/tripleDisaster",
           desc: "移动端文字冒险游戏",
-          color: ["135deg", "#ffad51", "#87511e"],
-          loading: false,
           mobile: true,
         },
         {
           name: "魔方",
           path: "/magicCube",
           desc: "用three.js创建的魔方游戏，支持3-5阶，自由旋转视角",
-          color: ["135deg", "#fbff00", "#ff6625"],
-          loading: false,
         },
         {
           name: "杠·地图编辑器",
           path: "/gangEditor",
           desc: "用three.js创建的地图编辑器",
-          color: ["135deg", "#eaff00", "#00d220"],
-          loading: false,
         },
         {
           name: "杭州三杠科技有限公司",
           path: "/gangCompany",
           desc: "移动端模拟经营类游戏",
-          color: ["135deg", "#35e7ff", "#6f39e2"],
-          loading: false,
           mobile: true,
         },
         {
           name: "动物世界",
           path: "/animal",
           desc: "根据电影《动物世界》引发的一些思考",
-          color: ["135deg", "#ffc162", "#e4417e"],
-          loading: false,
           mobile: true,
         },
         // {
         //   name: "CTO之路",
         //   path: "/road2CTO",
         //   desc: "传统rpg类型游戏",
-        //   color: ["135deg", "#56ff7b", "#439f89"],
-        //   loading: false,
         //   mobile: true,
         // },
         {
           name: "里该隐合成表（已废弃）",
           path: "/cain",
           desc: "以撒的结合里该隐合成表",
-          color: ["135deg", "#F7B3FF", "#FF25E9"],
-          loading: false,
-          mobile: true,
         },
-        // {
-        //   name: "猜文章",
-        //   path: "/guessBK",
-        //   desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
-        //   color: ["135deg", "#56ff7b", "#439f89"],
-        //   loading: false,
-        //   mobile: true,
-        // },
         {
           name: "coc工具",
           path: "/coc",
           desc: "我也不知道为啥写这个",
-          color: ["135deg", "#fff", "#fff"],
-          loading: false,
           mobile: true,
         },
         {
           name: "点灯游戏解密器",
           path: "/light",
           desc: "让人红温的解谜游戏",
-          color: ["135deg", "#ccc", "#fff"],
-          loading: false,
           mobile: true,
         },
+        // {
+        //   name: "猜文章",
+        //   path: "/guessBK",
+        //   desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
+        //   mobile: true,
+        // },
       ]
     }
   },
@@ -283,13 +169,6 @@ export default {
     this.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
   },
   methods: {
-    color2Style (color) {
-      if (typeof color === 'string') return {'backgroundColor': color}
-      if (Array.isArray(color)) {
-        return {'backgroundImage': `linear-gradient(${color.join(',')})`}
-      }
-      return {}
-    },
     goto(index){
       if(!this.loading){
         let page = this.$router.resolve({
