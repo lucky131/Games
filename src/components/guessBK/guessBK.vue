@@ -237,7 +237,7 @@
       name: "guessBK",
       data(){
         return{
-          punctuationMarks: `,，.。\\/、:：;；!！?？\`~·'‘’"“”()（）<>《》[]【】「」『』+-*_—%…`,
+          punctuationMarks: `,，.。\\/、:：;；!！?？\`~·•'‘’"“”()（）<>《》[]【】「」『』+-－*_—%…`,
           rightCount: 0,
           totalCount: 0,
           ans: [],
@@ -473,7 +473,7 @@
           return flag ? 1 : 2;
         },
         judgeWin(){
-          if(this.ans[0].every(c => c.status === 2)){
+          if(this.ans[0].every(c => c.status === 2 || c.status === 0)){
             for(let p of this.ans){
               for(let c of p){
                 if(c.status === 1){
