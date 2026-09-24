@@ -145,6 +145,12 @@ const router = new Router({
       component: () => import('../components/guessBK/guessBK'),
       meta: {mouseRightMenu: true, mouseSelect: true}
     },
+    {
+      path: "/merge",
+      name: "merge",
+      component: () => import('../components/merge/merge'),
+      meta: {mouseRightMenu: true, mouseSelect: true}
+    },
   ]
 })
 

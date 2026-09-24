@@ -1,0 +1,1364 @@
+/**
+ * merge 界面样式 —— 现代卡片风 / 移动端适配
+ *
+ * 由 merge.vue 的 <style scoped lang="scss"> 通过 @import 引入，
+ * 因此本文件里所有选择器都会被加上组件的 scope 属性。
+ *
+ * 两条必须遵守的约束（踩过的坑）：
+ * 1. :root 经 scoped 处理后变成 :root[data-v-x]，永不匹配 → CSS 变量一律挂在 #merge 上；
+ * 2. node-sass 4 会把 CSS 的 min() / max() 当成 Sass 内置函数吃掉 →
+ *    凡是「取较小值」的场景一律写成 max-width + 百分比，不写 min()。
+ *
+ * 尺寸策略：所有格子共用 --slot 一个上限变量，实际边长由容器宽度决定
+ * （flex-basis / grid 列宽 + aspect-ratio），媒体查询只改变量值，不改规则。
+ */
+
+#merge {
+  /* ================= 尺寸变量 ================= */
+  --slot: 58px;          /* 格子边长上限：棋盘 / 仓库 / 商店共用 */
+  --slot-gap: 8px;       /* 格子之间的间距 */
+  --pad: 12px;           /* 卡片内边距 */
+  --radius: 14px;        /* 卡片圆角 */
+  --radius-slot: 10px;   /* 格子圆角 */
+  --safe-b: env(safe-area-inset-bottom, 0px); /* iPhone 底部横条 */
+  --action-bar-h: 66px;   /* 底部操作栏高度：按钮 46 + 上下 padding 20，改 .action-bar 时同步这里 */
+
+  /* ================= 配色 ================= */
+  --bg-0: #0d0f16;
+  --bg-1: #171b26;
+  --card: rgba(255, 255, 255, 0.045);
+  --card-line: rgba(255, 255, 255, 0.09);
+  --slot-bg: rgba(255, 255, 255, 0.06);
+  --slot-line: rgba(255, 255, 255, 0.12);
+  --text: #e7eaf2;
+  --text-dim: #858c9e;
+  --player: #3fd0c9;
+  --enemy: #ff6b6b;
+  --gold: #f5c451;
+  --accent: #6c8cff;
+  /* 装备等级边框色。一级沿用 --slot-line（灰），不单独定义。
+     二级复用 --accent；三级刻意用橙调而非 --gold：
+     --gold 已经是「条件加成生效」的发光色（见 .bonus-active），两者同框时必须能一眼分开 */
+  --lv3: #ff9f43;
+
+  /* ================= 根容器 ================= */
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-flow: column nowrap;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 70% at 50% 0%, #1d2333 0%, rgba(29, 35, 51, 0) 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
+    'Helvetica Neue', Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* ================= 可滚动舞台 =================
+     .stage 负责滚动，.stage-inner 用 margin:auto 做「内容少时居中、
+     内容超出时正常滚动」——直接给 flex 容器 justify-content:center
+     会导致溢出部分滚不到顶部。 */
+  .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 12px;
+    /* 内容少时上下留白均分（视觉居中），内容超出时正常滚动。
+       不能直接给 flex 容器 justify-content: center：那样溢出部分滚不到顶部 */
+    &::before,
+    &::after {
+      content: '';
+      margin: auto;
+    }
+  }
+
+  /* ================= 计时器 ================= */
+  .time {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 5px 20px;
+    border: 1px solid var(--card-line);
+    border-radius: 999px;
+    background: var(--card);
+    font-variant-numeric: tabular-nums;
+
+    .time-value {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .time-unit {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* 超时：整块转红并脉冲，替代原来只改数字颜色 */
+    &.overtime {
+      color: #ff5c5c;
+      border-color: rgba(255, 92, 92, 0.55);
+      background: rgba(255, 92, 92, 0.12);
+      animation: blink 0.6s infinite alternate;
+
+      .time-unit {
+        color: #ff5c5c;
+      }
+    }
+  }
+
+  @keyframes blink {
+    from { opacity: 1; }
+    to { opacity: 0.45; }
+  }
+
+  /* ================= 敌我对战区 ================= */
+  .pve {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    /* ---- 单方卡片 ---- */
+    .side {
+      flex: 1 1 0;
+      min-width: 0;
+      /* 上限 = 三格棋盘撑满时的宽度：桌面下再宽也保持这个尺寸，
+         避免大屏上格子被拉成巨方块 */
+      max-width: 236px;
+      position: relative;
+      padding: var(--pad);
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 8px;
+      border: 1px solid var(--card-line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+
+      /* 顶部一道主题色流光，替代边框区分敌我 */
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0.9;
+      }
+      &.player::before {
+        background: linear-gradient(90deg, transparent, var(--player), transparent);
+      }
+      &.enemy::before {
+        background: linear-gradient(90deg, transparent, var(--enemy), transparent);
+      }
+      /* 战斗中：卡片整体轻微提亮，提示「已锁定」 */
+      &.fighting {
+        background: rgba(255, 255, 255, 0.07);
+      }
+    }
+
+    /* ---- 血量区：血条 + 下方数值（100/200(15)） ---- */
+    .hp-block {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 3px;
+    }
+    .hp-text {
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-dim);
+
+      /* 护盾值跟着护盾段的浅蓝走，一眼能对上 */
+      .hp-shield {
+        color: #8fe3ff;
+      }
+    }
+
+    /* ---- 属性面板：3 列 × 2 行（6 项刚好两行，比 2 列省一行高度） ---- */
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.22);
+
+      .stat-item {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        gap: 1px;
+        min-width: 0;
+
+        .stat-label {
+          font-size: 10px;
+          line-height: 1.1;
+          color: var(--text-dim);
+          white-space: nowrap;
+        }
+        .stat-value {
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.2;
+          font-variant-numeric: tabular-nums;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    /* ---- 棋盘：3 列，格子保持正方形 ---- */
+    .chesses {
+      width: 100%;
+      max-width: calc(var(--slot) * 3 + var(--slot-gap) * 2);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--slot-gap);
+
+      .chess {
+        width: 100%;
+        aspect-ratio: 1;
+        position: relative;
+        border: 1px solid var(--slot-line);
+        border-radius: var(--radius-slot);
+        background: var(--slot-bg);
+        overflow: hidden;
+        cursor: pointer;
+
+        /* 空格子点了没反应（棋盘不能直接放装备，得走仓库的「装备」按钮），
+           别给它可点击的手型 */
+        &.is-empty {
+          cursor: default;
+          border-style: dashed;
+          border-color: rgba(255, 255, 255, 0.07);
+          background: rgba(255, 255, 255, 0.02);
+        }
+
+        .chess-icon {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        /* 条件加成生效中：金色描边 + 外发光。
+           用 box-shadow 而不是加粗 border：格子尺寸不变，同排不会跟着跳 */
+        &.bonus-active {
+          border-color: var(--gold);
+          box-shadow: 0 0 0 1px var(--gold), 0 0 10px 6px rgba(245, 196, 81, 0.7);
+        }
+
+        /* 等级描边：二级蓝、三级橙，一级不写规则（沿用上面的 --slot-line 灰）。
+           写在 bonus-active 之后，与它同优先级时后者胜出——加成生效中的格子由金色接管，
+           装备本身的三级橙框被压住。这是刻意的：金光是「此刻有被动在生效」的强信号，
+           而且三级橙（--lv3）与金色（--gold）色相接近，同框并列反而看不清 */
+        &.lv-2 { border-color: var(--accent); }
+        &.lv-3 { border-color: var(--lv3); }
+
+        .cooldown-mask {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 12px;
+          font-weight: 700;
+          color: #fff;
+          pointer-events: none;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+          background: conic-gradient(
+            from 0deg,
+            rgba(0, 0, 0, 0.55) 0deg,
+            rgba(0, 0, 0, 0.55) var(--angle),
+            transparent var(--angle)
+          );
+        }
+      }
+    }
+
+    /* ---- 血条：纯视觉，数字已上移到卡片头 ---- */
+    .hp-bar {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+
+      /* 两段都不写自己的圆角，统一交给外层 overflow:hidden 裁：
+         满血时血量段的右端正好压在容器边上，跟着裁成圆弧；
+         有护盾时血量段缩到中间，右端就自然是直角，接着护盾段
+         而护盾段作为最后一段，右端仍被容器裁成圆弧 */
+      .hp-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transition: width 0.1s linear;
+      }
+      /* 护盾段接在血量段之后：血量段右端压成深绿，护盾段是浅蓝，
+         两者靠明度差拉开接缝，而不是靠色相 */
+      .shield-fill {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, #a8eaff, #7fd2f2);
+        transition: left 0.1s linear, width 0.1s linear;
+      }
+    }
+    /* 右端压深，与紧邻的浅蓝护盾段咬合出明度差（别改回左深右亮） */
+    .side.player .hp-fill {
+      background: linear-gradient(90deg, #5fe3b0, #1e9c7c);
+    }
+    .side.enemy .hp-fill {
+      background: linear-gradient(90deg, #d94a4a, #ff7a6b);
+    }
+  }
+
+  /* ================= 仓库 / 商店 ================= */
+  .warehouse,
+  .shop {
+    width: 100%;
+    max-width: 560px;
+    padding: var(--pad);
+    border: 1px solid var(--card-line);
+    border-radius: var(--radius);
+    background: var(--card);
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+
+      /* 标题后拉一条渐变细线补满剩余宽度 */
+      &::after {
+        content: '';
+        flex: 1 1 auto;
+        height: 1px;
+        background: linear-gradient(90deg, var(--card-line), transparent);
+      }
+    }
+  }
+
+  /* 两处格子共用同一套规则 */
+  .warehouse .blocks,
+  .shop .blocks {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--slot-gap);
+    flex-wrap: nowrap;
+  }
+
+  .warehouse .block,
+  .shop .block {
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: var(--slot);
+    aspect-ratio: 1;
+    position: relative;
+    border: 1px solid var(--slot-line);
+    border-radius: var(--radius-slot);
+    background: var(--slot-bg);
+    overflow: hidden;
+
+    .chess-icon {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* 等级描边：与棋盘 .chess 同一套色。放在 .is-empty / :active 之前，
+     让虚线和按压高亮（都是更具体的状态选择器）在需要时正常接管 */
+  .warehouse .block.lv-2,
+  .shop .block.lv-2 {
+    border-color: var(--accent);
+  }
+  .warehouse .block.lv-3,
+  .shop .block.lv-3 {
+    border-color: var(--lv3);
+  }
+
+  /* 有装备的格子才可点，给一点按压反馈（触屏没有 hover）。
+     用 :not(.is-empty) 精确排除空位——空格子不该给出「可以点」的暗示 */
+  .warehouse .block:not(.is-empty),
+  .shop .block:not(.is-empty) {
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+    &:active {
+      transform: scale(0.94);
+      border-color: var(--accent);
+    }
+  }
+
+  /* 空位：虚线框 + 十字，比原来的空白更容易读成「这里可以放」。
+     不用 :has() / :empty——前者 Safari 15.4 才有，后者遇到 v-if 留下的
+     注释占位节点在各浏览器表现不一致，直接由模板打 is-empty 类最稳 */
+  .warehouse .block.is-empty,
+  .shop .block.is-empty {
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  /* ================= HUD：心 / 回合 / 金币 =================
+     一个胶囊里分三格，格间竖线分隔，和上面的计时器用同一套语言。
+     每格统一「大数字 + 小单位」，数字走 tabular-nums 免得变化时抖动。
+     三格必须 stretch 等高，否则竖线会长短不一 */
+  .hud {
+    display: flex;
+    align-items: stretch;
+    padding: 6px 0;
+    border: 1px solid var(--card-line);
+    border-radius: 999px;
+    background: var(--card);
+    font-variant-numeric: tabular-nums;
+
+    .hud-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 14px;
+
+      /* 格间竖线，第一格不画 */
+      & + .hud-cell {
+        border-left: 1px solid var(--card-line);
+      }
+    }
+
+    .hud-num {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .hud-unit,
+    .hud-label {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    /* 生命：文本符号 ♥（不是 emoji ❤）。emoji 在 Windows 上会被渲染成
+       彩色图形，color 染不上色、和数字基线也对不齐 */
+    .lives {
+      color: #ff6b6b;
+      font-size: 17px;
+      letter-spacing: 1px;
+    }
+    .round {
+      color: var(--player);
+    }
+    .money {
+      color: var(--gold);
+
+      i {
+        font-size: 16px;
+      }
+    }
+  }
+
+  /* ================= 快速合成区 =================
+     材料与金币都够的配方横排贴在操作栏上方，空列表时整块不渲染、不占位。
+     只露产物图标与本次实际要扣的合成费，材料明细去合成表看；
+     点图标即合成，图标边缘做呼吸发光强调 */
+  .craft-bar {
+    /* 脱离文档流贴在操作栏上沿：进出行情时不挤压 .stage，主战斗区高度保持稳定 */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--action-bar-h) + var(--safe-b));
+    z-index: 20;   /* 高于舞台内容、低于 .mask 的 30 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--card-line);
+    background: rgba(18, 21, 30, 0.92);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+
+    .craft-bar-label {
+      flex: 0 0 auto;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* 条目多了横向滚：不换行、不压缩图标，滚到头也不把滚动传给底下的舞台 */
+    .craft-bar-list {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-flow: row nowrap;
+      gap: 10px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        height: 0;
+      }
+    }
+
+    .craft-bar-item {
+      flex: 0 0 auto;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+
+      &:active .craft-bar-icon {
+        transform: scale(0.92);
+      }
+    }
+
+    /* 尺寸与商店 / 背包格子同一套（--slot），三处看起来才是同一种东西 */
+    .craft-bar-icon {
+      width: var(--slot);
+      height: var(--slot);
+      border-radius: var(--radius-slot);
+      border: 1px solid var(--slot-line);
+      object-fit: cover;
+      transition: transform 0.12s ease;
+      /* craft-glow 动的是 box-shadow，等级描边走 border，两者互不干扰 */
+      animation: craft-glow 1.4s ease-in-out infinite alternate;
+
+      &.lv-2 { border-color: var(--accent); }
+      &.lv-3 { border-color: var(--lv3); }
+    }
+
+    .craft-bar-gold {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+  }
+
+  /* 图标后面的数量角标（×N）：快速合成区与装备详情页共用 */
+  .mat-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-right: 2px;
+  }
+
+  /* 金币标签：合成表、快速合成区、装备详情页共用同一套（原来散在三处各写一份） */
+  .gold-tag-mini {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(245, 196, 81, 0.45);
+    background: rgba(245, 196, 81, 0.1);
+    color: var(--gold);
+  }
+
+  /* 快速合成区图标的边缘呼吸发光。keyframes 里不能让 var() 参与颜色插值，写死 rgba */
+  @keyframes craft-glow {
+    from {
+      box-shadow: 0 0 0 rgba(108, 140, 255, 0);
+    }
+    to {
+      box-shadow: 0 0 12px rgba(108, 140, 255, 0.8);
+    }
+  }
+
+  /* ================= 底部固定操作栏 ================= */
+  .action-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+    padding-bottom: calc(10px + var(--safe-b));
+    background: rgba(18, 21, 30, 0.92);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--card-line);
+
+    /* el-button 是子组件根元素，会继承本组件的 scope 属性，
+       因此这里不需要深度选择器即可覆盖 element-ui 的默认白色样式 */
+    .el-button {
+      margin: 0;
+      height: 46px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--card-line);
+      color: var(--text);
+      transition: transform 0.12s ease, background 0.15s ease;
+
+      &:active {
+        transform: scale(0.96);
+      }
+      &:hover,
+      &:focus {
+        background: rgba(255, 255, 255, 0.13);
+        border-color: rgba(255, 255, 255, 0.22);
+        color: var(--text);
+      }
+      /* 禁用态：压到几乎透明，别让玩家以为还能点 */
+      &.is-disabled,
+      &.is-disabled:hover,
+      &.is-disabled:active {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: transparent;
+        color: #4d5464;
+        transform: none;
+      }
+    }
+
+    /* 刷新按钮 */
+    .btn-refresh {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    /* 主行动按钮：渐变底 + 投影，视觉权重最高 */
+    .btn-battle {
+      font-size: 16px;
+      flex: 3 1 0;
+      min-width: 0;
+
+      &.el-button--primary {
+        background: linear-gradient(135deg, #5b7cff 0%, #8b5cf6 100%);
+        border: none;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(91, 124, 255, 0.35);
+
+        &:hover,
+        &:focus {
+          background: linear-gradient(135deg, #6b88ff 0%, #9a6cff 100%);
+          color: #fff;
+        }
+        &.is-disabled,
+        &.is-disabled:hover,
+        &.is-disabled:active {
+          background: rgba(255, 255, 255, 0.05);
+          color: #4d5464;
+          box-shadow: none;
+        }
+      }
+    }
+
+    /* 圆形图标按钮（合成表 / 速度）：定宽方形，别被 flex 拉伸。
+       border-radius 必须显式写回 50%——上面 .el-button 的 12px 特异性更高，
+       会把 element 的 is-circle 圆角一起压掉，变成圆角方块 */
+    .btn-icon {
+      flex: 0 0 auto;
+      width: 46px;
+      padding: 0;
+      font-size: 15px;
+      border-radius: 50%;
+    }
+
+    /* 刷新：青色系，与「开始战斗」同属冷色，扁平渐变 + 白字 */
+    .btn-refresh {
+      /* el-button 默认 inline-block，这里改 inline-flex 才能保证「图标 + 文字」
+         作为整体真正居中——element 会给 icon 后面的 span 补 margin-left，
+         只靠 text-align 居中时整块内容会偏 */
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(6, 182, 212, 0.35);
+
+      .el-icon-refresh {
+        font-size: 15px;
+        margin: 0;
+      }
+      span {
+        margin-left: 0;
+      }
+
+      &:hover,
+      &:focus {
+        background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+        color: #fff;
+      }
+      &.is-disabled,
+      &.is-disabled:hover,
+      &.is-disabled:active {
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: #4d5464;
+        box-shadow: none;
+      }
+    }
+
+    /* 合成表：绿色，四个按钮里色相离得最远的一个 */
+    .btn-book {
+      background: linear-gradient(135deg, #34d399 0%, #16a34a 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(34, 197, 94, 0.35);
+
+      &:hover,
+      &:focus {
+        background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        color: #fff;
+      }
+    }
+
+    /* 倍速：一条「火候」色阶——琥珀 → 橙 → 红，档位越高越热。
+       三档一律白字，只靠底色与辉光强弱区分，不做反相 */
+    .btn-speed {
+      font-weight: 700;
+      transition: transform 0.12s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    /* 1x：琥珀，火候最小，辉光最弱 */
+    .speed-1 {
+      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.3);
+
+      &:hover,
+      &:focus {
+        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        color: #fff;
+      }
+    }
+
+    /* 2x：橙，火候居中 */
+    .speed-2 {
+      background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(249, 115, 22, 0.45);
+
+      &:hover,
+      &:focus {
+        background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+        color: #fff;
+      }
+    }
+
+    /* 4x：红，火候最旺，辉光也最强 */
+    .speed-4 {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 6px 22px rgba(239, 68, 68, 0.6);
+
+      &:hover,
+      &:focus {
+        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        color: #fff;
+      }
+    }
+  }
+
+  /* ================= 层数角标 ================= */
+  .stack-badge {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: rgba(10, 12, 18, 0.82);
+    border-top-right-radius: 8px;
+    pointer-events: none;
+  }
+
+  /* ================= 通用弹窗遮罩 ================= */
+  .mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(5, 7, 12, 0.72);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+
+    .inner {
+      width: 300px;
+      max-width: 100%;
+      max-height: 100%;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #1e2330 0%, #171b26 100%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+
+      img {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        /* 浮窗主体图标（商店 / 仓库 / 敌方 / 详情）的等级描边 */
+        &.lv-2 { border: 1px solid var(--accent); }
+        &.lv-3 { border: 1px solid var(--lv3); }
+      }
+      .name {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .desc {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.28);
+        color: #b7bdcc;
+        font-size: 12px;
+        line-height: 1.7;
+        white-space: pre-line; /* 装备描述按 \n 分行：属性加成逐行在前 */
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+      /* 商店一级装备的池子剩余量：与 .hint 同档次，用金色把它和说明文案区分开 */
+      .pool-hint {
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.28);
+        color: #d8b66a;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      /* 开发者模式：合成表详情里的「己方获取 / 敌方获取」并排 */
+      .dev-grant-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      /* 弹窗内按钮统一成深色款 */
+      .el-button {
+        margin: 0;
+        height: 40px;
+        min-width: 96px;
+        border-radius: 10px;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--card-line);
+        color: var(--text);
+
+        &:hover,
+        &:focus {
+          background: rgba(255, 255, 255, 0.14);
+          border-color: rgba(255, 255, 255, 0.22);
+          color: var(--text);
+        }
+        &.el-button--primary {
+          background: linear-gradient(135deg, #5b7cff 0%, #8b5cf6 100%);
+          border: none;
+          color: #fff;
+
+          &:hover,
+          &:focus {
+            background: linear-gradient(135deg, #6b88ff 0%, #9a6cff 100%);
+            color: #fff;
+          }
+        }
+        &.is-disabled,
+        &.is-disabled:hover,
+        &.is-disabled:active {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: transparent;
+          color: #4d5464;
+        }
+      }
+
+      /* ---- 可合成清单 ---- */
+      .craft-section {
+        width: 100%;
+        max-height: 30vh;
+        overflow-y: auto;
+        padding-top: 10px;
+
+        /* 分节标题：文字两侧各一条向外淡出的细线，比破折号克制，
+           也不用给「可合成」三个字加底色去和正文抢视觉 */
+        .craft-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 10px;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--player);
+
+          span {
+            letter-spacing: 3px;
+            margin-left: 3px; /* 抵消末字多出的字距，让文字居中于两条细线之间 */
+          }
+
+          &::before,
+          &::after {
+            content: '';
+            flex: 1 1 auto;
+            height: 1px;
+          }
+          &::before {
+            background: linear-gradient(90deg, transparent, currentColor);
+          }
+          &::after {
+            background: linear-gradient(90deg, currentColor, transparent);
+          }
+        }
+        .craft-entry {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+
+          .craft-icons-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex: 1 1 auto;
+            min-width: 0;
+
+            .craft-result-icon,
+            .craft-mat-icon {
+              width: 22px;
+              height: 22px;
+              border: 1px solid var(--slot-line);
+              border-radius: 5px;
+              object-fit: cover;
+
+              &.lv-2 { border-color: var(--accent); }
+              &.lv-3 { border-color: var(--lv3); }
+            }
+            .craft-lack-label {
+              font-size: 11px;
+              font-weight: 700;
+              margin: 0 4px;
+              padding: 1px 7px;
+              border-radius: 999px;
+              color: var(--text-dim);
+              background: rgba(255, 255, 255, 0.07);
+            }
+            .craft-ready {
+              font-size: 11px;
+              font-weight: 700;
+              margin: 0 4px;
+              padding: 1px 7px;
+              border-radius: 999px;
+              color: #5fe3b0;
+              background: rgba(95, 227, 176, 0.14);
+            }
+          }
+        }
+      }
+    }
+
+    /* ---- 战斗结算 / 整局结算 ---- */
+    .result-panel {
+      /* 结算面板要放下左右两块统计表，比通用 .inner 宽 */
+      width: 460px;
+
+      .result-text {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 2px;
+
+        &.win {
+          color: #5fe3b0;
+          text-shadow: 0 0 20px rgba(95, 227, 176, 0.5);
+        }
+        &.lose {
+          color: #ff6b6b;
+          text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+      }
+      /* 装备统计：左己方、右敌方 */
+      .stats-split {
+        width: 100%;
+        display: flex;
+        gap: 10px;
+
+        .stats-block {
+          flex: 1 1 0;
+          min-width: 0;
+          padding: 10px;
+          border-radius: 12px;
+          background: rgba(0, 0, 0, 0.28);
+
+          .stats-head {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-dim);
+          }
+        }
+        /* 己方绿、敌方红：与战斗日志的阵营配色一致 */
+        .stats-block:first-child .stats-head { color: #5fe3b0; }
+        .stats-block:last-child .stats-head { color: #ff6b6b; }
+
+        .stats-cols,
+        .stats-row {
+          display: flex;
+          align-items: center;
+          font-size: 12px;
+          padding: 3px 0;
+        }
+        /* 固定行高：空占位行只有文字，若交给内容撑高会比有图标（26px）的实体行矮，
+           两侧列表就会错位，所以统一按图标高度 + 上下 padding 定死 */
+        .stats-row { height: 32px; }
+        .stats-cols {
+          color: var(--text-dim);
+          border-bottom: 1px solid var(--card-line);
+          padding-bottom: 5px;
+          margin-bottom: 3px;
+        }
+        .stats-row + .stats-row { border-top: 1px solid rgba(255, 255, 255, 0.04); }
+
+        /* 装备图标占主列，三个数值列等宽右对齐 */
+        .col-icon {
+          flex: 1 1 0;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+
+          img {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            object-fit: cover;
+            /* 结算面板 / 整局结束弹窗的装备图标，level 由 buildStats 一并带出 */
+            &.lv-2 { border: 1px solid var(--accent); }
+            &.lv-3 { border: 1px solid var(--lv3); }
+          }
+        }
+        .col-num {
+          flex: 0 0 42px;
+          text-align: right;
+        }
+        .stats-empty { color: rgba(255, 255, 255, 0.15); }
+      }
+      .income-detail,
+      .game-over-detail {
+        width: 100%;
+        margin: 4px 0;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.28);
+
+        .income-title {
+          font-size: 12px;
+          color: var(--text-dim);
+          margin-bottom: 8px;
+        }
+        .income-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 13px;
+          padding: 3px 0;
+
+          .income-amount {
+            font-weight: 700;
+            color: var(--gold);
+          }
+        }
+        .income-total {
+          margin-top: 6px;
+          padding-top: 8px;
+          border-top: 1px solid var(--card-line);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  /* 整局结束：盖在其它弹窗之上，且必须点按钮才能关 */
+  .game-over-mask {
+    z-index: 50;
+  }
+
+  /* ================= 合成配方表 ================= */
+  .recipe-book-mask {
+    z-index: 40;
+
+    .recipe-book {
+      width: 92vw;
+      max-width: 520px;
+      /* 高度写死，不用 max-height：二级 24 条、三级只有 1 条，
+         随内容自适应会让弹窗在切页签时忽高忽低，眼睛很难受 */
+      height: 70vh;
+      /* 纵向 flex：标题 / 页签 / 筛选条固定在顶部，只有下方配方列表滚动 */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #1e2330 0%, #171b26 100%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+
+      .title {
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--card-line);
+      }
+
+      /* ---- 页签 ---- */
+      .recipe-tabs {
+        display: flex;
+        margin-bottom: 10px;
+        padding: 3px;
+        gap: 3px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.28);
+
+        .recipe-tab {
+          flex: 1 1 0;
+          padding: 7px 0;
+          border-radius: 8px;
+          font-size: 13px;
+          text-align: center;
+          color: var(--text-dim);
+          cursor: pointer;
+          user-select: none;
+
+          &.active {
+            color: #fff;
+            font-weight: 700;
+            background: linear-gradient(135deg, #5b7cff 0%, #8b5cf6 100%);
+          }
+        }
+      }
+
+      /* ---- 一级装备筛选条 ---- */
+      .recipe-filter {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 12px;
+
+        .filter-item {
+          /* 图标 28 + 左右各 5（1 边框 + 4 内距）= 38 */
+          flex: 0 0 auto;
+          width: 38px;
+          height: 38px;
+          padding: 4px;
+          border: 1px solid var(--slot-line);
+          border-radius: 9px;
+          background: var(--slot-bg);
+          cursor: pointer;
+          transition: transform 0.12s ease;
+
+          img {
+            display: block;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            object-fit: cover;
+            /* 筛选条只有一级装备，正常情况下不出边框；保留是为了将来放开等级筛选 */
+            &.lv-2 { border: 1px solid var(--accent); }
+            &.lv-3 { border: 1px solid var(--lv3); }
+          }
+          &:active {
+            transform: scale(0.9);
+          }
+          /* 选中：border 加粗到 2px、padding 同步收 1px，
+             盒子仍是 38×38、图标仍是 28×28，整行不会跟着跳 */
+          &.active {
+            border: 2px solid var(--accent);
+            padding: 3px;
+            box-shadow: 0 0 8px rgba(108, 140, 255, 0.85);
+          }
+        }
+      }
+
+      /* ---- 配方列表滚动区：顶部三段不参与滚动，只有这一块滚 ----
+         flex 子项默认最小高度是内容高度，不写 min-height: 0 会撑破容器 */
+      .recipe-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* ---- 配方卡片 ---- */
+      .recipe-card {
+        padding: 8px 0;
+        display: flex;
+        flex-flow: column nowrap;
+        gap: 4px;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .recipe-row {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex-wrap: wrap;
+
+          /* 行首固定宽度槽：首行是「产物图标 + 等号」，其余行是「+」，
+             保证各行材料图标的左边缘对齐，三级配方才有阶梯感 */
+          .row-head {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 44px;
+          }
+          /* 等号和加号给同一个盒子宽度并居中：只对齐左边缘不够，
+             + 和 = 的字形宽度、左右留白都不一样 */
+          .eq-sign,
+          .row-plus {
+            flex: 0 0 auto;
+            width: 12px;
+            text-align: center;
+            font-weight: 700;
+          }
+          .row-plus {
+            color: var(--text-dim);
+            /* 缩进到首行等号的位置（产物图标 28px + .row-head 的 gap 4px） */
+            margin-left: 32px;
+          }
+
+          .result-icon,
+          .mat-icon {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--slot-line);
+            border-radius: 6px;
+            object-fit: cover;
+            cursor: pointer;
+
+            /* 等级描边。写在 :hover 之前：悬停时蓝色高亮接管（同优先级、后者胜），
+               所以三级图标悬停也会变蓝——那是有意的交互反馈，与等级色不冲突 */
+            &.lv-2 { border-color: var(--accent); }
+            &.lv-3 { border-color: var(--lv3); }
+
+            &:hover {
+              border-color: var(--accent);
+              box-shadow: 0 0 6px rgba(108, 140, 255, 0.9);
+            }
+          }
+          .plus-sign {
+            font-weight: 700;
+            color: var(--text-dim);
+            margin: 0 1px;
+          }
+        }
+      }
+
+      .empty {
+        text-align: center;
+        color: var(--text-dim);
+        padding: 24px;
+      }
+    }
+  }
+
+  /* 合成表的第二层详情弹窗：必须盖在合成表（z-index:40）之上 */
+  .item-detail-mask {
+    z-index: 60;
+  }
+
+  /* 深色底上默认的浅色滚动条很扎眼，收窄并压暗。
+     只用标准属性（Chrome 121+ / Firefox 支持）；不写 ::-webkit-scrollbar，
+     因为 scoped 编译可能把属性选择器插到伪元素之后，导致整条规则失效 */
+  .stage,
+  .recipe-body,
+  .mask .inner {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+}
+
+/* ============================================================
+   断点：只改变量值，布局规则完全不动
+   ============================================================ */
+
+/* 窄屏手机：格子略缩，内边距收紧。
+   断点取 480 而不是 600：481~600px 的屏（横屏手机 / 小平板）容器仍有 560px 可用，
+   商店 7 格 7×58 + 6×8 = 454px 放得下，没必要缩 */
+@media (max-width: 480px) {
+  #merge {
+    /* 46px 而不是 58：棋盘格边长由「两张卡片并排」反推出来约 45px，
+       仓库/商店跟着对齐，三个区域看起来才是同一套尺寸 */
+    --slot: 46px;
+    --slot-gap: 7px;
+    --pad: 10px;
+    --radius: 13px;
+  }
+}
+
+/* 超窄屏（iPhone SE 320~380）：再收一档，保证 7 格商店不溢出 */
+@media (max-width: 380px) {
+  #merge {
+    --slot: 42px;
+    --slot-gap: 5px;
+    --pad: 9px;
+  }
+}
+
+/* 横屏手机 / 矮屏：压缩纵向留白，避免操作栏把战场挤没 */
+@media (max-height: 620px) {
+  #merge {
+    --slot: 46px;
+    .stage {
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .pve {
+      gap: 8px;
+    }
+  }
+}

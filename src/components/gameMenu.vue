@@ -162,6 +162,12 @@ export default {
         //   desc: "你能用最少的次数猜出文章吗？(猜出标题即可)",
         //   mobile: true,
         // },
+        {
+          name: "合成大无尽",
+          path: "/merge",
+          desc: "1+1>2",
+          mobile: false,
+        },
       ]
     }
   },
