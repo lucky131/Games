@@ -21,7 +21,6 @@
   --radius: 14px;        /* 卡片圆角 */
   --radius-slot: 10px;   /* 格子圆角 */
   --safe-b: env(safe-area-inset-bottom, 0px); /* iPhone 底部横条 */
-  --action-bar-h: 66px;   /* 底部操作栏高度：按钮 46 + 上下 padding 20，改 .action-bar 时同步这里 */
 
   /* ================= 配色 ================= */
   --bg-0: #0d0f16;
@@ -72,52 +71,34 @@
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* 不要竖向滚动条：放不下时依然能滑动，但滚动条既不占宽度、也不在视觉上多出一条 */
+    scrollbar-width: none;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     gap: 12px;
     padding: 14px 12px;
-    /* 内容少时上下留白均分（视觉居中），内容超出时正常滚动。
-       不能直接给 flex 容器 justify-content: center：那样溢出部分滚不到顶部 */
-    &::before,
-    &::after {
-      content: '';
-      margin: auto;
+    /* 内容整体贴底、顶部留白：首个 flex 子项用 auto 上边距吸收全部剩余空间。
+       内容溢出时 auto margin 按 0 处理（flexbox 规范），退化成普通的从上到下排列，
+       所以不会出现 justify-content: flex-end 那种「溢出部分滚不到顶」的毛病 */
+    > :first-child {
+      margin-top: auto;
     }
   }
 
-  /* ================= 计时器 ================= */
-  .time {
-    display: flex;
-    align-items: baseline;
-    gap: 3px;
-    padding: 5px 20px;
-    border: 1px solid var(--card-line);
-    border-radius: 999px;
-    background: var(--card);
+  /* ================= 战斗倒计时 =================
+     计时器已并入「开始战斗」按钮（见 .action-bar .btn-battle），
+     这里只留按钮内那两段文字的排版：数字走 tabular-nums，读秒时宽度不抖 */
+  .battle-time-value {
+    font-size: 20px;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-
-    .time-value {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-    .time-unit {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    /* 超时：整块转红并脉冲，替代原来只改数字颜色 */
-    &.overtime {
-      color: #ff5c5c;
-      border-color: rgba(255, 92, 92, 0.55);
-      background: rgba(255, 92, 92, 0.12);
-      animation: blink 0.6s infinite alternate;
-
-      .time-unit {
-        color: #ff5c5c;
-      }
-    }
+    letter-spacing: 0.5px;
+  }
+  .battle-time-unit {
+    font-size: 13px;
+    margin-left: 2px;
+    opacity: 0.85;
   }
 
   @keyframes blink {
@@ -496,20 +477,16 @@
      只露产物图标与本次实际要扣的合成费，材料明细去合成表看；
      点图标即合成，图标边缘做呼吸发光强调 */
   .craft-bar {
-    /* 脱离文档流贴在操作栏上沿：进出行情时不挤压 .stage，主战斗区高度保持稳定 */
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(var(--action-bar-h) + var(--safe-b));
-    z-index: 20;   /* 高于舞台内容、低于 .mask 的 30 */
+    /* 常驻在 HUD 与操作栏之间的文档流里。高度由下面的 min-height 锁死：
+       有没有可合成项、是否在战斗中都必须一样高，否则战场会随合成区的有无上下偏移 */
+    flex: 0 0 auto;
+    /* 图标(--slot) + 金币标签行(2 gap + 13 行高) + 上下 padding 16。
+       锁死高度是这块的关键：空列表时若塌陷，战场就会随合成区的有无上下跳 */
+    min-height: calc(var(--slot) + 31px);
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    border-top: 1px solid var(--card-line);
-    background: rgba(18, 21, 30, 0.92);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
 
     .craft-bar-label {
       flex: 0 0 auto;
@@ -563,6 +540,7 @@
     .craft-bar-gold {
       font-size: 11px;
       font-weight: 700;
+      line-height: 1;   /* 行高写死，上面 min-height 里那 13px 才算得准 */
       color: var(--gold);
     }
   }
@@ -670,6 +648,27 @@
           background: rgba(255, 255, 255, 0.05);
           color: #4d5464;
           box-shadow: none;
+        }
+        /* 战斗中：扁平化的「不可按」态——无渐变、无边框、无投影，观感与刷新按钮
+           被禁用时一致；唯一的区别是底色走主色的低透明蓝而非中性灰，
+           既明确「按不动」，又不会和刷新混成同一个按钮 */
+        &.fighting.is-disabled,
+        &.fighting.is-disabled:hover,
+        &.fighting.is-disabled:active {
+          background: rgba(91, 124, 255, 0.15);
+          border: none;
+          color: #a3b1e0;
+          box-shadow: none;
+        }
+        /* 超时：同一套扁平结构换成红调，再叠脉冲提示时间已过 */
+        &.fighting.overtime.is-disabled,
+        &.fighting.overtime.is-disabled:hover,
+        &.fighting.overtime.is-disabled:active {
+          background: rgba(255, 92, 92, 0.15);
+          border: none;
+          color: #ff8a8a;
+          box-shadow: none;
+          animation: blink 0.6s infinite alternate;
         }
       }
     }
@@ -1067,6 +1066,8 @@
           min-width: 0;
           display: flex;
           align-items: center;
+          /* 极窄屏（320px）下宁可把图标裁掉，也不能让它溢出压到数字上 */
+          overflow: hidden;
 
           img {
             width: 26px;
@@ -1078,11 +1079,25 @@
             &.lv-3 { border: 1px solid var(--lv3); }
           }
         }
+        /* 32px 是窄屏下的极限：三列共 96px，刚好塞进 .stats-block 的内容宽。
+           42px 时三列 126px 超宽，图标列被压到 0 后 26px 的图标就溢出压到数字上 */
         .col-num {
-          flex: 0 0 42px;
-          text-align: right;
+          flex: 0 0 32px;
+          text-align: center;
         }
-        .stats-empty { color: rgba(255, 255, 255, 0.15); }
+        /* 三个数值列按维度上色，表头与数据行一起染，对应关系一眼可见：
+           输出压暗一档（深底上不用 #ff6b6b 那么刺眼），护盾 / 治疗与主界面同色 */
+        .stats-cols .col-num:nth-child(2),
+        .stats-row .col-num:nth-child(2) { color: #e89a5a; }
+        .stats-cols .col-num:nth-child(3),
+        .stats-row .col-num:nth-child(3) { color: #8fe3ff; }
+        .stats-cols .col-num:nth-child(4),
+        .stats-row .col-num:nth-child(4) { color: #5fe3b0; }
+        /* 空占位行的破折号拉回灰色。上面 nth-child 规则特异性是 (0,3,0)，
+           这里必须写成同样带 .stats-cols / .stats-row 的形式、且排在后面才压得住 */
+        .stats-cols .col-num.stats-empty,
+        .stats-row .col-num.stats-empty,
+        .col-icon.stats-empty { color: rgba(255, 255, 255, 0.15); }
       }
       .income-detail,
       .game-over-detail {
@@ -1186,11 +1201,17 @@
         gap: 6px;
         margin-bottom: 12px;
 
+        /* 窄屏再挤一档，给 8 个格子多留出可分配的宽度 */
+        @media (max-width: 480px) {
+          gap: 4px;
+        }
+
         .filter-item {
-          /* 图标 28 + 左右各 5（1 边框 + 4 内距）= 38 */
-          flex: 0 0 auto;
-          width: 38px;
-          height: 38px;
+          /* 8 个格子平分可用宽度（max-width 兜住宽屏下的原尺寸 38），
+             图标跟着格子一起缩放，窄屏也不会溢出弹窗 */
+          flex: 1 1 0;
+          min-width: 0;
+          max-width: 38px;
           padding: 4px;
           border: 1px solid var(--slot-line);
           border-radius: 9px;
@@ -1200,8 +1221,8 @@
 
           img {
             display: block;
-            width: 28px;
-            height: 28px;
+            width: 100%;
+            aspect-ratio: 1;
             border-radius: 5px;
             object-fit: cover;
             /* 筛选条只有一级装备，正常情况下不出边框；保留是为了将来放开等级筛选 */
@@ -1212,7 +1233,7 @@
             transform: scale(0.9);
           }
           /* 选中：border 加粗到 2px、padding 同步收 1px，
-             盒子仍是 38×38、图标仍是 28×28，整行不会跟着跳 */
+             总占位不变（1+4 = 2+3），整行不会跟着跳 */
           &.active {
             border: 2px solid var(--accent);
             padding: 3px;
@@ -1313,8 +1334,8 @@
 
   /* 深色底上默认的浅色滚动条很扎眼，收窄并压暗。
      只用标准属性（Chrome 121+ / Firefox 支持）；不写 ::-webkit-scrollbar，
-     因为 scoped 编译可能把属性选择器插到伪元素之后，导致整条规则失效 */
-  .stage,
+     因为 scoped 编译可能把属性选择器插到伪元素之后，导致整条规则失效。
+     .stage 不在此列——它的滚动条是整体隐藏的，见上方 .stage 块 */
   .recipe-body,
   .mask .inner {
     scrollbar-width: thin;

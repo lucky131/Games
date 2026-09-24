@@ -1,16 +1,6 @@
 <template>
   <div id="merge">
     <div class="stage">
-      <div class="time" :class="{'overtime': battle.timeLeft < 0}">
-        <template v-if="battle.timeLeft >= 0">
-          <span class="time-value">{{ Math.ceil(battle.timeLeft) }}</span>
-          <span class="time-unit">s</span>
-        </template>
-        <template v-else>
-          <span class="time-value">{{ Math.floor(Math.abs(battle.timeLeft)) }}</span>
-          <span class="time-unit">s 超时</span>
-        </template>
-      </div>
       <div class="pve">
         <div class="side player" :class="{ fighting: battle.state === 'fighting' }">
           <div class="stats-panel">
@@ -108,11 +98,12 @@
       </div>
     </div>
 
-    <!--快速合成区：材料与金币都够才出现，默认整块不渲染；固定在底部操作栏上方，
-        不随舞台内容滚动。只露产物图标与本次实际要扣的合成费，点图标即合成-->
-    <div v-if="craftBarItems.length" class="craft-bar">
-      <span class="craft-bar-label">可合成</span>
-      <div ref="craftBar" class="craft-bar-list">
+    <!--快速合成区：常驻在 HUD 与操作栏之间，高度由 .craft-bar 的 min-height 锁死，
+        没有可合成项时整块留白——战场不会随它的有无上下偏移。
+        只露产物图标与本次实际要扣的合成费，点图标即合成-->
+    <div class="craft-bar">
+      <span v-if="craftBarItems.length" class="craft-bar-label">可合成</span>
+      <div v-if="craftBarItems.length" ref="craftBar" class="craft-bar-list">
         <div v-for="item in craftBarItems" :key="item.recipe.resultId" class="craft-bar-item"
              :title="getItemById(item.recipe.resultId).name" @click="craftFromBar(item.recipe)">
           <img :src="getItemById(item.recipe.resultId).icon" :alt="getItemById(item.recipe.resultId).name" class="craft-bar-icon" :class="levelClass(getItemById(item.recipe.resultId))">
@@ -123,7 +114,27 @@
 
     <div class="action-bar">
       <el-button class="btn-refresh" round :disabled="player.money < refreshCost || battle.state === 'fighting'" @click="refreshShopBtn"><i class="el-icon-refresh"></i><span> 刷新 {{ refreshCost }}c</span></el-button>
-      <el-button class="btn-battle" round type="primary" :disabled="battle.state !== 'idle'" @click="startBattle"><i class="el-icon-s-flag"></i> 开始战斗 <i class="el-icon-s-flag"></i></el-button>
+      <!-- 开始战斗 / 倒计时共用同一个按钮：战斗中按钮被禁用只是防重复点击，
+           内容换成读秒，超时转红脉冲；战斗结束后 state 回到 idle，自动恢复原样 -->
+      <el-button
+        class="btn-battle"
+        :class="{ fighting: battle.state === 'fighting', overtime: battle.timeLeft < 0 }"
+        round
+        type="primary"
+        :disabled="battle.state !== 'idle'"
+        @click="startBattle">
+        <template v-if="battle.state === 'fighting'">
+          <template v-if="battle.timeLeft >= 0">
+            <span class="battle-time-value">{{ Math.ceil(battle.timeLeft) }}</span><span class="battle-time-unit">s</span>
+          </template>
+          <template v-else>
+            <span class="battle-time-value">{{ Math.floor(Math.abs(battle.timeLeft)) }}</span><span class="battle-time-unit">s 超时</span>
+          </template>
+        </template>
+        <template v-else>
+          <i class="el-icon-s-flag"></i> 开始战斗 <i class="el-icon-s-flag"></i>
+        </template>
+      </el-button>
       <el-button class="btn-icon btn-book" circle icon="el-icon-notebook-2" title="合成表" @click="openRecipeBook"></el-button>
       <el-button class="btn-icon btn-speed" :class="'speed-' + battle.speed" circle title="战斗速度" @click="toggleSpeed">{{ battle.speed }}x</el-button>
     </div>
@@ -686,9 +697,11 @@ export default {
     this.grantStartingItems();
     this.refreshShop();
     this.maskItem = this.shop[0]
+    this.lockBackGesture();
   },
   beforeDestroy () {
     this.stopBattleLoop();
+    this.unlockBackGesture();
   },
   methods: {
     /**
@@ -1958,6 +1971,38 @@ export default {
     /** 根据 ID 获取装备信息（模板中用，返回空对象兜底避免可选链问题） */
     getItemById(id) {
       return getItemById(id) || {};
+    },
+    /**
+     * 锁死浏览器返回：手机上的边缘右滑返回属于系统级手势（iOS Safari 左边缘右滑、
+     * Android 10+ 全面屏返回手势），浏览器根本不把事件交给网页，CSS / JS 无从禁用。
+     * 唯一可行的做法是往 history 里打一条桩再监听 popstate：浏览器想回退时，
+     * 我们立刻把桩推回去，页面始终不卸载，游戏进度就不会丢。
+     * 代价：本页面的返回键 / 返回手势彻底失效，只能关闭标签页离开
+     */
+    lockBackGesture(){
+      // 打桩：history 里多出一条与当前 URL 完全相同的记录，返回键先落到它身上。
+      // 路由是 hash 模式，桩的 hash 与当前一致，vue-router 不会因此误触发跳转
+      history.pushState(null, '', location.href)
+      window.addEventListener('popstate', this.onPopState)
+    },
+    /**
+     * 浏览器回退到桩记录时触发：立刻补一条新桩，把页面钉在原地，不放行。
+     * 首次触发给一次提示，免得玩家以为是页面卡死了
+     */
+    onPopState(){
+      history.pushState(null, '', location.href)
+      if (!this._backLockHinted) {
+        this._backLockHinted = true
+        this.$message({
+          message: '已锁定返回手势，避免误触丢失进度',
+          type: 'info',
+          duration: 2200
+        })
+      }
+    },
+    /** 解开返回锁：组件销毁时移除监听，别把回调留在 window 上 */
+    unlockBackGesture(){
+      window.removeEventListener('popstate', this.onPopState)
     }
   }
 }
