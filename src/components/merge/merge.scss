@@ -78,11 +78,14 @@
     align-items: center;
     gap: 12px;
     padding: 14px 12px;
-    /* 内容整体贴底、顶部留白：首个 flex 子项用 auto 上边距吸收全部剩余空间。
+    /* 内容整体居中：首个子项吸收上方剩余空间、末个子项吸收下方剩余空间，两边各分一半。
        内容溢出时 auto margin 按 0 处理（flexbox 规范），退化成普通的从上到下排列，
-       所以不会出现 justify-content: flex-end 那种「溢出部分滚不到顶」的毛病 */
+       所以不会出现 justify-content: center 那种「溢出部分滚不到顶」的毛病 */
     > :first-child {
       margin-top: auto;
+    }
+    > :last-child {
+      margin-bottom: auto;
     }
   }
 
@@ -150,6 +153,46 @@
       /* 战斗中：卡片整体轻微提亮，提示「已锁定」 */
       &.fighting {
         background: rgba(255, 255, 255, 0.07);
+      }
+    }
+
+    /* ---- 卡片顶部一行：右对齐放「刷新阵容」按钮 ----
+       两侧都保留这个容器（玩家侧为空占位），高度写死，
+       不加的话敌人侧的属性面板 / 棋盘 / 血条会整体比玩家侧低一行 */
+    .side-head {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 18px;
+      margin-top: -4px; /* 抵消一点卡片上内边距，别把卡片撑高 */
+    }
+
+    /* 刷新敌方阵容：用原生 button 而非 el-button——el-button 最小也有 24px 高，
+       在这么窄的卡片顶部太占地方，默认的白底在深色卡片上也很跳 */
+    .btn-enemy-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      height: 18px;
+      padding: 0 7px;
+      border: 1px solid var(--card-line);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-dim);
+      font-size: 10px;
+      line-height: 1;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+
+      &:hover:not(:disabled) {
+        color: var(--text);
+        border-color: var(--enemy);
+        background: rgba(255, 107, 107, 0.12);
+      }
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
       }
     }
 
@@ -972,6 +1015,7 @@
               border: 1px solid var(--slot-line);
               border-radius: 5px;
               object-fit: cover;
+              cursor: pointer; /* 可点开装备详情，与合成表里的图标行为一致 */
 
               &.lv-2 { border-color: var(--accent); }
               &.lv-3 { border-color: var(--lv3); }
@@ -1060,13 +1104,14 @@
         }
         .stats-row + .stats-row { border-top: 1px solid rgba(255, 255, 255, 0.04); }
 
-        /* 装备图标占主列，三个数值列等宽右对齐 */
+        /* 图标列按图标本身的宽度定死（26px），剩余宽度全部交给三个数值列均分。
+           弹窗变矮出现纵向滚动条、或屏幕更窄时，被压掉的宽度只会落到数字列上，
+           图标列不会再缩到 26px 以下——那正是图标右侧被紧贴的「输出」数字切掉一块的原因 */
         .col-icon {
-          flex: 1 1 0;
-          min-width: 0;
+          flex: 0 0 26px;
           display: flex;
           align-items: center;
-          /* 极窄屏（320px）下宁可把图标裁掉，也不能让它溢出压到数字上 */
+          /* 兜底：列宽已等于图标宽，正常不会再裁到图标 */
           overflow: hidden;
 
           img {
@@ -1079,10 +1124,14 @@
             &.lv-3 { border: 1px solid var(--lv3); }
           }
         }
-        /* 32px 是窄屏下的极限：三列共 96px，刚好塞进 .stats-block 的内容宽。
-           42px 时三列 126px 超宽，图标列被压到 0 后 26px 的图标就溢出压到数字上 */
+        /* 三个数值列均分剩余宽度。原先写死 32px：面板一窄，弹性宽度全从图标列抽走，
+           图标就被 26px 的固定宽度裁断。改成均分后，宽度变化由数字列自己吸收。
+           min-width: 0 + overflow: hidden 兜底：数字长到列里放不下时只在列内裁掉，
+           绝不允许溢出压到左边的图标上 */
         .col-num {
-          flex: 0 0 32px;
+          flex: 1 1 0;
+          min-width: 0;
+          overflow: hidden;
           text-align: center;
         }
         /* 三个数值列按维度上色，表头与数据行一起染，对应关系一眼可见：
@@ -1358,6 +1407,16 @@
     --slot-gap: 7px;
     --pad: 10px;
     --radius: 13px;
+
+    /* 结算面板的统计表横向吃紧：弹窗四周留白各收 8px，
+       省下的 16px 全给数字列，320px 屏也放得下 4 位数 */
+    .mask {
+      padding: 12px;
+
+      .inner {
+        padding: 14px;
+      }
+    }
   }
 }
 
@@ -1374,6 +1433,12 @@
 @media (max-height: 620px) {
   #merge {
     --slot: 46px;
+    /* 矮屏（横屏手机、带上工具栏的手机浏览器）：弹窗四周留白压到最小，
+       尽量让结算面板整块塞进视口而不触发纵向滚动——面板一旦变成滚动容器，
+       部分浏览器会挤掉一条竖向滚动条的宽度，统计表随之被压窄 */
+    .mask {
+      padding: 12px;
+    }
     .stage {
       padding: 8px 12px;
       gap: 8px;

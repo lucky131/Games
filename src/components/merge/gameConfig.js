@@ -215,6 +215,14 @@ export const ENEMY_HP_TABLE = [
 ]
 
 /**
+ * 每局可用的「刷新敌方阵容」次数
+ *
+ * 只在本局内计数，用一次少一次；整局重开（restartGame）时恢复满。
+ * 战斗中禁止刷新（会把打到一半的阵容换掉、血量归位），刷新不消耗金币。
+ */
+export const ENEMY_REFRESH_TIMES = 3
+
+/**
  * 敌人生成时禁止出现的「基础装备」id（即一级装备）
  *
  * 凡是用到这些基础装备的二级 / 三级装备会被一并排除。
@@ -285,11 +293,11 @@ export const LEVEL1_POOL_SIZE_TABLE = {
   ruby_crystal: 12,
   long_sword: 11,
   amplifying_tome: 12,
-  glowing_mote: 8,
-  cloth_armor: 8,
-  null_magic_mantle: 8,
-  healing_bead: 4,
-  sapphire_crystal: 4
+  glowing_mote: 9,
+  cloth_armor: 9,
+  null_magic_mantle: 9,
+  healing_bead: 6,
+  sapphire_crystal: 6
 }
 
 /**

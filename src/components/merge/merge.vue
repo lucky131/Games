@@ -3,6 +3,9 @@
     <div class="stage">
       <div class="pve">
         <div class="side player" :class="{ fighting: battle.state === 'fighting' }">
+          <!-- 与敌人侧「刷新阵容」按钮同高的占位行：不加的话敌人侧多一行，
+               两张卡的属性面板 / 棋盘 / 血条会整体错开一行的距离 -->
+          <div class="side-head"></div>
           <div class="stats-panel">
             <div class="stat-item" v-for="(stat, i) in playerStatList" :key="i">
               <span class="stat-label">{{ stat.label }}</span>
@@ -31,6 +34,12 @@
         </div>
 
         <div class="side enemy" :class="{ fighting: battle.state === 'fighting' }">
+          <div class="side-head">
+            <button
+              class="btn-enemy-refresh"
+              :disabled="enemyRefreshLeft <= 0 || battle.state !== 'idle'"
+              @click="refreshEnemy"><i class="el-icon-refresh"></i> 刷新阵容 {{ enemyRefreshLeft }}/{{ enemyRefreshTotal }}</button>
+          </div>
           <div class="stats-panel">
             <div class="stat-item" v-for="(stat, i) in enemyStatList" :key="i">
               <span class="stat-label">{{ stat.label }}</span>
@@ -171,11 +180,11 @@
             <div class="craft-label"><span>可合成</span></div>
             <div v-for="recipe in maskCraftableRecipes" :key="recipe.resultId" class="craft-entry">
               <div class="craft-icons-row">
-                <img :src="getItemById(recipe.resultId).icon" :alt="getItemById(recipe.resultId).name" class="craft-result-icon" :class="levelClass(getItemById(recipe.resultId))">
+                <img :src="getItemById(recipe.resultId).icon" :alt="getItemById(recipe.resultId).name" class="craft-result-icon" :class="levelClass(getItemById(recipe.resultId))" title="点击查看装备详情" @click="openItemDetail(recipe.resultId)">
                 <template v-if="missingMaterials(recipe).length || missingGold(recipe)">
                   <span class="craft-lack-label">还缺少</span>
                   <template v-for="(mat, idx) in missingMaterials(recipe)">
-                    <img :key="'m' + idx" :src="getItemById(mat.id).icon" :alt="getItemById(mat.id).name" class="craft-mat-icon" :class="levelClass(getItemById(mat.id))">
+                    <img :key="'m' + idx" :src="getItemById(mat.id).icon" :alt="getItemById(mat.id).name" class="craft-mat-icon" :class="levelClass(getItemById(mat.id))" title="点击查看装备详情" @click="openItemDetail(mat.id)">
                     <span :key="'n' + idx" class="mat-count">×{{ mat.lack }}</span>
                   </template>
                   <span v-if="missingGold(recipe)" class="gold-tag-mini">{{ missingGold(recipe) }}c</span>
@@ -436,6 +445,7 @@ import {
   STARTING_ITEM_IDS,
   PLAYER_BASE_HP,
   ENEMY_BASE_HP,
+  ENEMY_REFRESH_TIMES,
   BOARD_SLOTS,
   WAREHOUSE_SLOTS,
   getShopSlots,
@@ -470,6 +480,8 @@ export default {
         shield: 0,
         chess: Array(BOARD_SLOTS).fill(null)
       },
+      // 本局剩余的「刷新敌方阵容」次数，整局重开时恢复满，见 refreshEnemy
+      enemyRefreshLeft: ENEMY_REFRESH_TIMES,
       shop: Array(getShopSlots(1)).fill(null),
       // 一级装备的商店池 { itemId: 剩余库存 }，规则见 itemPool.js：
       // 刷新时按剩余库存加权抽取并在抽取时预留，未售出的格子换商店时归还，
@@ -581,6 +593,10 @@ export default {
     },
     enemyHealPower(){
       return this.sumStat(this.enemy.chess, 'healPower');
+    },
+    /** 每局可用的刷新敌方阵容次数上限，只用于按钮上显示「剩余/总数」 */
+    enemyRefreshTotal(){
+      return ENEMY_REFRESH_TIMES
     },
     /** 玩家属性面板数据源：一行 2 个、共 3 行 */
     playerStatList(){
@@ -905,6 +921,21 @@ export default {
       this.enemy.chess = chess
       this.enemy.hp = this.enemyMaxHp
     },
+    /**
+     * 刷新敌方阵容：重掷当前回合的敌人，不换回合、不消耗金币，
+     * 只消耗本局的刷新次数（ENEMY_REFRESH_TIMES）
+     *
+     * 只在 idle（商店阶段）可用：战斗中刷新会把打到一半的阵容换掉，
+     * 结算弹窗期间（finished）也不该动，所以直接用 !== 'idle' 卡死
+     */
+    refreshEnemy(){
+      if(this.battle.state !== 'idle') return
+      if(this.enemyRefreshLeft <= 0) return
+      this.initEnemy()
+      this.enemy.shield = 0
+      this.enemyRefreshLeft--
+      this.logBySide('enemy', `[刷新敌方阵容] 剩余 ${this.enemyRefreshLeft} 次`)
+    },
     cooldownStyle(item){
       const ratio = item.cooldown > 0 ? item.currentCooldown / item.cooldown : 0
       const angle = (1 - ratio) * 360
@@ -1184,7 +1215,14 @@ export default {
          * @param {string} sourceName 来源装备名，仅用于日志
          */
         grantRandomLevel1Item: (sourceName) => {
-          this.grantRandomLevel1Item(sourceName)
+          this.grantRandomItem(1, sourceName)
+        },
+        /**
+         * 随机发一件二级装备给玩家（时光之杖满层出售时的返还）
+         * @param {string} sourceName 来源装备名，仅用于日志
+         */
+        grantRandomLevel2Item: (sourceName) => {
+          this.grantRandomItem(2, sourceName)
         }
       }
     },
@@ -1490,6 +1528,7 @@ export default {
 
       // 重置回合与战斗状态
       this.enemy.shield = 0
+      this.enemyRefreshLeft = ENEMY_REFRESH_TIMES
       this.battle.currentRound = 1
       this.battle.state = 'idle'
       this.battle.timeLeft = this.battle.timeLimit
@@ -1560,9 +1599,11 @@ export default {
       // 卖出即把材料还给商店池：一级还 1 件，二级 / 三级沿配方树拆成一级材料归还。
       // 不区分来源，商店直接买来的二级也照样拆，所以池子允许超过初始值
       returnItemToPool(this.itemPool, this.maskItem.itemId);
-      // 出售时才生效的钩子（守护天使 +1 生命）。只信任仓库里那件，所以先广播再清格子
-      this.maskItem.emitHook('onSell', this.buildBattleContext());
+      // 先清格子再广播：满层时光之杖的 onSell 会往装备栏 / 仓库塞一件二级装备，
+      // 若这格还没空出来、装备栏又满，就会被误判成仓库已满而丢弃
       this.$set(this.player.warehouse, index, null);
+      // 出售时才生效的钩子（守护天使 +1 生命 / 满层时光之杖返还二级装备）
+      this.maskItem.emitHook('onSell', this.buildBattleContext());
       this.showMask = false;
     },
     /** 商店池里某件装备的剩余库存，供浮窗展示；二级 / 三级不在池子里，恒为 0 */
@@ -1908,15 +1949,16 @@ export default {
       this.showMask = false;
     },
     /**
-     * 随机发一件一级装备给玩家（时光之杖的回合结算奖励）
+     * 随机发一件指定等级装备给玩家（时光之杖的回合奖励 / 出售满层的返还）
      * 在 endBattle 的 onBattleEnd 钩子里执行：此时战斗已结束、阵容即将解锁，
      * 发下来的装备下一回合可以正常上场 / 出售 / 当合成材料。
      * 装备栏优先、其次仓库，两处都满则丢弃并写日志。
      * 注意遍历边界：emitHooks 已对棋盘做了快照，这里塞进去的新装备不会再触发自己的 onBattleEnd
+     * @param {number} level 装备等级（1 / 2 / 3）
      * @param {string} sourceName 来源装备名，仅用于日志
      */
-    grantRandomLevel1Item(sourceName = ''){
-      const pool = itemLibrary.filter(item => item.level === 1);
+    grantRandomItem(level, sourceName = ''){
+      const pool = itemLibrary.filter(item => item.level === level);
       if(!pool.length) return;
       const itemData = pool[Math.floor(Math.random() * pool.length)];
       const chess = new Chess({ ...itemData });

@@ -258,12 +258,11 @@ export const recipes = [
     goldCost: 2
   },
   {
-    // 混了一级材料，价值 21c（巨人腰带 8 + 燃烧宝石 8 + 蓝水晶 3 + 2）
+    // 价值 18c（巨人腰带 8 + 万世催化石 8 + 2）
     resultId: 'winters_approach',
     materials: [
       { id: 'giants_belt', count: 1 },
-      { id: 'kindlegem', count: 1 },
-      { id: 'sapphire_crystal', count: 1 }
+      { id: 'catalyst_of_aeons', count: 1 }
     ],
     goldCost: 2
   },
@@ -659,6 +658,15 @@ export const recipes = [
     materials: [
       { id: 'hextech_alternator', count: 2 },
       { id: 'blighting_jewel', count: 1 }
+    ],
+    goldCost: 2
+  },
+  {
+    // 价值 18c（探索者的护臂 8 + 翠绿屏障 8 + 2）
+    resultId: 'banshees_veil',
+    materials: [
+      { id: 'seekers_armguard', count: 1 },
+      { id: 'verdant_barrier', count: 1 }
     ],
     goldCost: 2
   },

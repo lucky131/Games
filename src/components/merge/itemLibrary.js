@@ -365,7 +365,7 @@ const level2Items = [
     id: 'bramble_vest',
     name: '棘刺背心',
     nameEn: 'Bramble Vest',
-    desc: '受到敌人伤害时对敌人造成5魔法伤害',
+    desc: '受到敌人伤害时对敌人造成4魔法伤害',
     level: 2,
     type: 'armor',
     cooldown: 0,
@@ -378,7 +378,7 @@ const level2Items = [
     hooks: {
       onDamaged: (ctx, self) => {
         const target = self.owner === 'player' ? ctx.enemy : ctx.player
-        ctx.dealDamage(self, target, 5, 'magic')
+        ctx.dealDamage(self, target, 4, 'magic')
       }
     }
   },
@@ -756,18 +756,18 @@ const level3Items = [
     id: 'warmogs_armor',
     name: '狂徒铠甲',
     nameEn: "Warmog's Armor",
-    desc: '每3秒恢复20生命值',
+    desc: '每3秒恢复25生命值',
     level: 3,
     type: 'hp',
     cooldown: 3.0,
     damageType: 'true',
     stats: {
-      hp: 240
+      hp: 250
     },
     icon: require("./img/level3/Warmog's Armor.png"),
     effect: (ctx, self) => {
       const target = self.owner === 'player' ? ctx.player : ctx.enemy
-      ctx.heal(target, 20, self)
+      ctx.heal(target, 25, self)
     }
   },
   {
@@ -795,7 +795,7 @@ const level3Items = [
     id: 'thornmail',
     name: '荆棘之甲',
     nameEn: 'Thornmail',
-    desc: '受到敌人伤害时对敌人造成10魔法伤害',
+    desc: '受到敌人伤害时对敌人造成8魔法伤害',
     level: 3,
     type: 'armor',
     cooldown: 0,
@@ -808,7 +808,7 @@ const level3Items = [
     hooks: {
       onDamaged: (ctx, self) => {
         const target = self.owner === 'player' ? ctx.enemy : ctx.player
-        ctx.dealDamage(self, target, 10, 'magic')
+        ctx.dealDamage(self, target, 8, 'magic')
       }
     }
   },
@@ -868,21 +868,20 @@ const level3Items = [
     id: 'winters_approach',
     name: '凛冬之临',
     nameEn: "Winter's Approach",
-    desc: '对敌人造成伤害后获得5护盾',
+    desc: '战斗结束获得2c，每持有5c额外获得1c，最多额外获得5c',
     level: 3,
     type: 'hp',
     cooldown: 0,
     damageType: 'true',
     stats: {
-      hp: 200,
-      ah: 15
+      hp: 200
     },
     icon: require("./img/level3/Winter's Approach.png"),
     hooks: {
-      // 己方每造成一次伤害事件就获得 5 护盾（与海克斯科技发电机同一触发点）
-      onDealDamage: (ctx, self) => {
-        const selfRole = self.owner === 'player' ? ctx.player : ctx.enemy
-        ctx.addShield(selfRole, 5, self)
+      // 结算时先拿基础 2c，再按结算这一刻玩家持有的金币每 5c 追加 1c，追加部分封顶 5c
+      onBattleEnd: (ctx, self) => {
+        const bonus = Math.min(Math.floor(ctx.getMoney(ctx.player) / 5), 5)
+        ctx.addIncome(self.name, 2 + bonus)
       }
     }
   },
@@ -1261,7 +1260,7 @@ const level3Items = [
     id: 'rod_of_ages',
     name: '时光之杖',
     nameEn: 'Rod of Ages',
-    desc: '每回合结束后随机获得一件一级装备，并获得1层；每层额外获得20生命值，最多3层；满层时额外获得10技能急速',
+    desc: '每回合结束后随机获得一件一级装备，并获得1层；每层额外获得20生命值，最多3层；出售满层时随机获得一件二级装备',
     level: 3,
     type: 'hp',
     cooldown: 0,
@@ -1282,10 +1281,15 @@ const level3Items = [
         // 层数封顶后不再涨，但每回合的免费装备照发
         self.addStack(1)
         ctx.grantRandomLevel1Item(self.name)
+      },
+      // 满层（3 层）后卖掉才返还一件二级装备；没满层卖掉不返还
+      onSell: (ctx, self) => {
+        if (self.stacks < self.maxStacks) return
+        ctx.grantRandomLevel2Item(self.name)
       }
     },
-    // 满层才点亮高亮边框，同时给满层那 10 点技能急速
-    conditionalStats: (allyChess, self) => (self.stacks >= 3 ? { ah: 10 } : null)
+    // 满层才点亮高亮边框。不加属性，返回 {} 表示「有加成在生效」
+    conditionalStats: (allyChess, self) => (self.stacks >= 3 ? {} : null)
   },
   {
     id: 'fiendhunter_bolts',
@@ -1835,7 +1839,7 @@ const level3Items = [
       ctx.dealDamage(self, foe, 50, self.damageType)
     },
     hooks: {
-      // 与凛冬之临同一触发点：己方任一棋子打出的伤害都会走到这里（含残疫自己那发 40），
+      // 己方任一棋子打出的伤害都会走到这里（含残疫自己那一发），
       // 靠 ctx.damageType 只挑魔法伤害计数
       onDealDamage: (ctx, self) => {
         if (ctx.damageType !== 'magic') return
@@ -1934,6 +1938,31 @@ const level3Items = [
     effect: (ctx, self) => {
       const foe = self.owner === 'player' ? ctx.enemy : ctx.player
       ctx.dealDamage(self, foe, 90, self.damageType)
+    }
+  },
+  {
+    id: 'banshees_veil',
+    name: '女妖面纱',
+    nameEn: "Banshee's Veil",
+    desc: '每3秒获得30护盾，损失一半护盾并造成等量的魔法伤害',
+    level: 3,
+    type: 'armor',
+    cooldown: 3.0,
+    damageType: 'magic',
+    stats: {
+      armor: 20,
+      mr: 20
+    },
+    icon: require("./img/level3/Banshee's Veil.png"),
+    effect: (ctx, self) => {
+      const selfRole = self.owner === 'player' ? ctx.player : ctx.enemy
+      const foe = self.owner === 'player' ? ctx.enemy : ctx.player
+      // 先落 30 点盾，再砍掉一半，损失量就是这一发的伤害
+      // 盾量按 ceil((S+30)/2) 收敛在 30 附近，被消耗时伤害同步回落，不会无限滚雪球
+      ctx.addShield(selfRole, 30, self)
+      const lost = Math.floor(selfRole.shield / 2)
+      selfRole.shield -= lost
+      ctx.dealDamage(self, foe, lost, self.damageType)
     }
   },
   {
